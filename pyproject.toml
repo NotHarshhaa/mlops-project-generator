@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mlops-project-generator"
+version = "1.0.0"
+description = "A CLI tool that generates production-ready MLOps project templates for Scikit-learn, PyTorch, and TensorFlow"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [
+    {name = "HARSHHAA", email = "contact@example.com"}
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "typer>=0.9.0",
+    "jinja2>=3.1.0",
+    "pyyaml>=6.0",
+    "rich>=13.0.0",
+    "cookiecutter>=2.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[project.scripts]
+mlops-project-generator = "generator.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/NotHarshhaa/MLOps-Project-Generator"
+Repository = "https://github.com/NotHarshhaa/MLOps-Project-Generator"
+Issues = "https://github.com/NotHarshhaa/MLOps-Project-Generator/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["generator*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true

@@ -1,0 +1,324 @@
+"""
+Time series model implementation for TensorFlow/Keras
+"""
+
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import layers
+from typing import Dict, Any
+
+
+class TimeSeriesModel(keras.Model):
+    """
+    LSTM-based model for time series forecasting
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(TimeSeriesModel, self).__init__()
+        
+        self.config = config
+        self.sequence_length = config.get("sequence_length", 10)
+        self.hidden_dim = config.get("hidden_dim", 64)
+        self.num_layers = config.get("num_layers", 2)
+        self.dropout = config.get("dropout", 0.2)
+        self.prediction_horizon = config.get("prediction_horizon", 1)
+        self.input_dim = config.get("input_dim", 1)
+        
+        # Build the model
+        self._build_model()
+    
+    def _build_model(self):
+        """Build the LSTM model architecture"""
+        inputs = keras.Input(shape=(self.sequence_length, self.input_dim))
+        
+        # LSTM layers
+        x = inputs
+        for i in range(self.num_layers):
+            return_sequences = i < self.num_layers - 1
+            x = layers.LSTM(
+                self.hidden_dim,
+                return_sequences=return_sequences,
+                dropout=self.dropout if i < self.num_layers - 1 else 0
+            )(x)
+        
+        # Dense layers
+        x = layers.Dense(self.hidden_dim // 2, activation='relu')(x)
+        x = layers.Dropout(self.dropout)(x)
+        
+        # Output layer
+        outputs = layers.Dense(self.prediction_horizon, activation='linear')(x)
+        
+        self.model = keras.Model(inputs=inputs, outputs=outputs)
+    
+    def call(self, inputs, training=False):
+        """Forward pass"""
+        return self.model(inputs, training=training)
+    
+    def get_config(self):
+        """Get model configuration"""
+        return self.config
+
+
+class GRUTimeSeriesModel(keras.Model):
+    """
+    GRU-based model for time series forecasting
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize GRU time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(GRUTimeSeriesModel, self).__init__()
+        
+        self.config = config
+        self.sequence_length = config.get("sequence_length", 10)
+        self.hidden_dim = config.get("hidden_dim", 64)
+        self.num_layers = config.get("num_layers", 2)
+        self.dropout = config.get("dropout", 0.2)
+        self.prediction_horizon = config.get("prediction_horizon", 1)
+        self.input_dim = config.get("input_dim", 1)
+        
+        # Build the model
+        self._build_model()
+    
+    def _build_model(self):
+        """Build the GRU model architecture"""
+        inputs = keras.Input(shape=(self.sequence_length, self.input_dim))
+        
+        # GRU layers
+        x = inputs
+        for i in range(self.num_layers):
+            return_sequences = i < self.num_layers - 1
+            x = layers.GRU(
+                self.hidden_dim,
+                return_sequences=return_sequences,
+                dropout=self.dropout if i < self.num_layers - 1 else 0
+            )(x)
+        
+        # Attention mechanism
+        attention = layers.Dense(1, activation='tanh')(x)
+        attention = layers.Softmax(axis=1)(attention)
+        attended = layers.Multiply()([x, attention])
+        attended = layers.Lambda(lambda z: tf.reduce_sum(z, axis=1))(attended)
+        
+        # Dense layers
+        x = layers.Dense(self.hidden_dim // 2, activation='relu')(attended)
+        x = layers.Dropout(self.dropout)(x)
+        
+        # Output layer
+        outputs = layers.Dense(self.prediction_horizon, activation='linear')(x)
+        
+        self.model = keras.Model(inputs=inputs, outputs=outputs)
+    
+    def call(self, inputs, training=False):
+        """Forward pass"""
+        return self.model(inputs, training=training)
+    
+    def get_config(self):
+        """Get model configuration"""
+        return self.config
+
+
+class TransformerTimeSeriesModel(keras.Model):
+    """
+    Transformer-based model for time series forecasting
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize transformer time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(TransformerTimeSeriesModel, self).__init__()
+        
+        self.config = config
+        self.sequence_length = config.get("sequence_length", 10)
+        self.d_model = config.get("d_model", 64)
+        self.num_heads = config.get("num_heads", 4)
+        self.num_layers = config.get("num_layers", 2)
+        self.dropout = config.get("dropout", 0.1)
+        self.prediction_horizon = config.get("prediction_horizon", 1)
+        self.input_dim = config.get("input_dim", 1)
+        
+        # Build the model
+        self._build_model()
+    
+    def _build_model(self):
+        """Build the transformer model architecture"""
+        inputs = keras.Input(shape=(self.sequence_length, self.input_dim))
+        
+        # Input projection
+        x = layers.Dense(self.d_model)(inputs)
+        
+        # Positional encoding
+        positions = tf.range(start=0, limit=self.sequence_length, delta=1)
+        position_embedding = layers.Embedding(input_dim=self.sequence_length, output_dim=self.d_model)(positions)
+        x = x + position_embedding
+        
+        # Transformer encoder layers
+        for _ in range(self.num_layers):
+            # Multi-head attention
+            attention_output = layers.MultiHeadAttention(
+                num_heads=self.num_heads,
+                key_dim=self.d_model // self.num_heads,
+                dropout=self.dropout
+            )(x, x)
+            x = layers.Add()([x, attention_output])
+            x = layers.LayerNormalization()(x)
+            
+            # Feed-forward network
+            ffn_output = layers.Dense(self.d_model * 4, activation='relu')(x)
+            ffn_output = layers.Dense(self.d_model)(ffn_output)
+            ffn_output = layers.Dropout(self.dropout)(ffn_output)
+            x = layers.Add()([x, ffn_output])
+            x = layers.LayerNormalization()(x)
+        
+        # Global average pooling
+        x = layers.GlobalAveragePooling1D()(x)
+        
+        # Dense layers
+        x = layers.Dense(self.d_model // 2, activation='relu')(x)
+        x = layers.Dropout(self.dropout)(x)
+        
+        # Output layer
+        outputs = layers.Dense(self.prediction_horizon, activation='linear')(x)
+        
+        self.model = keras.Model(inputs=inputs, outputs=outputs)
+    
+    def call(self, inputs, training=False):
+        """Forward pass"""
+        return self.model(inputs, training=training)
+    
+    def get_config(self):
+        """Get model configuration"""
+        return self.config
+
+
+class ConvTimeSeriesModel(keras.Model):
+    """
+    CNN-based model for time series forecasting
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize CNN time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(ConvTimeSeriesModel, self).__init__()
+        
+        self.config = config
+        self.sequence_length = config.get("sequence_length", 10)
+        self.filters = config.get("filters", [64, 128, 256])
+        self.kernel_sizes = config.get("kernel_sizes", [3, 3, 3])
+        self.dropout = config.get("dropout", 0.2)
+        self.prediction_horizon = config.get("prediction_horizon", 1)
+        self.input_dim = config.get("input_dim", 1)
+        
+        # Build the model
+        self._build_model()
+    
+    def _build_model(self):
+        """Build the CNN model architecture"""
+        inputs = keras.Input(shape=(self.sequence_length, self.input_dim))
+        
+        # Convolutional layers
+        x = inputs
+        for i, (filters, kernel_size) in enumerate(zip(self.filters, self.kernel_sizes)):
+            x = layers.Conv1D(filters, kernel_size, padding='same')(x)
+            x = layers.BatchNormalization()(x)
+            x = layers.Activation('relu')(x)
+            x = layers.MaxPooling1D(pool_size=2)(x)
+            x = layers.Dropout(self.dropout)(x)
+        
+        # Global average pooling
+        x = layers.GlobalAveragePooling1D()(x)
+        
+        # Dense layers
+        x = layers.Dense(128, activation='relu')(x)
+        x = layers.Dropout(self.dropout)(x)
+        
+        # Output layer
+        outputs = layers.Dense(self.prediction_horizon, activation='linear')(x)
+        
+        self.model = keras.Model(inputs=inputs, outputs=outputs)
+    
+    def call(self, inputs, training=False):
+        """Forward pass"""
+        return self.model(inputs, training=training)
+    
+    def get_config(self):
+        """Get model configuration"""
+        return self.config
+
+
+class HybridTimeSeriesModel(keras.Model):
+    """
+    Hybrid CNN-LSTM model for time series forecasting
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize hybrid time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(HybridTimeSeriesModel, self).__init__()
+        
+        self.config = config
+        self.sequence_length = config.get("sequence_length", 10)
+        self.cnn_filters = config.get("cnn_filters", [64, 128])
+        self.lstm_units = config.get("lstm_units", 128)
+        self.dropout = config.get("dropout", 0.2)
+        self.prediction_horizon = config.get("prediction_horizon", 1)
+        self.input_dim = config.get("input_dim", 1)
+        
+        # Build the model
+        self._build_model()
+    
+    def _build_model(self):
+        """Build the hybrid CNN-LSTM model architecture"""
+        inputs = keras.Input(shape=(self.sequence_length, self.input_dim))
+        
+        # CNN layers for feature extraction
+        x = inputs
+        for filters in self.cnn_filters:
+            x = layers.Conv1D(filters, kernel_size=3, padding='same')(x)
+            x = layers.BatchNormalization()(x)
+            x = layers.Activation('relu')(x)
+            x = layers.MaxPooling1D(pool_size=2)(x)
+            x = layers.Dropout(self.dropout)(x)
+        
+        # LSTM layers
+        x = layers.LSTM(self.lstm_units, return_sequences=False)(x)
+        x = layers.Dropout(self.dropout)(x)
+        
+        # Dense layers
+        x = layers.Dense(64, activation='relu')(x)
+        x = layers.Dropout(self.dropout)(x)
+        
+        # Output layer
+        outputs = layers.Dense(self.prediction_horizon, activation='linear')(x)
+        
+        self.model = keras.Model(inputs=inputs, outputs=outputs)
+    
+    def call(self, inputs, training=False):
+        """Forward pass"""
+        return self.model(inputs, training=training)
+    
+    def get_config(self):
+        """Get model configuration"""
+        return self.config

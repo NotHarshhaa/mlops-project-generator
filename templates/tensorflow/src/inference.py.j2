@@ -1,0 +1,360 @@
+#!/usr/bin/env python3
+"""
+Inference script for {{ framework_display }} {{ task_type }} model
+"""
+
+import os
+import sys
+import argparse
+import logging
+import json
+from pathlib import Path
+from typing import Dict, Any, Union, List
+
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+import yaml
+
+{% if deployment == "fastapi" %}
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List, Union
+import uvicorn
+{% endif %}
+
+# Add src to path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from src.data.data_loader import DataLoader
+from src.models.{{ task_type }}_model import {{ task_type.title() }}Model
+
+
+def setup_logging(config: Dict[str, Any]) -> None:
+    """Setup logging configuration"""
+    log_config = config.get("logging", {})
+    log_level = getattr(logging, log_config.get("level", "INFO"))
+    log_format = log_config.get("format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    
+    logging.basicConfig(
+        level=log_level,
+        format=log_format,
+        handlers=[
+            logging.FileHandler(log_config.get("file", "logs/inference.log")),
+            logging.StreamHandler() if log_config.get("console", True) else logging.NullHandler()
+        ]
+    )
+
+
+def load_config(config_path: str) -> Dict[str, Any]:
+    """Load configuration from YAML file"""
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def load_model(model_path: str, model_config: Dict[str, Any]) -> tf.keras.Model:
+    """Load trained TensorFlow model"""
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model not found at {model_path}")
+    
+    model = tf.keras.models.load_model(model_path)
+    
+    logging.info(f"Model loaded from {model_path}")
+    return model
+
+
+def preprocess_data(data: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
+    """Preprocess input data"""
+    if isinstance(data, pd.DataFrame):
+        data = data.values
+    
+    # Convert to float32 and ensure correct shape
+    data = data.astype(np.float32)
+    
+    return data
+
+
+def predict_single(model: tf.keras.Model, data: np.ndarray) -> Union[int, float]:
+    """Make prediction for single sample"""
+    if data.ndim == 1:
+        data = data.reshape(1, -1)
+    
+    # Make prediction
+    prediction = model.predict(data, verbose=0)
+    
+    {% if task_type == "classification" %}
+    # For classification, return the predicted class
+    predicted_class = np.argmax(prediction[0])
+    return int(predicted_class)
+    {% elif task_type == "regression" %}
+    # For regression, return the predicted value
+    return float(prediction[0][0])
+    {% elif task_type == "timeseries" %}
+    # For time series, return the predicted value
+    return float(prediction[0][0])
+    {% endif %}
+
+
+def predict_batch(model: tf.keras.Model, data: np.ndarray) -> List[Union[int, float]]:
+    """Make predictions for batch of samples"""
+    # Make predictions
+    predictions = model.predict(data, verbose=0)
+    
+    {% if task_type == "classification" %}
+    # For classification, return the predicted classes
+    predicted_classes = np.argmax(predictions, axis=1)
+    return [int(cls) for cls in predicted_classes]
+    {% elif task_type == "regression" %}
+    # For regression, return the predicted values
+    return [float(pred[0]) for pred in predictions]
+    {% elif task_type == "timeseries" %}
+    # For time series, return the predicted values
+    return [float(pred[0]) for pred in predictions]
+    {% endif %}
+
+
+def predict_with_probabilities(model: tf.keras.Model, data: np.ndarray) -> Dict[str, Any]:
+    """Make predictions with probabilities (classification only)"""
+    {% if task_type == "classification" %}
+    # Make predictions
+    predictions = model.predict(data, verbose=0)
+    
+    # Get predicted classes and probabilities
+    predicted_classes = np.argmax(predictions, axis=1)
+    probabilities = predictions.tolist()
+    
+    return {
+        "predictions": [int(cls) for cls in predicted_classes],
+        "probabilities": probabilities
+    }
+    {% else %}
+    raise NotImplementedError("Probability predictions only available for classification")
+    {% endif %}
+
+
+def save_predictions(predictions: List[Union[int, float]], output_path: str) -> None:
+    """Save predictions to file"""
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    with open(output_path, 'w') as f:
+        json.dump(predictions, f, indent=2)
+    
+    logging.info(f"Predictions saved to {output_path}")
+
+
+{% if deployment == "fastapi" %}
+# FastAPI app
+app = FastAPI(title="{{ project_name }} API", version="0.1.0")
+
+# Pydantic models
+{% if task_type == "classification" %}
+class PredictionRequest(BaseModel):
+    features: List[float]
+
+class PredictionResponse(BaseModel):
+    prediction: int
+    confidence: float
+
+class BatchPredictionRequest(BaseModel):
+    data: List[List[float]]
+
+class BatchPredictionResponse(BaseModel):
+    predictions: List[int]
+
+class ProbabilityRequest(BaseModel):
+    data: List[List[float]]
+
+class ProbabilityResponse(BaseModel):
+    predictions: List[int]
+    probabilities: List[List[float]]
+{% elif task_type == "regression" or task_type == "timeseries" %}
+class PredictionRequest(BaseModel):
+    features: List[float]
+
+class PredictionResponse(BaseModel):
+    prediction: float
+
+class BatchPredictionRequest(BaseModel):
+    data: List[List[float]]
+
+class BatchPredictionResponse(BaseModel):
+    predictions: List[float]
+{% endif %}
+
+# Global variables for model
+model = None
+config = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Load model on startup"""
+    global model, config
+    
+    config_path = "configs/config.yaml"
+    config = load_config(config_path)
+    setup_logging(config)
+    
+    model_path = "models/production/{{ task_type }}_model"
+    model = load_model(model_path, config["model"])
+    
+    logging.info("API startup completed")
+
+
+@app.post("/predict", response_model=PredictionResponse)
+async def predict(request: PredictionRequest):
+    """Make single prediction"""
+    try:
+        data = preprocess_data(np.array(request.features))
+        prediction = predict_single(model, data)
+        
+        {% if task_type == "classification" %}
+        # Get confidence (max probability)
+        data_batch = data.reshape(1, -1)
+        probabilities = model.predict(data_batch, verbose=0)[0]
+        confidence = float(np.max(probabilities))
+        
+        return PredictionResponse(prediction=prediction, confidence=confidence)
+        {% else %}
+        return PredictionResponse(prediction=prediction)
+        {% endif %}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/predict-batch", response_model=BatchPredictionResponse)
+async def predict_batch_endpoint(request: BatchPredictionRequest):
+    """Make batch predictions"""
+    try:
+        data = preprocess_data(np.array(request.data))
+        predictions = predict_batch(model, data)
+        
+        return BatchPredictionResponse(predictions=predictions)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+{% if task_type == "classification" %}
+@app.post("/predict-probabilities", response_model=ProbabilityResponse)
+async def predict_probabilities(request: ProbabilityRequest):
+    """Make predictions with probabilities"""
+    try:
+        data = preprocess_data(np.array(request.data))
+        result = predict_with_probabilities(model, data)
+        
+        return ProbabilityResponse(
+            predictions=result["predictions"],
+            probabilities=result["probabilities"]
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+{% endif %}
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy", 
+        "model_loaded": model is not None
+    }
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "src.inference:app",
+        host=config["deployment"]["host"],
+        port=config["deployment"]["port"],
+        reload=True
+    )
+{% else %}
+def main() -> None:
+    """Main inference function"""
+    parser = argparse.ArgumentParser(description="Run inference with {{ framework_display }} {{ task_type }} model")
+    parser.add_argument("--config", type=str, default="configs/config.yaml", help="Path to configuration file")
+    parser.add_argument("--input-path", type=str, required=True, help="Path to input data")
+    parser.add_argument("--output-path", type=str, help="Path to save predictions")
+    parser.add_argument("--model-path", type=str, default="models/production/{{ task_type }}_model", help="Path to trained model")
+    {% if task_type == "classification" %}
+    parser.add_argument("--probabilities", action="store_true", help="Return prediction probabilities")
+    {% endif %}
+    args = parser.parse_args()
+    
+    # Load configuration
+    config = load_config(args.config)
+    setup_logging(config)
+    
+    logging.info("Starting inference process")
+    
+    # Load model
+    model = load_model(args.model_path, config["model"])
+    
+    # Load data
+    data_loader = DataLoader(config)
+    if args.input_path.endswith('.csv'):
+        data = data_loader.load_from_file(args.input_path)
+    else:
+        data = np.load(args.input_path)
+    
+    logging.info(f"Loaded data with shape: {data.shape}")
+    
+    # Preprocess data
+    data_processed = preprocess_data(data)
+    
+    # Make predictions
+    if data_processed.shape[0] == 1:
+        # Single prediction
+        prediction = predict_single(model, data_processed)
+        predictions = [prediction]
+        logging.info(f"Single prediction: {prediction}")
+        
+        {% if task_type == "classification" %}
+        if args.probabilities:
+            result = predict_with_probabilities(model, data_processed)
+            logging.info(f"Probabilities: {result['probabilities'][0]}")
+        {% endif %}
+    else:
+        # Batch predictions
+        {% if task_type == "classification" %}
+        if args.probabilities:
+            result = predict_with_probabilities(model, data_processed)
+            predictions = result["predictions"]
+            logging.info(f"Batch predictions with probabilities: {len(predictions)} predictions made")
+        else:
+            predictions = predict_batch(model, data_processed)
+            logging.info(f"Batch predictions: {len(predictions)} predictions made")
+        {% else %}
+        predictions = predict_batch(model, data_processed)
+        logging.info(f"Batch predictions: {len(predictions)} predictions made")
+        {% endif %}
+    
+    # Save predictions if output path provided
+    if args.output_path:
+        {% if task_type == "classification" %}
+        if args.probabilities:
+            output_data = {
+                "predictions": predictions,
+                "probabilities": result["probabilities"]
+            }
+        else:
+            output_data = {"predictions": predictions}
+        
+        with open(args.output_path, 'w') as f:
+            json.dump(output_data, f, indent=2)
+        {% else %}
+        save_predictions(predictions, args.output_path)
+        {% endif %}
+    else:
+        print("Predictions:")
+        for i, pred in enumerate(predictions):
+            print(f"Sample {i}: {pred}")
+    
+    logging.info("Inference process completed successfully")
+
+
+if __name__ == "__main__":
+    main()
+{% endif %}

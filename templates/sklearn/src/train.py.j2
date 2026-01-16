@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+"""
+Training script for {{ framework_display }} {{ task_display }} model
+"""
+
+import os
+import sys
+import argparse
+import logging
+from pathlib import Path
+from typing import Dict, Any, Tuple
+
+import pandas as pd
+import numpy as np
+import yaml
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score, roc_auc_score,
+    mean_squared_error, mean_absolute_error, r2_score
+)
+import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+{% if experiment_tracking == "mlflow" %}
+import mlflow
+import mlflow.sklearn
+{% elif experiment_tracking == "wandb" %}
+import wandb
+{% endif %}
+
+# Add src to path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from src.models.{{ task_type }}_model import {{ task_type.title() }}Model
+from src.data.data_loader import DataLoader
+from src.features.feature_engineering import FeatureEngineer
+
+
+def setup_logging(config: Dict[str, Any]) -> None:
+    """Setup logging configuration"""
+    log_config = config.get("logging", {})
+    log_level = getattr(logging, log_config.get("level", "INFO"))
+    log_format = log_config.get("format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    
+    logging.basicConfig(
+        level=log_level,
+        format=log_format,
+        handlers=[
+            logging.FileHandler(log_config.get("file", "logs/train.log")),
+            logging.StreamHandler() if log_config.get("console", True) else logging.NullHandler()
+        ]
+    )
+
+
+def load_config(config_path: str) -> Dict[str, Any]:
+    """Load configuration from YAML file"""
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def evaluate_model(model, X_test: np.ndarray, y_test: np.ndarray, task_type: str) -> Dict[str, float]:
+    """Evaluate model performance"""
+    y_pred = model.predict(X_test)
+    
+    metrics = {}
+    
+    if task_type == "classification":
+        metrics["accuracy"] = accuracy_score(y_test, y_pred)
+        metrics["precision"] = precision_score(y_test, y_pred, average='weighted')
+        metrics["recall"] = recall_score(y_test, y_pred, average='weighted')
+        metrics["f1_score"] = f1_score(y_test, y_pred, average='weighted')
+        
+        # Try to get ROC AUC if possible
+        try:
+            y_pred_proba = model.predict_proba(X_test)
+            metrics["roc_auc"] = roc_auc_score(y_test, y_pred_proba, multi_class='ovr', average='weighted')
+        except:
+            pass
+            
+    elif task_type == "regression":
+        metrics["mse"] = mean_squared_error(y_test, y_pred)
+        metrics["rmse"] = np.sqrt(metrics["mse"])
+        metrics["mae"] = mean_absolute_error(y_test, y_pred)
+        metrics["r2_score"] = r2_score(y_test, y_pred)
+    
+    return metrics
+
+
+def save_model(model, model_path: str) -> None:
+    """Save trained model"""
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    joblib.dump(model, model_path)
+    logging.info(f"Model saved to {model_path}")
+
+
+def plot_results(y_true: np.ndarray, y_pred: np.ndarray, task_type: str, save_path: str) -> None:
+    """Plot and save evaluation results"""
+    plt.figure(figsize=(10, 6))
+    
+    if task_type == "classification":
+        from sklearn.metrics import confusion_matrix
+        cm = confusion_matrix(y_true, y_pred)
+        sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+        plt.title('Confusion Matrix')
+        plt.ylabel('True Label')
+        plt.xlabel('Predicted Label')
+    else:
+        plt.scatter(y_true, y_pred, alpha=0.6)
+        plt.plot([y_true.min(), y_true.max()], [y_true.min(), y_true.max()], 'r--', lw=2)
+        plt.xlabel('True Values')
+        plt.ylabel('Predicted Values')
+        plt.title('True vs Predicted Values')
+    
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+    logging.info(f"Results plot saved to {save_path}")
+
+
+def main() -> None:
+    """Main training function"""
+    parser = argparse.ArgumentParser(description="Train {{ framework_display }} {{ task_type }} model")
+    parser.add_argument("--config", type=str, default="configs/config.yaml", help="Path to configuration file")
+    parser.add_argument("--data-path", type=str, help="Path to training data")
+    args = parser.parse_args()
+    
+    # Load configuration
+    config = load_config(args.config)
+    setup_logging(config)
+    
+    logging.info("Starting training process")
+    
+    {% if experiment_tracking == "mlflow" %}
+    # Setup MLflow
+    mlflow.set_tracking_uri(config["experiment_tracking"]["tracking_uri"])
+    mlflow.set_experiment(config["experiment_tracking"]["experiment_name"])
+    
+    with mlflow.start_run():
+    {% elif experiment_tracking == "wandb" %}
+    # Setup W&B
+    wandb.init(
+        project=config["experiment_tracking"]["project"],
+        entity=config["experiment_tracking"]["entity"],
+        config=config
+    )
+    {% endif %}
+    
+        # Load data
+        data_loader = DataLoader(config)
+        if args.data_path:
+            X, y = data_loader.load_from_file(args.data_path)
+        else:
+            X, y = data_loader.load_sample_data()
+        
+        logging.info(f"Loaded data with shape: {X.shape}")
+        
+        # Feature engineering
+        feature_engineer = FeatureEngineer(config)
+        X_processed = feature_engineer.fit_transform(X)
+        
+        # Split data
+        data_config = config["data"]
+        X_train, X_test, y_train, y_test = train_test_split(
+            X_processed, y,
+            test_size=data_config["test_size"],
+            random_state=data_config["random_state"],
+            stratify=y if config["model"]["type"].endswith("Classifier") else None
+        )
+        
+        logging.info(f"Training set shape: {X_train.shape}")
+        logging.info(f"Test set shape: {X_test.shape}")
+        
+        # Initialize and train model
+        model = {{ task_type.title() }}Model(config)
+        model.train(X_train, y_train)
+        
+        logging.info("Model training completed")
+        
+        # Evaluate model
+        metrics = evaluate_model(model.model, X_test, y_test, "{{ task_type }}")
+        logging.info(f"Test metrics: {metrics}")
+        
+        # Cross-validation
+        cv_scores = cross_val_score(model.model, X_train, y_train, cv=config["training"]["cross_validation"])
+        logging.info(f"Cross-validation scores: {cv_scores}")
+        logging.info(f"Mean CV score: {cv_scores.mean():.4f} (+/- {cv_scores.std() * 2:.4f})")
+        
+        # Save model
+        model_path = "models/production/{{ task_type }}_model.joblib"
+        save_model(model.model, model_path)
+        
+        # Plot results
+        y_pred = model.model.predict(X_test)
+        plot_path = "models/production/evaluation_plot.png"
+        plot_results(y_test, y_pred, "{{ task_type }}", plot_path)
+        
+        {% if experiment_tracking == "mlflow" %}
+        # Log to MLflow
+        mlflow.log_params(config["model"])
+        mlflow.log_metrics(metrics)
+        mlflow.log_metric("cv_mean", cv_scores.mean())
+        mlflow.log_metric("cv_std", cv_scores.std())
+        mlflow.log_artifact(model_path, "model")
+        mlflow.log_artifact(plot_path, "plots")
+        
+        {% elif experiment_tracking == "wandb" %}
+        # Log to W&B
+        wandb.log(metrics)
+        wandb.log({"cv_mean": cv_scores.mean(), "cv_std": cv_scores.std()})
+        wandb.save(model_path)
+        wandb.save(plot_path)
+        {% endif %}
+    
+    {% if experiment_tracking == "mlflow" %}
+    {% elif experiment_tracking == "wandb" %}
+    wandb.finish()
+    {% endif %}
+    
+    logging.info("Training process completed successfully")
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,155 @@
+# Configuration file for {{ project_name }}
+
+# Project settings
+project:
+  name: "{{ project_name }}"
+  author: "{{ author_name }}"
+  version: "0.1.0"
+  description: "{{ framework_display }} {{ task_display }} project"
+
+# Data settings
+data:
+  raw_data_path: "data/raw"
+  processed_data_path: "data/processed"
+  external_data_path: "data/external"
+  test_size: 0.2
+  random_state: 42
+  {% if framework == "sklearn" %}
+  target_column: "target"
+  feature_columns: []
+  {% endif %}
+
+# Model settings
+model:
+  {% if framework == "sklearn" %}
+  {% if task_type == "classification" %}
+  type: "RandomForestClassifier"
+  n_estimators: 100
+  max_depth: 10
+  {% elif task_type == "regression" %}
+  type: "RandomForestRegressor"
+  n_estimators: 100
+  max_depth: 10
+  {% elif task_type == "timeseries" %}
+  type: "ARIMA"
+  order: [1, 1, 1]
+  {% endif %}
+  {% elif framework == "pytorch" %}
+  type: "NeuralNetwork"
+  {% if task_type == "classification" %}
+  num_classes: 2
+  {% elif task_type == "regression" %}
+  output_dim: 1
+  {% elif task_type == "timeseries" %}
+  sequence_length: 10
+  prediction_horizon: 1
+  {% endif %}
+  hidden_layers: [128, 64, 32]
+  dropout: 0.2
+  {% elif framework == "tensorflow" %}
+  type: "NeuralNetwork"
+  {% if task_type == "classification" %}
+  num_classes: 2
+  {% elif task_type == "regression" %}
+  output_dim: 1
+  {% elif task_type == "timeseries" %}
+  sequence_length: 10
+  prediction_horizon: 1
+  {% endif %}
+  hidden_layers: [128, 64, 32]
+  dropout: 0.2
+  {% endif %}
+
+# Training settings
+training:
+  {% if framework in ["pytorch", "tensorflow"] %}
+  batch_size: 32
+  learning_rate: 0.001
+  epochs: 100
+  {% if framework == "pytorch" %}
+  optimizer: "adam"
+  scheduler: "step"
+  {% elif framework == "tensorflow" %}
+  optimizer: "adam"
+  {% endif %}
+  {% else %}
+  cross_validation: 5
+  {% endif %}
+  early_stopping: true
+  patience: 10
+  verbose: true
+
+# Evaluation settings
+evaluation:
+  metrics:
+    {% if task_type == "classification" %}
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1_score"
+    - "roc_auc"
+    {% elif task_type == "regression" %}
+    - "mse"
+    - "rmse"
+    - "mae"
+    - "r2_score"
+    {% elif task_type == "timeseries" %}
+    - "mse"
+    - "rmse"
+    - "mae"
+    - "mape"
+    {% endif %}
+  save_predictions: true
+  plot_results: true
+
+# Experiment tracking
+experiment_tracking:
+  tool: "{{ experiment_tracking }}"
+  {% if experiment_tracking == "mlflow" %}
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "{{ project_name }}"
+  {% elif experiment_tracking == "wandb" %}
+  project: "{{ project_name }}"
+  entity: "{{ author_name.lower().replace(' ', '_') }}"
+  {% endif %}
+
+# Deployment settings
+deployment:
+  method: "{{ deployment }}"
+  {% if deployment == "fastapi" %}
+  host: "0.0.0.0"
+  port: 8000
+  workers: 1
+  {% elif deployment == "docker" %}
+  base_image: "python:{{ python_version }}-slim"
+  {% elif deployment == "kubernetes" %}
+  namespace: "default"
+  replicas: 3
+  {% endif %}
+
+# Monitoring settings
+monitoring:
+  tool: "{{ monitoring }}"
+  {% if monitoring == "evidently" %}
+  dashboard_port: 8001
+  report_frequency: "daily"
+  {% elif monitoring == "custom" %}
+  alert_threshold: 0.1
+  check_frequency: "hourly"
+  {% endif %}
+
+# Logging settings
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/{{ project_name }}.log"
+  console: true
+
+# Paths
+paths:
+  data_dir: "data"
+  models_dir: "models"
+  notebooks_dir: "notebooks"
+  scripts_dir: "scripts"
+  logs_dir: "logs"
+  configs_dir: "configs"

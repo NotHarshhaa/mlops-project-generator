@@ -1,0 +1,374 @@
+"""
+Training utilities for PyTorch
+"""
+
+import torch
+import numpy as np
+from typing import Dict, Any, List, Tuple
+import logging
+
+
+class EarlyStopping:
+    """
+    Early stopping utility to prevent overfitting
+    """
+    
+    def __init__(self, patience: int = 10, min_delta: float = 0.0, restore_best_weights: bool = True):
+        """
+        Initialize early stopping
+        
+        Args:
+            patience: Number of epochs to wait before stopping
+            min_delta: Minimum change to qualify as improvement
+            restore_best_weights: Whether to restore best model weights
+        """
+        self.patience = patience
+        self.min_delta = min_delta
+        self.restore_best_weights = restore_best_weights
+        self.best_loss = float('inf')
+        self.counter = 0
+        self.best_weights = None
+        
+    def should_stop(self, current_loss: float) -> bool:
+        """
+        Check if training should stop
+        
+        Args:
+            current_loss: Current validation loss
+            
+        Returns:
+            True if training should stop
+        """
+        if current_loss < self.best_loss - self.min_delta:
+            self.best_loss = current_loss
+            self.counter = 0
+            return False
+        else:
+            self.counter += 1
+            return self.counter >= self.patience
+
+
+class MetricsCalculator:
+    """
+    Calculate various metrics for model evaluation
+    """
+    
+    @staticmethod
+    def calculate_accuracy(predictions: torch.Tensor, targets: torch.Tensor) -> float:
+        """
+        Calculate accuracy for classification
+        
+        Args:
+            predictions: Model predictions
+            targets: True targets
+            
+        Returns:
+            Accuracy as percentage
+        """
+        _, predicted = torch.max(predictions.data, 1)
+        total = targets.size(0)
+        correct = (predicted == targets).sum().item()
+        return 100.0 * correct / total
+    
+    @staticmethod
+    def calculate_mse(predictions: torch.Tensor, targets: torch.Tensor) -> float:
+        """
+        Calculate Mean Squared Error
+        
+        Args:
+            predictions: Model predictions
+            targets: True targets
+            
+        Returns:
+            MSE value
+        """
+        mse = torch.nn.functional.mse_loss(predictions.squeeze(), targets)
+        return mse.item()
+    
+    @staticmethod
+    def calculate_mae(predictions: torch.Tensor, targets: torch.Tensor) -> float:
+        """
+        Calculate Mean Absolute Error
+        
+        Args:
+            predictions: Model predictions
+            targets: True targets
+            
+        Returns:
+            MAE value
+        """
+        mae = torch.nn.functional.l1_loss(predictions.squeeze(), targets)
+        return mae.item()
+    
+    @staticmethod
+    def calculate_rmse(predictions: torch.Tensor, targets: torch.Tensor) -> float:
+        """
+        Calculate Root Mean Squared Error
+        
+        Args:
+            predictions: Model predictions
+            targets: True targets
+            
+        Returns:
+            RMSE value
+        """
+        mse = torch.nn.functional.mse_loss(predictions.squeeze(), targets)
+        return torch.sqrt(mse).item()
+
+
+class LearningRateScheduler:
+    """
+    Custom learning rate schedulers
+    """
+    
+    @staticmethod
+    def cosine_annealing_with_warmup(optimizer: torch.optim.Optimizer, 
+                                   warmup_epochs: int, 
+                                   max_epochs: int,
+                                   min_lr: float = 1e-6):
+        """
+        Cosine annealing scheduler with warmup
+        
+        Args:
+            optimizer: PyTorch optimizer
+            warmup_epochs: Number of warmup epochs
+            max_epochs: Total number of epochs
+            min_lr: Minimum learning rate
+        """
+        def lr_lambda(current_epoch):
+            if current_epoch < warmup_epochs:
+                return current_epoch / warmup_epochs
+            else:
+                progress = (current_epoch - warmup_epochs) / (max_epochs - warmup_epochs)
+                return min_lr + (1 - min_lr) * 0.5 * (1 + np.cos(np.pi * progress))
+        
+        return torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
+
+class ModelCheckpoint:
+    """
+    Model checkpoint utility
+    """
+    
+    def __init__(self, checkpoint_dir: str = "checkpoints", save_best_only: bool = True):
+        """
+        Initialize model checkpoint
+        
+        Args:
+            checkpoint_dir: Directory to save checkpoints
+            save_best_only: Whether to save only the best model
+        """
+        self.checkpoint_dir = checkpoint_dir
+        self.save_best_only = save_best_only
+        self.best_loss = float('inf')
+        
+        import os
+        os.makedirs(checkpoint_dir, exist_ok=True)
+    
+    def save_checkpoint(self, model: torch.nn.Module, optimizer: torch.optim.Optimizer, 
+                       epoch: int, loss: float, metrics: Dict[str, float] = None):
+        """
+        Save model checkpoint
+        
+        Args:
+            model: PyTorch model
+            optimizer: PyTorch optimizer
+            epoch: Current epoch
+            loss: Current loss
+            metrics: Additional metrics
+        """
+        checkpoint = {
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss,
+            'metrics': metrics or {}
+        }
+        
+        if self.save_best_only:
+            if loss < self.best_loss:
+                self.best_loss = loss
+                torch.save(checkpoint, f"{self.checkpoint_dir}/best_model.pth")
+                logging.info(f"Saved best model checkpoint at epoch {epoch}")
+        else:
+            torch.save(checkpoint, f"{self.checkpoint_dir}/model_epoch_{epoch}.pth")
+            logging.info(f"Saved model checkpoint at epoch {epoch}")
+    
+    def load_checkpoint(self, checkpoint_path: str, model: torch.nn.Module, 
+                       optimizer: torch.optim.Optimizer = None):
+        """
+        Load model checkpoint
+        
+        Args:
+            checkpoint_path: Path to checkpoint
+            model: PyTorch model
+            optimizer: PyTorch optimizer (optional)
+        """
+        checkpoint = torch.load(checkpoint_path)
+        
+        model.load_state_dict(checkpoint['model_state_dict'])
+        
+        if optimizer is not None:
+            optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        
+        epoch = checkpoint['epoch']
+        loss = checkpoint['loss']
+        metrics = checkpoint.get('metrics', {})
+        
+        logging.info(f"Loaded checkpoint from epoch {epoch}, loss: {loss:.4f}")
+        
+        return epoch, loss, metrics
+
+
+class GradientClipping:
+    """
+    Gradient clipping utilities
+    """
+    
+    @staticmethod
+    def clip_gradients(model: torch.nn.Module, max_norm: float = 1.0):
+        """
+        Clip gradients to prevent exploding gradients
+        
+        Args:
+            model: PyTorch model
+            max_norm: Maximum norm for gradient clipping
+        """
+        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)
+    
+    @staticmethod
+    def clip_gradients_value(model: torch.nn.Module, clip_value: float = 1.0):
+        """
+        Clip gradients by value
+        
+        Args:
+            model: PyTorch model
+            clip_value: Maximum absolute value for gradients
+        """
+        torch.nn.utils.clip_grad_value_(model.parameters(), clip_value)
+
+
+class DataAugmentation:
+    """
+    Data augmentation utilities
+    """
+    
+    @staticmethod
+    def add_noise(data: torch.Tensor, noise_factor: float = 0.1) -> torch.Tensor:
+        """
+        Add Gaussian noise to data
+        
+        Args:
+            data: Input data
+            noise_factor: Noise factor
+            
+        Returns:
+            Noisy data
+        """
+        noise = torch.randn_like(data) * noise_factor
+        return data + noise
+    
+    @staticmethod
+    def random_masking(data: torch.Tensor, mask_prob: float = 0.1) -> torch.Tensor:
+        """
+        Apply random masking to data
+        
+        Args:
+            data: Input data
+            mask_prob: Probability of masking each element
+            
+        Returns:
+            Masked data
+        """
+        mask = torch.rand_like(data) > mask_prob
+        return data * mask.float()
+
+
+class ModelProfiler:
+    """
+    Model profiling utilities
+    """
+    
+    @staticmethod
+    def count_parameters(model: torch.nn.Module) -> Tuple[int, int]:
+        """
+        Count model parameters
+        
+        Args:
+            model: PyTorch model
+            
+        Returns:
+            Tuple of (total_parameters, trainable_parameters)
+        """
+        total_params = sum(p.numel() for p in model.parameters())
+        trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+        return total_params, trainable_params
+    
+    @staticmethod
+    def get_model_size(model: torch.nn.Module) -> float:
+        """
+        Get model size in MB
+        
+        Args:
+            model: PyTorch model
+            
+        Returns:
+            Model size in MB
+        """
+        param_size = 0
+        buffer_size = 0
+        
+        for param in model.parameters():
+            param_size += param.nelement() * param.element_size()
+        
+        for buffer in model.buffers():
+            buffer_size += buffer.nelement() * buffer.element_size()
+        
+        size_mb = (param_size + buffer_size) / 1024 / 1024
+        return size_mb
+    
+    @staticmethod
+    def profile_model(model: torch.nn.Module, input_shape: Tuple[int, ...]) -> Dict[str, Any]:
+        """
+        Profile model performance
+        
+        Args:
+            model: PyTorch model
+            input_shape: Input tensor shape
+            
+        Returns:
+            Dictionary with profiling information
+        """
+        model.eval()
+        
+        # Create dummy input
+        dummy_input = torch.randn(input_shape)
+        
+        # Measure inference time
+        with torch.no_grad():
+            start_time = torch.cuda.Event(enable_timing=True) if torch.cuda.is_available() else None
+            end_time = torch.cuda.Event(enable_timing=True) if torch.cuda.is_available() else None
+            
+            if torch.cuda.is_available():
+                start_time.record()
+                output = model(dummy_input)
+                end_time.record()
+                torch.cuda.synchronize()
+                inference_time = start_time.elapsed_time(end_time)
+            else:
+                import time
+                start = time.time()
+                output = model(dummy_input)
+                inference_time = (time.time() - start) * 1000  # Convert to ms
+        
+        # Get model info
+        total_params, trainable_params = ModelProfiler.count_parameters(model)
+        model_size = ModelProfiler.get_model_size(model)
+        
+        return {
+            "total_parameters": total_params,
+            "trainable_parameters": trainable_params,
+            "model_size_mb": model_size,
+            "inference_time_ms": inference_time,
+            "output_shape": output.shape
+        }

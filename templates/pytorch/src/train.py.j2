@@ -1,0 +1,388 @@
+#!/usr/bin/env python3
+"""
+Training script for {{ framework_display }} {{ task_type }} model
+"""
+
+import os
+import sys
+import argparse
+import logging
+from pathlib import Path
+from typing import Dict, Any, Tuple
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+from torch.utils.data import DataLoader, TensorDataset
+import numpy as np
+import pandas as pd
+import yaml
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+
+{% if experiment_tracking == "mlflow" %}
+import mlflow
+import mlflow.pytorch
+{% elif experiment_tracking == "wandb" %}
+import wandb
+{% endif %}
+
+# Add src to path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from src.models.{{ task_type }}_model import {{ task_type.title() }}Model
+from src.data.data_loader import DataLoader
+from src.utils.training_utils import EarlyStopping, MetricsCalculator
+
+
+def setup_logging(config: Dict[str, Any]) -> None:
+    """Setup logging configuration"""
+    log_config = config.get("logging", {})
+    log_level = getattr(logging, log_config.get("level", "INFO"))
+    log_format = log_config.get("format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    
+    logging.basicConfig(
+        level=log_level,
+        format=log_format,
+        handlers=[
+            logging.FileHandler(log_config.get("file", "logs/train.log")),
+            logging.StreamHandler() if log_config.get("console", True) else logging.NullHandler()
+        ]
+    )
+
+
+def load_config(config_path: str) -> Dict[str, Any]:
+    """Load configuration from YAML file"""
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def create_data_loaders(X_train: np.ndarray, y_train: np.ndarray, 
+                       X_test: np.ndarray, y_test: np.ndarray,
+                       batch_size: int) -> Tuple[DataLoader, DataLoader]:
+    """Create PyTorch data loaders"""
+    # Convert to tensors
+    X_train_tensor = torch.FloatTensor(X_train)
+    y_train_tensor = torch.LongTensor(y_train) if "{{ task_type }}" == "classification" else torch.FloatTensor(y_train)
+    X_test_tensor = torch.FloatTensor(X_test)
+    y_test_tensor = torch.LongTensor(y_test) if "{{ task_type }}" == "classification" else torch.FloatTensor(y_test)
+    
+    # Create datasets
+    train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+    test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
+    
+    # Create data loaders
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+    
+    return train_loader, test_loader
+
+
+def train_epoch(model: nn.Module, train_loader: DataLoader, 
+                optimizer: torch.optim.Optimizer, criterion: nn.Module,
+                device: torch.device) -> Tuple[float, float]:
+    """Train model for one epoch"""
+    model.train()
+    total_loss = 0.0
+    correct = 0
+    total = 0
+    
+    for batch_idx, (data, target) in enumerate(train_loader):
+        data, target = data.to(device), target.to(device)
+        
+        optimizer.zero_grad()
+        output = model(data)
+        
+        {% if task_type == "classification" %}
+        loss = criterion(output, target)
+        _, predicted = torch.max(output.data, 1)
+        total += target.size(0)
+        correct += (predicted == target).sum().item()
+        {% elif task_type == "regression" %}
+        loss = criterion(output.squeeze(), target)
+        {% elif task_type == "timeseries" %}
+        loss = criterion(output.squeeze(), target)
+        {% endif %}
+        
+        loss.backward()
+        optimizer.step()
+        
+        total_loss += loss.item()
+    
+    avg_loss = total_loss / len(train_loader)
+    {% if task_type == "classification" %}
+    accuracy = 100.0 * correct / total
+    return avg_loss, accuracy
+    {% else %}
+    return avg_loss, 0.0
+    {% endif %}
+
+
+def validate_epoch(model: nn.Module, test_loader: DataLoader,
+                   criterion: nn.Module, device: torch.device) -> Tuple[float, float]:
+    """Validate model for one epoch"""
+    model.eval()
+    total_loss = 0.0
+    correct = 0
+    total = 0
+    
+    with torch.no_grad():
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            
+            {% if task_type == "classification" %}
+            loss = criterion(output, target)
+            _, predicted = torch.max(output.data, 1)
+            total += target.size(0)
+            correct += (predicted == target).sum().item()
+            {% elif task_type == "regression" %}
+            loss = criterion(output.squeeze(), target)
+            {% elif task_type == "timeseries" %}
+            loss = criterion(output.squeeze(), target)
+            {% endif %}
+            
+            total_loss += loss.item()
+    
+    avg_loss = total_loss / len(test_loader)
+    {% if task_type == "classification" %}
+    accuracy = 100.0 * correct / total
+    return avg_loss, accuracy
+    {% else %}
+    return avg_loss, 0.0
+    {% endif %}
+
+
+def save_model(model: nn.Module, model_path: str) -> None:
+    """Save trained model"""
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    torch.save(model.state_dict(), model_path)
+    logging.info(f"Model saved to {model_path}")
+
+
+def plot_training_history(train_losses: list, val_losses: list, 
+                        train_accs: list, val_accs: list, save_path: str) -> None:
+    """Plot and save training history"""
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+    
+    # Loss plot
+    ax1.plot(train_losses, label='Train Loss')
+    ax1.plot(val_losses, label='Validation Loss')
+    ax1.set_title('Training and Validation Loss')
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('Loss')
+    ax1.legend()
+    
+    {% if task_type == "classification" %}
+    # Accuracy plot
+    ax2.plot(train_accs, label='Train Accuracy')
+    ax2.plot(val_accs, label='Validation Accuracy')
+    ax2.set_title('Training and Validation Accuracy')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('Accuracy (%)')
+    ax2.legend()
+    {% else %}
+    # For regression/timeseries, show loss only
+    ax2.plot(train_losses, label='Train Loss')
+    ax2.plot(val_losses, label='Validation Loss')
+    ax2.set_title('Training and Validation Loss')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('Loss')
+    ax2.legend()
+    {% endif %}
+    
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+    logging.info(f"Training history plot saved to {save_path}")
+
+
+def main() -> None:
+    """Main training function"""
+    parser = argparse.ArgumentParser(description="Train {{ framework_display }} {{ task_type }} model")
+    parser.add_argument("--config", type=str, default="configs/config.yaml", help="Path to configuration file")
+    parser.add_argument("--data-path", type=str, help="Path to training data")
+    parser.add_argument("--epochs", type=int, help="Number of epochs (overrides config)")
+    parser.add_argument("--batch-size", type=int, help="Batch size (overrides config)")
+    args = parser.parse_args()
+    
+    # Load configuration
+    config = load_config(args.config)
+    setup_logging(config)
+    
+    logging.info("Starting training process")
+    
+    {% if experiment_tracking == "mlflow" %}
+    # Setup MLflow
+    mlflow.set_tracking_uri(config["experiment_tracking"]["tracking_uri"])
+    mlflow.set_experiment(config["experiment_tracking"]["experiment_name"])
+    
+    with mlflow.start_run():
+    {% elif experiment_tracking == "wandb" %}
+    # Setup W&B
+    wandb.init(
+        project=config["experiment_tracking"]["project"],
+        entity=config["experiment_tracking"]["entity"],
+        config=config
+    )
+    {% endif %}
+    
+        # Set device
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        logging.info(f"Using device: {device}")
+        
+        # Load data
+        data_loader = DataLoader(config)
+        if args.data_path:
+            X, y = data_loader.load_from_file(args.data_path)
+        else:
+            X, y = data_loader.load_sample_data()
+        
+        logging.info(f"Loaded data with shape: {X.shape}")
+        
+        # Split data
+        from sklearn.model_selection import train_test_split
+        data_config = config["data"]
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y,
+            test_size=data_config["test_size"],
+            random_state=data_config["random_state"],
+            stratify=y if "{{ task_type }}" == "classification" else None
+        )
+        
+        logging.info(f"Training set shape: {X_train.shape}")
+        logging.info(f"Test set shape: {X_test.shape}")
+        
+        # Create data loaders
+        training_config = config["training"]
+        batch_size = args.batch_size or training_config["batch_size"]
+        train_loader, test_loader = create_data_loaders(
+            X_train, y_train, X_test, y_test, batch_size
+        )
+        
+        # Initialize model
+        model_config = config["model"]
+        model = {{ task_type.title() }}Model(model_config).to(device)
+        
+        # Setup optimizer and criterion
+        {% if task_type == "classification" %}
+        criterion = nn.CrossEntropyLoss()
+        {% elif task_type == "regression" %}
+        criterion = nn.MSELoss()
+        {% elif task_type == "timeseries" %}
+        criterion = nn.MSELoss()
+        {% endif %}
+        
+        optimizer_name = training_config.get("optimizer", "adam").lower()
+        if optimizer_name == "adam":
+            optimizer = optim.Adam(model.parameters(), lr=training_config["learning_rate"])
+        elif optimizer_name == "sgd":
+            optimizer = optim.SGD(model.parameters(), lr=training_config["learning_rate"])
+        elif optimizer_name == "rmsprop":
+            optimizer = optim.RMSprop(model.parameters(), lr=training_config["learning_rate"])
+        else:
+            raise ValueError(f"Unsupported optimizer: {optimizer_name}")
+        
+        # Setup learning rate scheduler
+        scheduler_name = training_config.get("scheduler", "step")
+        if scheduler_name == "step":
+            scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
+        elif scheduler_name == "cosine":
+            scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=training_config["epochs"])
+        else:
+            scheduler = None
+        
+        # Setup early stopping
+        early_stopping = None
+        if training_config.get("early_stopping", True):
+            early_stopping = EarlyStopping(patience=training_config.get("patience", 10))
+        
+        # Training loop
+        epochs = args.epochs or training_config["epochs"]
+        train_losses, val_losses = [], []
+        train_accs, val_accs = [], []
+        
+        logging.info(f"Starting training for {epochs} epochs")
+        
+        for epoch in range(epochs):
+            train_loss, train_acc = train_epoch(model, train_loader, optimizer, criterion, device)
+            val_loss, val_acc = validate_epoch(model, test_loader, criterion, device)
+            
+            train_losses.append(train_loss)
+            val_losses.append(val_loss)
+            train_accs.append(train_acc)
+            val_accs.append(val_acc)
+            
+            # Update learning rate
+            if scheduler is not None:
+                scheduler.step()
+            
+            # Log metrics
+            {% if experiment_tracking == "mlflow" %}
+            mlflow.log_metrics({
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                "train_acc": train_acc,
+                "val_acc": val_acc,
+                "epoch": epoch
+            })
+            {% elif experiment_tracking == "wandb" %}
+            wandb.log({
+                "train_loss": train_loss,
+                "val_loss": val_loss,
+                "train_acc": train_acc,
+                "val_acc": val_acc,
+                "epoch": epoch
+            })
+            {% endif %}
+            
+            logging.info(f"Epoch {epoch+1}/{epochs}: "
+                        f"Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, "
+                        f"Train Acc: {train_acc:.2f}%, Val Acc: {val_acc:.2f}%")
+            
+            # Early stopping check
+            if early_stopping is not None and early_stopping.should_stop(val_loss):
+                logging.info(f"Early stopping triggered at epoch {epoch+1}")
+                break
+        
+        # Save model
+        model_path = "models/production/{{ task_type }}_model.pth"
+        save_model(model, model_path)
+        
+        # Plot training history
+        plot_path = "models/production/training_history.png"
+        plot_training_history(train_losses, val_losses, train_accs, val_accs, plot_path)
+        
+        # Final evaluation
+        final_val_loss, final_val_acc = validate_epoch(model, test_loader, criterion, device)
+        logging.info(f"Final validation loss: {final_val_loss:.4f}, accuracy: {final_val_acc:.2f}%")
+        
+        {% if experiment_tracking == "mlflow" %}
+        # Log final metrics and artifacts
+        mlflow.log_metrics({
+            "final_val_loss": final_val_loss,
+            "final_val_acc": final_val_acc
+        })
+        mlflow.log_artifact(model_path, "model")
+        mlflow.log_artifact(plot_path, "plots")
+        
+        {% elif experiment_tracking == "wandb" %}
+        # Log final metrics and artifacts
+        wandb.log({
+            "final_val_loss": final_val_loss,
+            "final_val_acc": final_val_acc
+        })
+        wandb.save(model_path)
+        wandb.save(plot_path)
+        {% endif %}
+    
+    {% if experiment_tracking == "mlflow" %}
+    {% elif experiment_tracking == "wandb" %}
+    wandb.finish()
+    {% endif %}
+    
+    logging.info("Training process completed successfully")
+
+
+if __name__ == "__main__":
+    main()

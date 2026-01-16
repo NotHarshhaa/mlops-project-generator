@@ -1,0 +1,232 @@
+"""
+Data loading utilities
+"""
+
+import os
+import logging
+from typing import Dict, Any, Tuple, Union
+import numpy as np
+import pandas as pd
+from sklearn.datasets import make_classification, make_regression
+import yaml
+
+
+class DataLoader:
+    """
+    Data loading utilities for {{ framework_display }} {{ task_type }}
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize data loader
+        
+        Args:
+            config: Configuration dictionary
+        """
+        self.config = config
+        self.data_config = config.get("data", {})
+        
+        logging.info("Initialized DataLoader")
+    
+    def load_from_file(self, file_path: str) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Load data from file
+        
+        Args:
+            file_path: Path to data file
+            
+        Returns:
+            Tuple of (features, target)
+        """
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Data file not found: {file_path}")
+        
+        file_ext = os.path.splitext(file_path)[1].lower()
+        
+        if file_ext == '.csv':
+            df = pd.read_csv(file_path)
+        elif file_ext == '.json':
+            df = pd.read_json(file_path)
+        elif file_ext == '.parquet':
+            df = pd.read_parquet(file_path)
+        elif file_ext in ['.npy', '.npz']:
+            data = np.load(file_path)
+            if isinstance(data, np.ndarray):
+                return data[:, :-1], data[:, -1]
+            else:
+                return data['X'], data['y']
+        else:
+            raise ValueError(f"Unsupported file format: {file_ext}")
+        
+        # Separate features and target
+        target_column = self.data_config.get("target_column", "target")
+        feature_columns = self.data_config.get("feature_columns", [])
+        
+        if feature_columns:
+            X = df[feature_columns].values
+        else:
+            X = df.drop(columns=[target_column]).values
+        
+        y = df[target_column].values
+        
+        logging.info(f"Loaded data from {file_path}: {X.shape[0]} samples, {X.shape[1]} features")
+        
+        return X, y
+    
+    def load_sample_data(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Generate sample data for testing
+        
+        Returns:
+            Tuple of (features, target)
+        """
+        task_type = self.config.get("model", {}).get("type", "").lower()
+        
+        {% if task_type == "classification" %}
+        X, y = make_classification(
+            n_samples=1000,
+            n_features=20,
+            n_informative=15,
+            n_redundant=5,
+            n_classes=2,
+            random_state=self.data_config.get("random_state", 42)
+        )
+        {% elif task_type == "regression" %}
+        X, y = make_regression(
+            n_samples=1000,
+            n_features=20,
+            n_informative=15,
+            noise=0.1,
+            random_state=self.data_config.get("random_state", 42)
+        )
+        {% elif task_type == "timeseries" %}
+        # Generate synthetic time series data
+        np.random.seed(self.data_config.get("random_state", 42))
+        n_samples = 1000
+        t = np.linspace(0, 100, n_samples)
+        # Create a time series with trend, seasonality, and noise
+        trend = 0.1 * t
+        seasonal = 10 * np.sin(0.1 * t)
+        noise = np.random.normal(0, 1, n_samples)
+        y = trend + seasonal + noise
+        X = y.reshape(-1, 1)  # For time series, X is the same as y (univariate)
+        {% endif %}
+        
+        logging.info(f"Generated sample data: {X.shape[0]} samples, {X.shape[1]} features")
+        
+        return X, y
+    
+    def save_data(self, X: np.ndarray, y: np.ndarray, file_path: str) -> None:
+        """
+        Save data to file
+        
+        Args:
+            X: Features
+            y: Target
+            file_path: Output file path
+        """
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        file_ext = os.path.splitext(file_path)[1].lower()
+        
+        if file_ext == '.csv':
+            target_column = self.data_config.get("target_column", "target")
+            feature_columns = [f"feature_{i}" for i in range(X.shape[1])]
+            
+            df = pd.DataFrame(X, columns=feature_columns)
+            df[target_column] = y
+            df.to_csv(file_path, index=False)
+            
+        elif file_ext == '.npy':
+            np.save(file_path, np.column_stack([X, y]))
+            
+        elif file_ext == '.npz':
+            np.savez(file_path, X=X, y=y)
+            
+        else:
+            raise ValueError(f"Unsupported file format: {file_ext}")
+        
+        logging.info(f"Saved data to {file_path}")
+    
+    def validate_data(self, X: np.ndarray, y: np.ndarray) -> bool:
+        """
+        Validate data quality
+        
+        Args:
+            X: Features
+            y: Target
+            
+        Returns:
+            True if data is valid
+        """
+        # Check for missing values
+        if np.isnan(X).any() or np.isnan(y).any():
+            logging.warning("Data contains missing values")
+            return False
+        
+        # Check for empty data
+        if len(X) == 0 or len(y) == 0:
+            logging.error("Data is empty")
+            return False
+        
+        # Check for consistent lengths
+        if len(X) != len(y):
+            logging.error(f"Features and target have different lengths: {len(X)} vs {len(y)}")
+            return False
+        
+        # Check for constant features
+        if np.any(np.var(X, axis=0) == 0):
+            logging.warning("Data contains constant features")
+        
+        logging.info("Data validation passed")
+        return True
+    
+    def get_data_info(self, X: np.ndarray, y: np.ndarray) -> Dict[str, Any]:
+        """
+        Get data information and statistics
+        
+        Args:
+            X: Features
+            y: Target
+            
+        Returns:
+            Dictionary containing data information
+        """
+        info = {
+            "n_samples": len(X),
+            "n_features": X.shape[1] if X.ndim > 1 else 1,
+            "feature_types": ["numeric"] * (X.shape[1] if X.ndim > 1 else 1),
+            "missing_values": {
+                "features": int(np.isnan(X).sum()),
+                "target": int(np.isnan(y).sum())
+            },
+            "target_stats": {
+                "mean": float(np.mean(y)),
+                "std": float(np.std(y)),
+                "min": float(np.min(y)),
+                "max": float(np.max(y))
+            }
+        }
+        
+        # Add task-specific information
+        {% if task_type == "classification" %}
+        unique_classes = np.unique(y)
+        info["target_stats"]["n_classes"] = len(unique_classes)
+        info["target_stats"]["class_distribution"] = {
+            int(cls): int(np.sum(y == cls)) for cls in unique_classes
+        }
+        {% elif task_type == "regression" %}
+        info["target_stats"].update({
+            "median": float(np.median(y)),
+            "q25": float(np.percentile(y, 25)),
+            "q75": float(np.percentile(y, 75))
+        })
+        {% elif task_type == "timeseries" %}
+        info["time_series_info"] = {
+            "length": len(y),
+            "frequency": None,  # Could be inferred from timestamps if available
+            "trend": "increasing" if np.polyfit(range(len(y)), y, 1)[0] > 0 else "decreasing"
+        }
+        {% endif %}
+        
+        return info

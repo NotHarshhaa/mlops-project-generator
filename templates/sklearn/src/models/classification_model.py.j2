@@ -1,0 +1,155 @@
+"""
+Classification model implementation
+"""
+
+import logging
+from typing import Dict, Any, Optional
+import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+
+class ClassificationModel:
+    """
+    Classification model wrapper for Scikit-learn
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize classification model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        self.config = config
+        self.model_config = config.get("model", {})
+        self.training_config = config.get("training", {})
+        
+        self.model = self._create_model()
+        self.is_trained = False
+        
+        logging.info(f"Initialized {self.model_config.get('type', 'RandomForestClassifier')} model")
+    
+    def _create_model(self) -> Any:
+        """Create model based on configuration"""
+        model_type = self.model_config.get("type", "RandomForestClassifier")
+        
+        if model_type == "RandomForestClassifier":
+            return RandomForestClassifier(
+                n_estimators=self.model_config.get("n_estimators", 100),
+                max_depth=self.model_config.get("max_depth", 10),
+                random_state=self.config.get("data", {}).get("random_state", 42)
+            )
+        elif model_type == "LogisticRegression":
+            return LogisticRegression(
+                random_state=self.config.get("data", {}).get("random_state", 42),
+                max_iter=1000
+            )
+        elif model_type == "SVC":
+            return SVC(
+                probability=True,  # Enable probability estimates
+                random_state=self.config.get("data", {}).get("random_state", 42)
+            )
+        elif model_type == "GaussianNB":
+            return GaussianNB()
+        elif model_type == "KNeighborsClassifier":
+            return KNeighborsClassifier(
+                n_neighbors=self.model_config.get("n_neighbors", 5)
+            )
+        elif model_type == "DecisionTreeClassifier":
+            return DecisionTreeClassifier(
+                max_depth=self.model_config.get("max_depth", 10),
+                random_state=self.config.get("data", {}).get("random_state", 42)
+            )
+        else:
+            raise ValueError(f"Unsupported model type: {model_type}")
+    
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
+        """
+        Train the classification model
+        
+        Args:
+            X: Training features
+            y: Training labels
+        """
+        logging.info(f"Training {type(self.model).__name__} on {X.shape[0]} samples")
+        
+        self.model.fit(X, y)
+        self.is_trained = True
+        
+        logging.info("Model training completed")
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """
+        Make predictions
+        
+        Args:
+            X: Input features
+            
+        Returns:
+            Predicted labels
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before making predictions")
+        
+        return self.model.predict(X)
+    
+    def predict_proba(self, X: np.ndarray) -> np.ndarray:
+        """
+        Make probability predictions
+        
+        Args:
+            X: Input features
+            
+        Returns:
+            Predicted probabilities
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before making predictions")
+        
+        if not hasattr(self.model, 'predict_proba'):
+            raise ValueError("Model does not support probability predictions")
+        
+        return self.model.predict_proba(X)
+    
+    def get_feature_importance(self) -> Optional[np.ndarray]:
+        """
+        Get feature importance if available
+        
+        Returns:
+            Feature importance array or None if not available
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before getting feature importance")
+        
+        if hasattr(self.model, 'feature_importances_'):
+            return self.model.feature_importances_
+        elif hasattr(self.model, 'coef_'):
+            # For linear models, use absolute coefficients
+            return np.abs(self.model.coef_).flatten()
+        else:
+            return None
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """
+        Get model information
+        
+        Returns:
+            Dictionary containing model information
+        """
+        info = {
+            "model_type": type(self.model).__name__,
+            "is_trained": self.is_trained,
+            "parameters": self.model.get_params()
+        }
+        
+        # Add feature importance if available
+        feature_importance = self.get_feature_importance()
+        if feature_importance is not None:
+            info["feature_importance"] = feature_importance.tolist()
+        
+        return info

@@ -1,0 +1,310 @@
+"""
+Time series model implementation for PyTorch
+"""
+
+import torch
+import torch.nn as nn
+from typing import Dict, Any, Tuple
+
+
+class TimeSeriesModel(nn.Module):
+    """
+    LSTM-based model for time series forecasting
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(TimeSeriesModel, self).__init__()
+        
+        self.config = config
+        self.sequence_length = config.get("sequence_length", 10)
+        self.hidden_dim = config.get("hidden_dim", 64)
+        self.num_layers = config.get("num_layers", 2)
+        self.dropout = config.get("dropout", 0.2)
+        self.prediction_horizon = config.get("prediction_horizon", 1)
+        self.input_dim = config.get("input_dim", 1)  # Univariate by default
+        
+        # LSTM layers
+        self.lstm = nn.LSTM(
+            input_size=self.input_dim,
+            hidden_size=self.hidden_dim,
+            num_layers=self.num_layers,
+            dropout=self.dropout if self.num_layers > 1 else 0,
+            batch_first=True
+        )
+        
+        # Output layers
+        self.fc_layers = nn.Sequential(
+            nn.Linear(self.hidden_dim, self.hidden_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Linear(self.hidden_dim // 2, self.prediction_horizon)
+        )
+        
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize network weights"""
+        for name, param in self.named_parameters():
+            if 'weight_ih' in name:
+                nn.init.xavier_uniform_(param.data)
+            elif 'weight_hh' in name:
+                nn.init.orthogonal_(param.data)
+            elif 'bias' in name:
+                param.data.fill_(0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass
+        
+        Args:
+            x: Input tensor of shape (batch_size, sequence_length, input_dim)
+            
+        Returns:
+            Output tensor of shape (batch_size, prediction_horizon)
+        """
+        # LSTM forward pass
+        lstm_out, (h_n, c_n) = self.lstm(x)
+        
+        # Use the last time step output
+        last_output = lstm_out[:, -1, :]
+        
+        # Pass through fully connected layers
+        output = self.fc_layers(last_output)
+        
+        return output
+    
+    def set_input_dim(self, input_dim: int):
+        """Set input dimension (for multivariate time series)"""
+        if input_dim != self.input_dim:
+            self.input_dim = input_dim
+            self.lstm = nn.LSTM(
+                input_size=self.input_dim,
+                hidden_size=self.hidden_dim,
+                num_layers=self.num_layers,
+                dropout=self.dropout if self.num_layers > 1 else 0,
+                batch_first=True
+            )
+            self._initialize_weights()
+
+
+class GRUTimeSeriesModel(nn.Module):
+    """
+    GRU-based model for time series forecasting
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize GRU time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(GRUTimeSeriesModel, self).__init__()
+        
+        self.config = config
+        self.sequence_length = config.get("sequence_length", 10)
+        self.hidden_dim = config.get("hidden_dim", 64)
+        self.num_layers = config.get("num_layers", 2)
+        self.dropout = config.get("dropout", 0.2)
+        self.prediction_horizon = config.get("prediction_horizon", 1)
+        self.input_dim = config.get("input_dim", 1)
+        
+        # GRU layers
+        self.gru = nn.GRU(
+            input_size=self.input_dim,
+            hidden_size=self.hidden_dim,
+            num_layers=self.num_layers,
+            dropout=self.dropout if self.num_layers > 1 else 0,
+            batch_first=True
+        )
+        
+        # Attention mechanism
+        self.attention = nn.Sequential(
+            nn.Linear(self.hidden_dim, self.hidden_dim // 2),
+            nn.Tanh(),
+            nn.Linear(self.hidden_dim // 2, 1),
+            nn.Softmax(dim=1)
+        )
+        
+        # Output layers
+        self.fc_layers = nn.Sequential(
+            nn.Linear(self.hidden_dim, self.hidden_dim // 2),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Linear(self.hidden_dim // 2, self.prediction_horizon)
+        )
+        
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize network weights"""
+        for name, param in self.named_parameters():
+            if 'weight_ih' in name:
+                nn.init.xavier_uniform_(param.data)
+            elif 'weight_hh' in name:
+                nn.init.orthogonal_(param.data)
+            elif 'bias' in name:
+                param.data.fill_(0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass
+        
+        Args:
+            x: Input tensor of shape (batch_size, sequence_length, input_dim)
+            
+        Returns:
+            Output tensor of shape (batch_size, prediction_horizon)
+        """
+        # GRU forward pass
+        gru_out, h_n = self.gru(x)
+        
+        # Apply attention
+        attention_weights = self.attention(gru_out)
+        attended_output = torch.sum(gru_out * attention_weights, dim=1)
+        
+        # Pass through fully connected layers
+        output = self.fc_layers(attended_output)
+        
+        return output
+    
+    def set_input_dim(self, input_dim: int):
+        """Set input dimension (for multivariate time series)"""
+        if input_dim != self.input_dim:
+            self.input_dim = input_dim
+            self.gru = nn.GRU(
+                input_size=self.input_dim,
+                hidden_size=self.hidden_dim,
+                num_layers=self.num_layers,
+                dropout=self.dropout if self.num_layers > 1 else 0,
+                batch_first=True
+            )
+            self._initialize_weights()
+
+
+class TransformerTimeSeriesModel(nn.Module):
+    """
+    Transformer-based model for time series forecasting
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize transformer time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(TransformerTimeSeriesModel, self).__init__()
+        
+        self.config = config
+        self.sequence_length = config.get("sequence_length", 10)
+        self.d_model = config.get("d_model", 64)
+        self.nhead = config.get("nhead", 4)
+        self.num_layers = config.get("num_layers", 2)
+        self.dropout = config.get("dropout", 0.1)
+        self.prediction_horizon = config.get("prediction_horizon", 1)
+        self.input_dim = config.get("input_dim", 1)
+        
+        # Input projection
+        self.input_projection = nn.Linear(self.input_dim, self.d_model)
+        
+        # Positional encoding
+        self.positional_encoding = PositionalEncoding(self.d_model, self.sequence_length)
+        
+        # Transformer encoder
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=self.d_model,
+            nhead=self.nhead,
+            dropout=self.dropout,
+            batch_first=True
+        )
+        self.transformer = nn.TransformerEncoder(encoder_layer, self.num_layers)
+        
+        # Output layers
+        self.fc_layers = nn.Sequential(
+            nn.Linear(self.d_model, self.d_model // 2),
+            nn.ReLU(),
+            nn.Dropout(self.dropout),
+            nn.Linear(self.d_model // 2, self.prediction_horizon)
+        )
+        
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize network weights"""
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass
+        
+        Args:
+            x: Input tensor of shape (batch_size, sequence_length, input_dim)
+            
+        Returns:
+            Output tensor of shape (batch_size, prediction_horizon)
+        """
+        # Input projection
+        x = self.input_projection(x)
+        
+        # Add positional encoding
+        x = self.positional_encoding(x)
+        
+        # Transformer forward pass
+        transformer_out = self.transformer(x)
+        
+        # Use the last time step output
+        last_output = transformer_out[:, -1, :]
+        
+        # Pass through fully connected layers
+        output = self.fc_layers(last_output)
+        
+        return output
+    
+    def set_input_dim(self, input_dim: int):
+        """Set input dimension (for multivariate time series)"""
+        if input_dim != self.input_dim:
+            self.input_dim = input_dim
+            self.input_projection = nn.Linear(self.input_dim, self.d_model)
+            self._initialize_weights()
+
+
+class PositionalEncoding(nn.Module):
+    """
+    Positional encoding for transformer
+    """
+    
+    def __init__(self, d_model: int, max_len: int = 5000):
+        super(PositionalEncoding, self).__init__()
+        
+        pe = torch.zeros(max_len, d_model)
+        position = torch.arange(0, max_len, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, d_model, 2).float() * (-torch.log(torch.tensor(10000.0)) / d_model))
+        
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+        pe = pe.unsqueeze(0).transpose(0, 1)
+        
+        self.register_buffer('pe', pe)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Add positional encoding to input
+        
+        Args:
+            x: Input tensor
+            
+        Returns:
+            Input tensor with positional encoding
+        """
+        return x + self.pe[:x.size(1), :].transpose(0, 1)

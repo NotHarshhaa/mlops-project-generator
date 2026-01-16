@@ -1,0 +1,345 @@
+#!/usr/bin/env python3
+"""
+Training script for {{ framework_display }} {{ task_type }} model
+"""
+
+import os
+import sys
+import argparse
+import logging
+from pathlib import Path
+from typing import Dict, Any, Tuple
+
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+import yaml
+from tqdm import tqdm
+import matplotlib.pyplot as plt
+
+{% if experiment_tracking == "mlflow" %}
+import mlflow
+import mlflow.tensorflow
+{% elif experiment_tracking == "wandb" %}
+import wandb
+{% endif %}
+
+# Add src to path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from src.models.{{ task_type }}_model import {{ task_type.title() }}Model
+from src.data.data_loader import DataLoader
+from src.utils.training_utils import EarlyStopping, MetricsCalculator
+
+
+def setup_logging(config: Dict[str, Any]) -> None:
+    """Setup logging configuration"""
+    log_config = config.get("logging", {})
+    log_level = getattr(logging, log_config.get("level", "INFO"))
+    log_format = log_config.get("format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    
+    logging.basicConfig(
+        level=log_level,
+        format=log_format,
+        handlers=[
+            logging.FileHandler(log_config.get("file", "logs/train.log")),
+            logging.StreamHandler() if log_config.get("console", True) else logging.NullHandler()
+        ]
+    )
+
+
+def load_config(config_path: str) -> Dict[str, Any]:
+    """Load configuration from YAML file"""
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def create_tf_datasets(X_train: np.ndarray, y_train: np.ndarray, 
+                      X_test: np.ndarray, y_test: np.ndarray,
+                      batch_size: int) -> Tuple[tf.data.Dataset, tf.data.Dataset]:
+    """Create TensorFlow datasets"""
+    # Convert to tensors
+    {% if task_type == "classification" %}
+    y_train_tensor = tf.keras.utils.to_categorical(y_train)
+    y_test_tensor = tf.keras.utils.to_categorical(y_test)
+    {% else %}
+    y_train_tensor = y_train.astype(np.float32)
+    y_test_tensor = y_test.astype(np.float32)
+    {% endif %}
+    
+    X_train_tensor = X_train.astype(np.float32)
+    X_test_tensor = X_test.astype(np.float32)
+    
+    # Create datasets
+    train_dataset = tf.data.Dataset.from_tensor_slices((X_train_tensor, y_train_tensor))
+    train_dataset = train_dataset.shuffle(buffer_size=len(X_train)).batch(batch_size)
+    
+    test_dataset = tf.data.Dataset.from_tensor_slices((X_test_tensor, y_test_tensor))
+    test_dataset = test_dataset.batch(batch_size)
+    
+    return train_dataset, test_dataset
+
+
+def train_model(model: tf.keras.Model, train_dataset: tf.data.Dataset,
+                test_dataset: tf.data.Dataset, config: Dict[str, Any]) -> Dict[str, Any]:
+    """Train the TensorFlow model"""
+    training_config = config["training"]
+    epochs = training_config["epochs"]
+    
+    # Setup callbacks
+    callbacks = []
+    
+    # Early stopping
+    if training_config.get("early_stopping", True):
+        early_stopping = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss',
+            patience=training_config.get("patience", 10),
+            restore_best_weights=True
+        )
+        callbacks.append(early_stopping)
+    
+    # Learning rate scheduler
+    scheduler_name = training_config.get("scheduler", "step")
+    if scheduler_name == "step":
+        lr_scheduler = tf.keras.callbacks.ReduceLROnPlateau(
+            monitor='val_loss',
+            factor=0.5,
+            patience=5,
+            min_lr=1e-6
+        )
+        callbacks.append(lr_scheduler)
+    elif scheduler_name == "cosine":
+        def cosine_decay(epoch, lr):
+            decay_steps = epochs
+            initial_lr = training_config["learning_rate"]
+            return initial_lr * 0.5 * (1 + np.cos(np.pi * epoch / decay_steps))
+        
+        lr_scheduler = tf.keras.callbacks.LearningRateScheduler(cosine_decay)
+        callbacks.append(lr_scheduler)
+    
+    {% if experiment_tracking == "mlflow" %}
+    # MLflow callback
+    mlflow_callback = tf.keras.callbacks.LambdaCallback(
+        on_epoch_end=lambda epoch, logs: mlflow.log_metrics(logs, step=epoch)
+    )
+    callbacks.append(mlflow_callback)
+    {% elif experiment_tracking == "wandb" %}
+    # W&B callback
+    wandb_callback = wandb.keras.WandbCallback()
+    callbacks.append(wandb_callback)
+    {% endif %}
+    
+    # Compile model
+    {% if task_type == "classification" %}
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=training_config["learning_rate"]),
+        loss='categorical_crossentropy',
+        metrics=['accuracy']
+    )
+    {% elif task_type == "regression" %}
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=training_config["learning_rate"]),
+        loss='mse',
+        metrics=['mae']
+    )
+    {% elif task_type == "timeseries" %}
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=training_config["learning_rate"]),
+        loss='mse',
+        metrics=['mae']
+    )
+    {% endif %}
+    
+    # Train model
+    logging.info(f"Starting training for {epochs} epochs")
+    
+    history = model.fit(
+        train_dataset,
+        epochs=epochs,
+        validation_data=test_dataset,
+        callbacks=callbacks,
+        verbose=1
+    )
+    
+    return history.history
+
+
+def evaluate_model(model: tf.keras.Model, test_dataset: tf.data.Dataset, 
+                  task_type: str) -> Dict[str, float]:
+    """Evaluate model performance"""
+    {% if task_type == "classification" %}
+    results = model.evaluate(test_dataset, verbose=0)
+    metrics = {
+        "loss": results[0],
+        "accuracy": results[1]
+    }
+    {% else %}
+    results = model.evaluate(test_dataset, verbose=0)
+    metrics = {
+        "loss": results[0],
+        "mae": results[1]
+    }
+    {% endif %}
+    
+    return metrics
+
+
+def save_model(model: tf.keras.Model, model_path: str) -> None:
+    """Save trained model"""
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    model.save(model_path)
+    logging.info(f"Model saved to {model_path}")
+
+
+def plot_training_history(history: Dict[str, Any], save_path: str) -> None:
+    """Plot and save training history"""
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+    
+    # Loss plot
+    ax1.plot(history['loss'], label='Train Loss')
+    ax1.plot(history['val_loss'], label='Validation Loss')
+    ax1.set_title('Training and Validation Loss')
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('Loss')
+    ax1.legend()
+    
+    {% if task_type == "classification" %}
+    # Accuracy plot
+    ax2.plot(history['accuracy'], label='Train Accuracy')
+    ax2.plot(history['val_accuracy'], label='Validation Accuracy')
+    ax2.set_title('Training and Validation Accuracy')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('Accuracy')
+    ax2.legend()
+    {% else %}
+    # MAE plot for regression/timeseries
+    ax2.plot(history['mae'], label='Train MAE')
+    ax2.plot(history['val_mae'], label='Validation MAE')
+    ax2.set_title('Training and Validation MAE')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('MAE')
+    ax2.legend()
+    {% endif %}
+    
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+    logging.info(f"Training history plot saved to {save_path}")
+
+
+def main() -> None:
+    """Main training function"""
+    parser = argparse.ArgumentParser(description="Train {{ framework_display }} {{ task_type }} model")
+    parser.add_argument("--config", type=str, default="configs/config.yaml", help="Path to configuration file")
+    parser.add_argument("--data-path", type=str, help="Path to training data")
+    parser.add_argument("--epochs", type=int, help="Number of epochs (overrides config)")
+    parser.add_argument("--batch-size", type=int, help="Batch size (overrides config)")
+    args = parser.parse_args()
+    
+    # Load configuration
+    config = load_config(args.config)
+    setup_logging(config)
+    
+    logging.info("Starting training process")
+    
+    {% if experiment_tracking == "mlflow" %}
+    # Setup MLflow
+    mlflow.set_tracking_uri(config["experiment_tracking"]["tracking_uri"])
+    mlflow.set_experiment(config["experiment_tracking"]["experiment_name"])
+    
+    with mlflow.start_run():
+    {% elif experiment_tracking == "wandb" %}
+    # Setup W&B
+    wandb.init(
+        project=config["experiment_tracking"]["project"],
+        entity=config["experiment_tracking"]["entity"],
+        config=config
+    )
+    {% endif %}
+    
+        # Set GPU memory growth
+        gpus = tf.config.experimental.list_physical_devices('GPU')
+        if gpus:
+            try:
+                for gpu in gpus:
+                    tf.config.experimental.set_memory_growth(gpu, True)
+                logging.info(f"Found {len(gpus)} GPU(s)")
+            except RuntimeError as e:
+                logging.warning(f"GPU setup error: {e}")
+        
+        # Load data
+        data_loader = DataLoader(config)
+        if args.data_path:
+            X, y = data_loader.load_from_file(args.data_path)
+        else:
+            X, y = data_loader.load_sample_data()
+        
+        logging.info(f"Loaded data with shape: {X.shape}")
+        
+        # Split data
+        from sklearn.model_selection import train_test_split
+        data_config = config["data"]
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y,
+            test_size=data_config["test_size"],
+            random_state=data_config["random_state"],
+            stratify=y if "{{ task_type }}" == "classification" else None
+        )
+        
+        logging.info(f"Training set shape: {X_train.shape}")
+        logging.info(f"Test set shape: {X_test.shape}")
+        
+        # Create datasets
+        training_config = config["training"]
+        batch_size = args.batch_size or training_config["batch_size"]
+        train_dataset, test_dataset = create_tf_datasets(
+            X_train, y_train, X_test, y_test, batch_size
+        )
+        
+        # Initialize model
+        model_config = config["model"]
+        model_config["input_dim"] = X_train.shape[1]
+        model = {{ task_type.title() }}Model(model_config)
+        
+        # Override epochs if provided
+        if args.epochs:
+            training_config["epochs"] = args.epochs
+        
+        # Train model
+        history = train_model(model, train_dataset, test_dataset, config)
+        
+        # Evaluate model
+        metrics = evaluate_model(model, test_dataset, "{{ task_type }}")
+        logging.info(f"Final evaluation metrics: {metrics}")
+        
+        # Save model
+        model_path = "models/production/{{ task_type }}_model"
+        save_model(model, model_path)
+        
+        # Plot training history
+        plot_path = "models/production/training_history.png"
+        plot_training_history(history, plot_path)
+        
+        {% if experiment_tracking == "mlflow" %}
+        # Log final metrics and artifacts
+        mlflow.log_metrics(metrics)
+        mlflow.log_artifact(model_path, "model")
+        mlflow.log_artifact(plot_path, "plots")
+        
+        {% elif experiment_tracking == "wandb" %}
+        # Log final metrics and artifacts
+        wandb.log(metrics)
+        wandb.save(model_path)
+        wandb.save(plot_path)
+        {% endif %}
+    
+    {% if experiment_tracking == "mlflow" %}
+    {% elif experiment_tracking == "wandb" %}
+    wandb.finish()
+    {% endif %}
+    
+    logging.info("Training process completed successfully")
+
+
+if __name__ == "__main__":
+    main()

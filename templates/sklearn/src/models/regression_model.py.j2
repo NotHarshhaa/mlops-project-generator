@@ -1,0 +1,138 @@
+"""
+Regression model implementation
+"""
+
+import logging
+from typing import Dict, Any, Optional
+import numpy as np
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeRegressor
+
+
+class RegressionModel:
+    """
+    Regression model wrapper for Scikit-learn
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize regression model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        self.config = config
+        self.model_config = config.get("model", {})
+        self.training_config = config.get("training", {})
+        
+        self.model = self._create_model()
+        self.is_trained = False
+        
+        logging.info(f"Initialized {self.model_config.get('type', 'RandomForestRegressor')} model")
+    
+    def _create_model(self) -> Any:
+        """Create model based on configuration"""
+        model_type = self.model_config.get("type", "RandomForestRegressor")
+        
+        if model_type == "RandomForestRegressor":
+            return RandomForestRegressor(
+                n_estimators=self.model_config.get("n_estimators", 100),
+                max_depth=self.model_config.get("max_depth", 10),
+                random_state=self.config.get("data", {}).get("random_state", 42)
+            )
+        elif model_type == "LinearRegression":
+            return LinearRegression()
+        elif model_type == "Ridge":
+            return Ridge(
+                alpha=self.model_config.get("alpha", 1.0),
+                random_state=self.config.get("data", {}).get("random_state", 42)
+            )
+        elif model_type == "Lasso":
+            return Lasso(
+                alpha=self.model_config.get("alpha", 1.0),
+                random_state=self.config.get("data", {}).get("random_state", 42)
+            )
+        elif model_type == "SVR":
+            return SVR()
+        elif model_type == "KNeighborsRegressor":
+            return KNeighborsRegressor(
+                n_neighbors=self.model_config.get("n_neighbors", 5)
+            )
+        elif model_type == "DecisionTreeRegressor":
+            return DecisionTreeRegressor(
+                max_depth=self.model_config.get("max_depth", 10),
+                random_state=self.config.get("data", {}).get("random_state", 42)
+            )
+        else:
+            raise ValueError(f"Unsupported model type: {model_type}")
+    
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
+        """
+        Train the regression model
+        
+        Args:
+            X: Training features
+            y: Training targets
+        """
+        logging.info(f"Training {type(self.model).__name__} on {X.shape[0]} samples")
+        
+        self.model.fit(X, y)
+        self.is_trained = True
+        
+        logging.info("Model training completed")
+    
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """
+        Make predictions
+        
+        Args:
+            X: Input features
+            
+        Returns:
+            Predicted values
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before making predictions")
+        
+        return self.model.predict(X)
+    
+    def get_feature_importance(self) -> Optional[np.ndarray]:
+        """
+        Get feature importance if available
+        
+        Returns:
+            Feature importance array or None if not available
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before getting feature importance")
+        
+        if hasattr(self.model, 'feature_importances_'):
+            return self.model.feature_importances_
+        elif hasattr(self.model, 'coef_'):
+            # For linear models, use absolute coefficients
+            return np.abs(self.model.coef_).flatten()
+        else:
+            return None
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """
+        Get model information
+        
+        Returns:
+            Dictionary containing model information
+        """
+        info = {
+            "model_type": type(self.model).__name__,
+            "is_trained": self.is_trained,
+            "parameters": self.model.get_params()
+        }
+        
+        # Add feature importance if available
+        feature_importance = self.get_feature_importance()
+        if feature_importance is not None:
+            info["feature_importance"] = feature_importance.tolist()
+        
+        return info
