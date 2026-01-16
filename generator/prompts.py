@@ -29,7 +29,10 @@ def get_user_choices() -> Dict[str, Any]:
         choices=framework_choices,
         default="Scikit-learn"
     )
-    choices["framework"] = framework.lower().replace("-", "")
+    if framework == "Scikit-learn":
+        choices["framework"] = "sklearn"
+    else:
+        choices["framework"] = framework.lower().replace("-", "")
     
     # Task type selection
     console.print(Panel(Text("📊 Choose Task Type", style="bold cyan")))
@@ -49,7 +52,10 @@ def get_user_choices() -> Dict[str, Any]:
         choices=tracking_choices,
         default="MLflow"
     )
-    choices["experiment_tracking"] = experiment_tracking.lower().replace("&", "wandb" if experiment_tracking == "W&B" else experiment_tracking.lower())
+    if experiment_tracking == "W&B":
+        choices["experiment_tracking"] = "wandb"
+    else:
+        choices["experiment_tracking"] = experiment_tracking.lower()
     
     # Orchestration
     console.print(Panel(Text("🎯 Orchestration", style="bold cyan")))

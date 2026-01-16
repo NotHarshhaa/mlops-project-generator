@@ -113,16 +113,18 @@ class ProjectRenderer:
             output_file = self.output_dir / relative_path.with_suffix("")
             
             # Load and render template
-            template = env.get_template(str(relative_path))
-            rendered_content = template.render(**self.choices)
+            template = env.get_template(str(relative_path).replace('\\', '/'))
+            rendered_content = template.render(**self.get_template_context())
             
             # Write rendered content
             output_file.parent.mkdir(parents=True, exist_ok=True)
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(rendered_content)
             
-            # Remove the original template file
-            template_file.unlink()
+            # Remove the original template file from output directory
+            output_template_file = self.output_dir / relative_path
+            if output_template_file.exists():
+                output_template_file.unlink()
     
     def _create_additional_directories(self) -> None:
         """Create additional directories based on choices"""
