@@ -5,7 +5,7 @@ Tests for template renderer functionality
 import shutil
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -112,7 +112,7 @@ class TestProjectRenderer:
         rendered_readme = output_dir / "README.md"
         assert rendered_readme.exists()
 
-        content = rendered_readme.read_text()
+        content = rendered_readme.read_text(encoding="utf-8")
         assert "test-project" in content
         assert "Test Author" in content
         assert (
