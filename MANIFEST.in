@@ -1,0 +1,36 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include MANIFEST.in
+
+# Include templates
+recursive-include templates *.j2 *.yaml *.yml *.txt *.md *.gitignore Makefile
+
+# Include source code
+recursive-include generator *.py
+
+# Include tests
+recursive-include tests *.py
+
+# Include documentation
+recursive-include docs *.md *.rst *.txt
+
+# Include configuration files
+include .github/workflows/*.yml
+include .github/workflows/*.yaml
+
+# Exclude development files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+global-exclude __pycache__
+global-exclude .git*
+global-exclude .DS_Store
+global-exclude *.so
+global-exclude .coverage
+global-exclude .pytest_cache
+global-exclude .mypy_cache
+global-exclude .tox
+global-exclude build
+global-exclude dist
+global-exclude *.egg-info

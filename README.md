@@ -1,7 +1,7 @@
 # 🧠 MLOps Project Generator
 
 <p align="center">
-  <img src="images/banner.png" alt="MLOps Project Generator Banner" width="800"/>
+  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/banner.png" alt="MLOps Project Generator Banner" width="800"/>
 </p>
 
 A CLI tool that generates production-ready MLOps project templates for Scikit-learn, PyTorch, and TensorFlow.
@@ -50,6 +50,12 @@ Data → Train → Track → Orchestrate → Deploy → Monitor → Improve
 
 ## 📦 Installation
 
+### From PyPI (Recommended)
+
+```bash
+pip install mlops-project-generator
+```
+
 ### From Source
 
 ```bash
@@ -58,10 +64,12 @@ cd MLOps-Project-Generator
 pip install -e .
 ```
 
-### Using pip (when published)
+### Development Installation
 
 ```bash
-pip install mlops-project-generator
+git clone https://github.com/NotHarshhaa/MLOps-Project-Generator.git
+cd MLOps-Project-Generator
+pip install -e ".[dev]"
 ```
 
 ## 🖼️ Screenshots
@@ -69,25 +77,25 @@ pip install mlops-project-generator
 ### CLI Commands
 
 <p align="center">
-  <img src="images/cli-commands.png" alt="CLI Version and Help Commands" width="700"/>
+  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/cli-commands.png" alt="CLI Version and Help Commands" width="700"/>
 </p>
 
 ### Scikit-learn Project Generation
 
 <p align="center">
-  <img src="images/sklearn-generation.png" alt="Scikit-learn Project Generation" width="700"/>
+  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/sklearn-generation.png" alt="Scikit-learn Project Generation" width="700"/>
 </p>
 
 ### PyTorch Project Generation
 
 <p align="center">
-  <img src="images/pytorch-generation.png" alt="PyTorch Project Generation" width="700"/>
+  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/pytorch-generation.png" alt="PyTorch Project Generation" width="700"/>
 </p>
 
 ### TensorFlow Project Generation
 
 <p align="center">
-  <img src="images/tensorflow-generation.png" alt="TensorFlow Project Generation" width="700"/>
+  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/tensorflow-generation.png" alt="TensorFlow Project Generation" width="700"/>
 </p>
 
 ## 🎯 Quick Start
