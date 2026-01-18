@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLOps Project Generator - Production-Ready ML Templates</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .feature-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .tech-icon {
+            transition: transform 0.3s ease;
+        }
+        .tech-icon:hover {
+            transform: scale(1.1);
+        }
+        .code-block {
+            background: #2d2d2d;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        /* Mobile-specific fixes */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+        .code-block pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        /* Ensure no horizontal overflow */
+        .container, .max-w-7xl {
+            overflow-x: hidden;
+        }
+        /* Fix for long text in cards */
+        .feature-card p {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-brain text-2xl sm:text-3xl text-purple-600 mr-2 sm:mr-3"></i>
+                    <span class="text-lg sm:text-xl font-bold text-gray-800 hidden sm:block">MLOps Project Generator</span>
+                    <span class="text-sm sm:text-lg font-bold text-gray-800 sm:hidden">ML Generator</span>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden">
+                    <button id="mobile-menu-button" class="text-gray-600 hover:text-purple-600 p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+                <!-- Desktop menu -->
+                <div class="hidden sm:flex items-center space-x-2 sm:space-x-4">
+                    <a href="#features" class="text-gray-600 hover:text-purple-600 transition text-sm sm:text-base">Features</a>
+                    <a href="#installation" class="text-gray-600 hover:text-purple-600 transition text-sm sm:text-base">Installation</a>
+                    <a href="#usage" class="text-gray-600 hover:text-purple-600 transition text-sm sm:text-base">Usage</a>
+                    <a href="#frameworks" class="text-gray-600 hover:text-purple-600 transition text-sm sm:text-base">Frameworks</a>
+                    <a href="https://github.com/NotHarshhaa/MLOps-Project-Generator" class="bg-purple-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg hover:bg-purple-700 transition text-xs sm:text-base">
+                        <i class="fab fa-github mr-1 sm:mr-2"></i><span class="hidden sm:inline">GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden sm:hidden bg-white border-t">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#features" class="block px-3 py-2 text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-md text-base">Features</a>
+                <a href="#installation" class="block px-3 py-2 text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-md text-base">Installation</a>
+                <a href="#usage" class="block px-3 py-2 text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-md text-base">Usage</a>
+                <a href="#frameworks" class="block px-3 py-2 text-gray-600 hover:text-purple-600 hover:bg-gray-50 rounded-md text-base">Frameworks</a>
+                <a href="https://github.com/NotHarshhaa/MLOps-Project-Generator" class="block px-3 py-2 bg-purple-600 text-white rounded-md text-base">
+                    <i class="fab fa-github mr-2"></i>GitHub
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-12 sm:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="floating mb-6 sm:mb-8">
+                    <i class="fas fa-robot text-4xl sm:text-6xl mb-4"></i>
+                </div>
+                <h1 class="text-3xl sm:text-5xl font-bold mb-4 sm:mb-6 px-4">MLOps Project Generator</h1>
+                <p class="text-lg sm:text-xl mb-6 sm:mb-8 max-w-3xl mx-auto px-4">
+                    Generate production-ready MLOps project templates in seconds. 
+                    Built with best practices for Scikit-learn, PyTorch, and TensorFlow.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
+                    <a href="#installation" class="bg-white text-purple-600 px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-100 transition text-sm sm:text-base">
+                        <i class="fas fa-download mr-2"></i>Get Started
+                    </a>
+                    <a href="https://github.com/NotHarshhaa/MLOps-Project-Generator" class="border-2 border-white text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition text-sm sm:text-base">
+                        <i class="fab fa-github mr-2"></i>View on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-8 sm:py-12 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8 text-center">
+                <div>
+                    <div class="text-2xl sm:text-3xl font-bold text-purple-600">3</div>
+                    <div class="text-sm sm:text-base text-gray-600">ML Frameworks</div>
+                </div>
+                <div>
+                    <div class="text-2xl sm:text-3xl font-bold text-purple-600">5+</div>
+                    <div class="text-sm sm:text-base text-gray-600">Task Types</div>
+                </div>
+                <div>
+                    <div class="text-2xl sm:text-3xl font-bold text-purple-600">39</div>
+                    <div class="text-sm sm:text-base text-gray-600">Test Cases</div>
+                </div>
+                <div>
+                    <div class="text-2xl sm:text-3xl font-bold text-purple-600">100%</div>
+                    <div class="text-sm sm:text-base text-gray-600">CI/CD Ready</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-12 sm:py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8 sm:mb-16">
+                <h2 class="text-2xl sm:text-4xl font-bold text-gray-800 mb-4">Powerful Features</h2>
+                <p class="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4">
+                    Everything you need to build production-ready ML projects
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <div class="text-purple-600 text-2xl sm:text-3xl mb-4">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">Multi-Framework Support</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">Templates for Scikit-learn, PyTorch, and TensorFlow with framework-specific optimizations.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <div class="text-purple-600 text-2xl sm:text-3xl mb-4">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">MLOps Integration</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">Built-in support for MLflow, W&B, Airflow, and Kubeflow for complete MLOps pipelines.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <div class="text-purple-600 text-2xl sm:text-3xl mb-4">
+                        <i class="fas fa-rocket"></i>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">Production Ready</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">Docker, FastAPI, and Kubernetes deployment templates with monitoring and logging.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <div class="text-purple-600 text-2xl sm:text-3xl mb-4">
+                        <i class="fas fa-terminal"></i>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">Rich CLI Interface</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">Beautiful interactive prompts with system checks and progress indicators.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="feature-card bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <div class="text-purple-600 text-2xl sm:text-3xl mb-4">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">Best Practices</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">Industry-standard project structures with testing, documentation, and CI/CD.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="feature-card bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                    <div class="text-purple-600 text-2xl sm:text-3xl mb-4">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="text-lg sm:text-xl font-semibold mb-3">Lightning Fast</h3>
+                    <p class="text-gray-600 text-sm sm:text-base">Generate complete projects in seconds with optimized template rendering.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation Section -->
+    <section id="installation" class="py-12 sm:py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-8 sm:mb-16">
+                <h2 class="text-2xl sm:text-4xl font-bold text-gray-800 mb-4">Quick Installation</h2>
+                <p class="text-lg sm:text-xl text-gray-600">Get started in seconds with pip</p>
+            </div>
+
+            <div class="max-w-3xl mx-auto px-4">
+                <div class="bg-gray-900 rounded-lg p-4 sm:p-6 overflow-x-auto">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-gray-400 font-mono text-sm sm:text-base">bash</span>
+                        <button onclick="copyToClipboard('install-code')" class="text-gray-400 hover:text-white transition p-1 sm:p-0">
+                            <i class="fas fa-copy text-sm sm:text-base"></i>
+                        </button>
+                    </div>
+                    <pre id="install-code" class="text-green-400 font-mono text-xs sm:text-sm whitespace-pre-wrap break-words"><code># Install from PyPI
+pip install mlops-project-generator
+
+# Verify installation
+mlops-project-generator version</code></pre>
+                </div>
+
+                <div class="mt-6 sm:mt-8 bg-blue-50 border-l-4 border-blue-400 p-3 sm:p-4 rounded">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400 text-sm sm:text-base"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-xs sm:text-sm text-blue-700">
+                                <strong>Requirements:</strong> Python 3.8 or higher. The tool automatically installs all necessary dependencies.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage Section -->
+    <section id="usage" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Simple Usage</h2>
+                <p class="text-xl text-gray-600">Generate your ML project with one command</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6">Interactive Project Generation</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-purple-600 text-white text-sm font-medium">1</div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-medium">Run the generator</h4>
+                                <p class="text-gray-600">Launch the interactive CLI with system checks</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-purple-600 text-white text-sm font-medium">2</div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-medium">Choose your stack</h4>
+                                <p class="text-gray-600">Select framework, task type, and MLOps tools</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-purple-600 text-white text-sm font-medium">3</div>
+                            </div>
+                            <div class="ml-4">
+                                <h4 class="text-lg font-medium">Get your project</h4>
+                                <p class="text-gray-600">Production-ready project generated instantly</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="bg-gray-900 rounded-lg p-4 sm:p-6 overflow-x-auto">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-gray-400 font-mono text-sm sm:text-base">bash</span>
+                            <button onclick="copyToClipboard('usage-code')" class="text-gray-400 hover:text-white transition p-1 sm:p-0">
+                                <i class="fas fa-copy text-sm sm:text-base"></i>
+                            </button>
+                        </div>
+                        <pre id="usage-code" class="text-green-400 font-mono text-xs sm:text-sm whitespace-pre-wrap break-words"><code># Generate a new project
+mlops-project-generator init
+
+# Follow the interactive prompts:
+# 🧠 MLOps Project Generator
+# 🔧 Choose ML Framework: Scikit-learn
+# 📊 Choose Task Type: Classification  
+# 🔬 Experiment Tracking: MLflow
+# 🚀 Deployment: FastAPI
+# 📈 Monitoring: Evidently
+
+# 🎉 Project Generated Successfully!</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Frameworks Section -->
+    <section id="frameworks" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Supported Frameworks</h2>
+                <p class="text-xl text-gray-600">Choose from popular ML frameworks</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Scikit-learn -->
+                <div class="text-center">
+                    <div class="tech-icon mb-6">
+                        <i class="fab fa-python text-6xl text-blue-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4">Scikit-learn</h3>
+                    <p class="text-gray-600 mb-6">Perfect for traditional ML tasks, classification, regression, and clustering.</p>
+                    <ul class="text-left text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Classification & Regression</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Feature Engineering</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Model Evaluation</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>FastAPI Deployment</li>
+                    </ul>
+                </div>
+
+                <!-- PyTorch -->
+                <div class="text-center">
+                    <div class="tech-icon mb-6">
+                        <i class="fab fa-python text-6xl text-orange-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4">PyTorch</h3>
+                    <p class="text-gray-600 mb-6">Deep learning framework for research and production neural networks.</p>
+                    <ul class="text-left text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Neural Networks</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Computer Vision</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>NLP Tasks</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>GPU Training</li>
+                    </ul>
+                </div>
+
+                <!-- TensorFlow -->
+                <div class="text-center">
+                    <div class="tech-icon mb-6">
+                        <i class="fab fa-python text-6xl text-red-600"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4">TensorFlow</h3>
+                    <p class="text-gray-600 mb-6">Enterprise-ready deep learning with TensorFlow and Keras.</p>
+                    <ul class="text-left text-gray-600 space-y-2">
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Keras Integration</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>TensorBoard</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>TFLite Deployment</li>
+                        <li><i class="fas fa-check text-green-500 mr-2"></i>Production Serving</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Structure Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Generated Project Structure</h2>
+                <p class="text-xl text-gray-600">Clean, organized, and production-ready</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-gray-900 rounded-lg p-4 sm:p-6 overflow-x-auto">
+                    <pre class="text-green-400 font-mono text-xs sm:text-sm whitespace-pre-wrap break-words"><code>your-project/
+├── src/
+│   ├── data/
+│   ├── features/
+│   ├── models/
+│   ├── train.py
+│   └── inference.py
+├── tests/
+│   ├── test_models.py
+│   └── test_features.py
+├── configs/
+│   └── config.yaml
+├── notebooks/
+├── scripts/
+├── data/
+│   ├── raw/
+│   ├── processed/
+│   └── external/
+├── models/
+│   ├── checkpoints/
+│   └── production/
+├── requirements.txt
+├── README.md
+├── Dockerfile
+├── .gitignore
+├── .github/
+│   └── workflows/
+│       ├── ci.yml
+│       └── publish.yml
+└── pyproject.toml</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MLOps Features Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">MLOps Integration</h2>
+                <p class="text-xl text-gray-600">Complete MLOps pipeline support</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-purple-600 text-4xl mb-4">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Experiment Tracking</h3>
+                    <p class="text-gray-600">MLflow & W&B integration</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-purple-600 text-4xl mb-4">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Orchestration</h3>
+                    <p class="text-gray-600">Airflow & Kubeflow pipelines</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-purple-600 text-4xl mb-4">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Deployment</h3>
+                    <p class="text-gray-600">FastAPI, Docker, K8s</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="text-purple-600 text-4xl mb-4">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Monitoring</h3>
+                    <p class="text-gray-600">Evidently & custom metrics</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">What Developers Say</h2>
+                <p class="text-xl text-gray-600">Loved by ML engineers and data scientists</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                            JD
+                        </div>
+                        <div class="ml-4">
+                            <div class="font-semibold">Jane Doe</div>
+                            <div class="text-gray-600 text-sm">ML Engineer</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"This tool saved me hours of boilerplate setup. I can focus on building models instead of configuring projects."</p>
+                    <div class="flex text-yellow-400 mt-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                            AS
+                        </div>
+                        <div class="ml-4">
+                            <div class="font-semibold">Alex Smith</div>
+                            <div class="text-gray-600 text-sm">Data Scientist</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"The MLOps integration is fantastic. I got a complete ML pipeline with monitoring in minutes."</p>
+                    <div class="flex text-yellow-400 mt-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">
+                            RJ
+                        </div>
+                        <div class="ml-4">
+                            <div class="font-semibold">Robert Johnson</div>
+                            <div class="text-gray-600 text-sm">Team Lead</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"Standardized our team's project structure. Everyone follows the same best practices now."</p>
+                    <div class="flex text-yellow-400 mt-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 gradient-bg text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold mb-4">Ready to Build Better ML Projects?</h2>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">
+                Join thousands of developers using MLOps Project Generator to build production-ready ML projects faster.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#installation" class="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    <i class="fas fa-download mr-2"></i>Install Now
+                </a>
+                <a href="https://github.com/NotHarshhaa/MLOps-Project-Generator" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition">
+                    <i class="fab fa-github mr-2"></i>View on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-brain text-2xl text-purple-400 mr-2"></i>
+                        <span class="text-lg font-semibold">MLOps Generator</span>
+                    </div>
+                    <p class="text-gray-400">Production-ready ML project templates for modern development.</p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#installation" class="hover:text-white transition">Installation</a></li>
+                        <li><a href="#usage" class="hover:text-white transition">Usage</a></li>
+                        <li><a href="#frameworks" class="hover:text-white transition">Frameworks</a></li>
+                        <li><a href="https://github.com/NotHarshhaa/MLOps-Project-Generator" class="hover:text-white transition">GitHub</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">Frameworks</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition">Scikit-learn</a></li>
+                        <li><a href="#" class="hover:text-white transition">PyTorch</a></li>
+                        <li><a href="#" class="hover:text-white transition">TensorFlow</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/NotHarshhaa/MLOps-Project-Generator" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2026 MLOps Project Generator. Built with ❤️ by HARSHHAA.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking on links
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                // Show feedback
+                const button = event.target.closest('button');
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i>';
+                button.classList.add('text-green-400');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('text-green-400');
+                }, 2000);
+            });
+        }
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add scroll effect to navigation
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 100) {
+                nav.classList.add('shadow-xl');
+            } else {
+                nav.classList.remove('shadow-xl');
+            }
+        });
+    </script>
+</body>
+</html>
