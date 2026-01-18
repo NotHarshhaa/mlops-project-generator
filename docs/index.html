@@ -8,56 +8,235 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-tertiary: #9ca3af;
+            --border-color: #e5e7eb;
+            --accent-color: #7c3aed;
+            --accent-hover: #6d28d9;
+            --card-bg: #ffffff;
+            --code-bg: #1f2937;
+            --gradient-start: #667eea;
+            --gradient-end: #764ba2;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --bg-tertiary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --text-tertiary: #9ca3af;
+            --border-color: #374151;
+            --accent-color: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --card-bg: #1f2937;
+            --code-bg: #0f172a;
+            --gradient-start: #8b5cf6;
+            --gradient-end: #ec4899;
+        }
+
+        body {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+            overflow-x: hidden;
+            max-width: 100vw;
+            margin: 0 !important;
+            padding: 0 !important;
+            padding-top: 64px; /* Account for fixed header */
+        }
+
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
         }
+        
         .feature-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: var(--card-bg);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
         }
+        
         .feature-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
+
         .tech-icon {
             transition: transform 0.3s ease;
         }
+        
         .tech-icon:hover {
             transform: scale(1.1);
         }
+
         .code-block {
-            background: #2d2d2d;
+            background-color: var(--code-bg);
             border-radius: 8px;
             overflow-x: auto;
         }
+
+        .theme-toggle {
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
             50% { transform: translateY(-20px); }
         }
+        
         .floating {
             animation: float 6s ease-in-out infinite;
         }
+
+        /* Dark mode specific styles */
+        [data-theme="dark"] .bg-white {
+            background-color: var(--card-bg) !important;
+        }
+
+        [data-theme="dark"] .bg-gray-50 {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        [data-theme="dark"] .bg-gray-900 {
+            background-color: var(--code-bg) !important;
+        }
+
+        [data-theme="dark"] .text-gray-600 {
+            color: var(--text-secondary) !important;
+        }
+
+        [data-theme="dark"] .text-gray-800 {
+            color: var(--text-primary) !important;
+        }
+
+        [data-theme="dark"] .text-gray-400 {
+            color: var(--text-tertiary) !important;
+        }
+
+        [data-theme="dark"] .border-gray-800 {
+            border-color: var(--border-color) !important;
+        }
+
+        [data-theme="dark"] .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        /* Fix Get Started button in dark mode */
+        [data-theme="dark"] .bg-white.text-purple-600 {
+            background-color: var(--card-bg) !important;
+            color: var(--accent-color) !important;
+            border: 1px solid var(--accent-color) !important;
+        }
+
+        [data-theme="dark"] .bg-white.text-purple-600:hover {
+            background-color: var(--accent-color) !important;
+            color: white !important;
+        }
+
+        /* Fix feature cards in dark mode */
+        [data-theme="dark"] .feature-card {
+            background-color: var(--card-bg) !important;
+            border: 1px solid var(--border-color) !important;
+        }
+
+        [data-theme="dark"] .feature-card:hover {
+            background-color: var(--bg-tertiary) !important;
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2) !important;
+        }
+
+        /* Fix purple text in dark mode */
+        [data-theme="dark"] .text-purple-600 {
+            color: var(--accent-color) !important;
+        }
+
+        /* Fix GitHub button in dark mode */
+        [data-theme="dark"] .bg-purple-600 {
+            background-color: var(--accent-color) !important;
+        }
+
+        [data-theme="dark"] .bg-purple-600:hover {
+            background-color: var(--accent-hover) !important;
+        }
+
         /* Mobile-specific fixes */
         * {
             box-sizing: border-box;
         }
-        body {
-            overflow-x: hidden;
-            max-width: 100vw;
-        }
+        
         .code-block pre {
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-x: auto;
             max-width: 100%;
         }
+        
         /* Ensure no horizontal overflow */
         .container, .max-w-7xl {
             overflow-x: hidden;
         }
+        
         /* Fix for long text in cards */
         .feature-card p {
             word-wrap: break-word;
             overflow-wrap: break-word;
+        }
+
+        /* Theme toggle animation */
+        .theme-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover .theme-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Fix mobile header fluctuations */
+        nav {
+            transition: box-shadow 0.3s ease;
+        }
+
+        /* Ensure stable header height */
+        .sticky {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        /* Remove any default margins/padding - more aggressive reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Fix navigation positioning - force to top */
+        nav {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 50;
+            margin: 0 !important;
+            padding: 0 !important;
         }
     </style>
 </head>
@@ -71,21 +250,27 @@
                     <span class="text-lg sm:text-xl font-bold text-gray-800 hidden sm:block">MLOps Project Generator</span>
                     <span class="text-sm sm:text-lg font-bold text-gray-800 sm:hidden">ML Generator</span>
                 </div>
-                <!-- Mobile menu button -->
-                <div class="flex items-center sm:hidden">
-                    <button id="mobile-menu-button" class="text-gray-600 hover:text-purple-600 p-2">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                </div>
                 <!-- Desktop menu -->
                 <div class="hidden sm:flex items-center space-x-2 sm:space-x-4">
                     <a href="#features" class="text-gray-600 hover:text-purple-600 transition text-sm sm:text-base">Features</a>
                     <a href="#installation" class="text-gray-600 hover:text-purple-600 transition text-sm sm:text-base">Installation</a>
                     <a href="#usage" class="text-gray-600 hover:text-purple-600 transition text-sm sm:text-base">Usage</a>
                     <a href="#frameworks" class="text-gray-600 hover:text-purple-600 transition text-sm sm:text-base">Frameworks</a>
+                    <button id="theme-toggle" class="theme-toggle p-2 rounded-lg text-sm sm:text-base" aria-label="Toggle theme">
+                        <i class="fas fa-moon theme-icon" id="theme-icon"></i>
+                    </button>
                     <a href="https://github.com/NotHarshhaa/MLOps-Project-Generator" class="bg-purple-600 text-white px-2 sm:px-4 py-1 sm:py-2 rounded-lg hover:bg-purple-700 transition text-xs sm:text-base">
                         <i class="fab fa-github mr-1 sm:mr-2"></i><span class="hidden sm:inline">GitHub</span>
                     </a>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="flex items-center sm:hidden space-x-2">
+                    <button id="theme-toggle-mobile" class="theme-toggle p-2 rounded-lg" aria-label="Toggle theme">
+                        <i class="fas fa-moon theme-icon" id="theme-icon-mobile"></i>
+                    </button>
+                    <button id="mobile-menu-button" class="text-gray-600 hover:text-purple-600 p-2">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -616,6 +801,38 @@ mlops-project-generator init
     </footer>
 
     <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeToggleMobile = document.getElementById('theme-toggle-mobile');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeIconMobile = document.getElementById('theme-icon-mobile');
+        const html = document.documentElement;
+
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        html.setAttribute('data-theme', currentTheme);
+        updateThemeIcon(currentTheme);
+
+        // Theme toggle functions
+        function toggleTheme() {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+
+        function updateThemeIcon(theme) {
+            const iconClass = theme === 'light' ? 'fa-moon' : 'fa-sun';
+            themeIcon.className = `fas ${iconClass} theme-icon`;
+            themeIconMobile.className = `fas ${iconClass} theme-icon`;
+        }
+
+        // Event listeners for theme toggle
+        themeToggle.addEventListener('click', toggleTheme);
+        themeToggleMobile.addEventListener('click', toggleTheme);
+
         // Mobile menu toggle
         document.getElementById('mobile-menu-button').addEventListener('click', function() {
             const mobileMenu = document.getElementById('mobile-menu');
@@ -661,13 +878,45 @@ mlops-project-generator init
             });
         });
 
-        // Add scroll effect to navigation
-        window.addEventListener('scroll', () => {
+        // Add scroll effect to navigation - smoother and more stable
+        let lastScrollY = 0;
+        let ticking = false;
+        
+        function updateNavShadow() {
             const nav = document.querySelector('nav');
-            if (window.scrollY > 100) {
+            const currentScrollY = window.scrollY;
+            
+            if (currentScrollY > 50) {
                 nav.classList.add('shadow-xl');
             } else {
                 nav.classList.remove('shadow-xl');
+            }
+            
+            lastScrollY = currentScrollY;
+            ticking = false;
+        }
+
+        function requestTick() {
+            if (!ticking) {
+                window.requestAnimationFrame(updateNavShadow);
+                ticking = true;
+            }
+        }
+
+        window.addEventListener('scroll', requestTick, { passive: true });
+
+        // Check system preference for theme
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('theme')) {
+            html.setAttribute('data-theme', 'dark');
+            updateThemeIcon('dark');
+        }
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                const newTheme = e.matches ? 'dark' : 'light';
+                html.setAttribute('data-theme', newTheme);
+                updateThemeIcon(newTheme);
             }
         });
     </script>
