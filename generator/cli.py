@@ -3,6 +3,7 @@
 CLI interface for MLOps Project Generator
 """
 
+import os
 import typer
 from rich.align import Align
 from rich.console import Console
@@ -14,6 +15,7 @@ from generator.prompts import get_user_choices
 from generator.renderer import ProjectRenderer
 from generator.utils import get_next_steps
 from generator.validators import validate_choices
+from generator.validator import validate_project
 
 app = typer.Typer(
     name="mlops-project-generator",
@@ -179,7 +181,46 @@ def init(
 @app.command()
 def version():
     """Show version information"""
-    console.print("mlops-project-generator v1.0.5")
+    console.print("mlops-project-generator v1.0.6")
+
+
+@app.command()
+def validate(
+    project_path: str = typer.Option(".", "--path", "-p", help="Path to the project to validate")
+):
+    """
+    Validate an existing MLOps project structure and configuration
+    """
+    try:
+        # Check if project path exists
+        if not os.path.exists(project_path):
+            console.print(
+                Panel(
+                    Text(f"❌ Path '{project_path}' does not exist", style="bold red"),
+                    border_style="red",
+                )
+            )
+            raise typer.Exit(1)
+        
+        # Validate the project
+        is_valid = validate_project(project_path)
+        
+        # Exit with appropriate code
+        if is_valid:
+            console.print("\n✅ [bold green]Project validation completed successfully![/bold green]")
+            raise typer.Exit(0)
+        else:
+            console.print("\n❌ [bold red]Project validation failed. Please address the issues above.[/bold red]")
+            raise typer.Exit(1)
+            
+    except Exception as e:
+        console.print(
+            Panel(
+                Text(f"❌ Error during validation: {str(e)}", style="bold red"),
+                border_style="red",
+            )
+        )
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":

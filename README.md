@@ -22,8 +22,28 @@ Data → Train → Track → Orchestrate → Deploy → Monitor → Improve
 - **📈 Monitoring**: Evidently AI, Custom solutions
 - **🛠️ Production-Ready**: CI/CD, monitoring, best practices by default
 - **🤖 CI/CD Automation**: Non-interactive mode for DevOps pipelines
+- **🔍 Project Validation**: Comprehensive project structure and configuration validation
 
-## 🌟 NEW: v1.0.5 Advanced Features
+## 🌟 NEW: v1.0.6 Advanced Features
+
+### 🔍 **Project Validation Command**
+- **Comprehensive validation**: Checks project structure, configuration, and deployment readiness
+- **Framework-specific validation**: Validates sklearn, PyTorch, and TensorFlow projects
+- **Smart framework detection**: Automatically detects ML framework from project files
+- **Beautiful Rich UI**: Professional terminal output with pass/warn/fail status
+- **CI/CD integration**: Proper exit codes for automation pipelines
+- **Extensible design**: Easy to add new validation checks
+
+```bash
+# Validate current directory
+mlops-project-generator validate
+
+# Validate specific project
+mlops-project-generator validate --path /path/to/project
+
+# CI/CD integration
+mlops-project-generator validate --path . || exit 1
+```
 
 ### 🚀 **Non-Interactive CLI Mode (CI/CD Ready)**
 - **One-liner project generation** with command-line flags
@@ -141,7 +161,14 @@ mlops-project-generator init \
   --description "Production ML pipeline"
 ```
 
-### 📋 **Available CLI Flags**
+### 📋 **Available CLI Commands**
+| Command | Description | Options |
+|--------|-------------|---------|
+| `init` | Generate new MLOps project | Framework, task type, tracking, deployment flags |
+| `validate` | Validate existing project structure | `--path` to specify project directory |
+| `version` | Show version information | None |
+
+### 📋 **Available CLI Flags (for init command)**
 | Flag | Short | Description | Options |
 |------|-------|-------------|---------|
 | `--framework` | `-f` | ML framework | `sklearn`, `pytorch`, `tensorflow` |
@@ -153,6 +180,11 @@ mlops-project-generator init \
 | `--project-name` | `-p` | Project name | Any valid name |
 | `--author-name` | `-a` | Author name | Any string |
 | `--description` | `--desc` | Project description | Any string |
+
+### 📋 **Validation Options**
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--path` | `-p` | Path to project to validate | `.` (current directory) |
 
 ### 🎯 **Use Case Examples**
 

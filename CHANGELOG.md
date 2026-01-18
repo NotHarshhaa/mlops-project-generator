@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.6] - 2026-01-18
+
+### ✨ **NEW FEATURES**
+- **🔍 Project Validation Command**: New `mlops-project-generator validate` command
+- **📋 Comprehensive Validation**: Checks project structure, configuration, and deployment readiness
+- **🎯 Framework-Specific Validation**: Validates sklearn, PyTorch, and TensorFlow projects
+- **🚀 Deployment Readiness**: Validates Docker, FastAPI, and deployment configurations
+- **🔬 MLflow Configuration**: Validates experiment tracking setup
+- **📁 Data Folder Safety**: Checks data directory structure and .gitignore files
+- **📚 Documentation Validation**: Ensures proper documentation exists
+
+### 🎯 **VALIDATION FEATURES**
+- **Smart Framework Detection**: Automatically detects ML framework from project files
+- **Detailed Reporting**: Beautiful Rich UI with pass/warn/fail status
+- **Professional Output**: Summary panel, detailed results table, and recommendations
+- **Flexible Path Support**: Validate any project path with `--path` option
+- **Exit Codes**: Proper exit codes for CI/CD integration
+
+### 🔧 **TECHNICAL IMPROVEMENTS**
+- **Modular Design**: Separate validator module for easy extension
+- **Rich UI Integration**: Beautiful terminal output with tables and panels
+- **Comprehensive Testing**: Full test coverage for validation functionality
+- **Error Handling**: Graceful error handling and user feedback
+
+### 📋 **VALIDATION CHECKS**
+- **Project Structure**: Required directories (src, configs, data, models, scripts)
+- **Configuration Files**: config.yaml, requirements.txt, Makefile, .gitignore
+- **Framework Files**: Framework-specific files (model.py, train.py, etc.)
+- **Deployment Files**: Dockerfile, FastAPI, docker-compose.yml
+- **MLflow Setup**: mlruns directory, MLflow configuration
+- **Data Safety**: Data directories with proper .gitignore files
+- **Dependencies**: Python packages and ML framework detection
+- **Documentation**: README.md, CHANGELOG.md, docs/ directory
+
+### 🚀 **USAGE EXAMPLES**
+```bash
+# Validate current directory
+mlops-project-generator validate
+
+# Validate specific project
+mlops-project-generator validate --path /path/to/project
+
+# CI/CD integration
+mlops-project-generator validate --path . || exit 1
+```
+
+---
+
 ## [1.0.5] - 2026-01-18
 
 ### ✨ **NEW FEATURES**
