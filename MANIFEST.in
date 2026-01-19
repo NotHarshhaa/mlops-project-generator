@@ -12,8 +12,9 @@ recursive-include generator *.py
 # Include tests
 recursive-include tests *.py
 
-# Exclude docs folder from PyPI package
-prune docs
+# Exclude web UI and API from PyPI package
+prune web_api
+prune web_ui
 
 # Include configuration files
 include .github/workflows/*.yml
