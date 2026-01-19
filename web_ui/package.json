@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:auto": "node start-dev.js",
-    "dev:backend": "python api.py",
+    "dev:backend": "python ../backend/api.py",
     "dev:frontend": "next dev",
     "build": "next build",
     "start": "next start",
