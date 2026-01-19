@@ -5,3 +5,6 @@
 
 # next.js
 /.next/
+
+# typescript
+next-env.d.ts
