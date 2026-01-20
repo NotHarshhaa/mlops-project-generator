@@ -185,24 +185,24 @@ export default function MLOpsForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden">
-      <div className="w-full max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-950 dark:to-black p-3 sm:p-4 md:p-6 lg:p-8 overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-4 sm:mb-6 lg:mb-8 pt-4 sm:pt-6 lg:pt-8 relative">
           <div className="absolute top-0 right-0 sm:top-4 sm:right-4">
             <ThemeToggle />
           </div>
           <div className="flex items-center justify-center mb-2 sm:mb-3 lg:mb-4 pr-12 sm:pr-0">
-            <Rocket className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-blue-600 dark:text-blue-400 mr-1 sm:mr-2 lg:mr-3 flex-shrink-0" />
+            <Rocket className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-blue-600 dark:text-zinc-400 mr-1 sm:mr-2 lg:mr-3 flex-shrink-0" />
             <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100 break-words">MLOps Project Generator</h1>
           </div>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto px-2 sm:px-4">
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-zinc-400 max-w-2xl mx-auto px-2 sm:px-4">
             Generate production-ready MLOps project templates with best practices built-in
           </p>
         </div>
 
         {/* Main Form */}
-        <Card className="shadow-lg w-full overflow-hidden">
+        <Card className="shadow-lg w-full overflow-hidden dark:bg-zinc-800/80">
           <CardHeader className="pb-3 sm:pb-4 lg:pb-6 px-3 sm:px-4 lg:px-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
@@ -216,7 +216,6 @@ export default function MLOpsForm() {
               </div>
               <Button
                 type="button"
-                variant="outline"
                 size="sm"
                 onClick={unselectAll}
                 className="ml-2 flex-shrink-0"
@@ -355,14 +354,14 @@ export default function MLOpsForm() {
                 </div>
 
                 {/* Enhanced Separator */}
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-4 sm:pt-6 lg:pt-8">
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                      <Settings className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                <div className="border-t border-gray-200 dark:border-zinc-800 pt-4 sm:pt-6 lg:pt-8">
+                  <div className="flex items-center space-x-3 pb-2">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
+                      <Settings className="w-4 h-4 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100 break-words">Project Details</h3>
-                      <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Configure your project metadata</p>
+                      <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 break-words">Project Details</h3>
+                      <p className="text-sm text-gray-600 dark:text-zinc-400 mt-0.5">Configure your project metadata</p>
                     </div>
                   </div>
                 </div>
@@ -375,16 +374,16 @@ export default function MLOpsForm() {
                       name="project_name"
                       render={({ field }) => (
                         <FormItem className="space-y-1 sm:space-y-2">
-                          <FormLabel className="flex items-center space-x-1 sm:space-x-2">
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-                              <Info className="w-2 h-2 sm:w-3 sm:h-3 text-blue-600 dark:text-blue-400" />
+                          <FormLabel className="flex items-center space-x-2 sm:space-x-3">
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
+                              <Info className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                             </div>
-                            <span className="text-sm sm:text-base">Project Name</span>
+                            <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-zinc-100">Project Name</span>
                             <div className="group relative">
-                              <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center cursor-help">
-                                <span className="text-xs text-gray-600 dark:text-gray-400">?</span>
+                              <div className="w-4 h-4 rounded-full bg-gray-200 dark:bg-zinc-700 flex items-center justify-center cursor-help">
+                                <span className="text-xs text-gray-600 dark:text-zinc-400">?</span>
                               </div>
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity z-50 max-w-sm">
                                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900 dark:bg-gray-100"></div>
                                 Use lowercase, hyphens, and underscores only. Max 50 characters.
                               </div>
@@ -393,11 +392,11 @@ export default function MLOpsForm() {
                           <FormControl>
                             <Input 
                               placeholder="my-ml-project" 
-                              className="font-mono text-xs sm:text-sm h-8 sm:h-10"
+                              className="font-mono text-sm sm:text-base lg:text-base h-10 sm:h-11"
                               {...field} 
                             />
                           </FormControl>
-                          <FormDescription className="text-xs text-gray-500 dark:text-gray-400 hidden xs:block sm:block">
+                          <FormDescription className="text-sm text-gray-500 dark:text-zinc-400 hidden xs:block sm:block">
                             Examples: sentiment-analysis, image_classifier, sales-forecast
                           </FormDescription>
                           <FormMessage />
@@ -410,20 +409,20 @@ export default function MLOpsForm() {
                       name="author_name"
                       render={({ field }) => (
                         <FormItem className="space-y-1 sm:space-y-2">
-                          <FormLabel className="flex items-center space-x-1 sm:space-x-2">
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg bg-green-100 dark:bg-green-900 flex items-center justify-center">
-                              <User className="w-2 h-2 sm:w-3 sm:h-3 text-green-600 dark:text-green-400" />
+                          <FormLabel className="flex items-center space-x-2 sm:space-x-3">
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
+                              <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                             </div>
-                            <span className="text-sm sm:text-base">Author Name</span>
+                            <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-zinc-100">Author Name</span>
                           </FormLabel>
                           <FormControl>
                             <Input 
                               placeholder="Your Name" 
-                              className="font-medium border-gray-200 focus:border-green-500 focus:ring-green-500 text-xs sm:text-sm h-8 sm:h-10"
+                              className="font-medium text-sm sm:text-base lg:text-base h-10 sm:h-11"
                               {...field} 
                             />
                           </FormControl>
-                          <FormDescription className="text-xs text-gray-500 dark:text-gray-400">
+                          <FormDescription className="text-sm text-gray-500 dark:text-zinc-400">
                             Your name or team name
                           </FormDescription>
                           <FormMessage />
@@ -437,20 +436,20 @@ export default function MLOpsForm() {
                     name="description"
                     render={({ field }) => (
                       <FormItem className="space-y-1 sm:space-y-2">
-                        <FormLabel className="flex items-center space-x-1 sm:space-x-2">
-                          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-lg bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-                            <FileText className="w-2 h-2 sm:w-3 sm:h-3 text-purple-600 dark:text-purple-400" />
+                        <FormLabel className="flex items-center space-x-2 sm:space-x-3">
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                           </div>
-                          <span className="text-sm sm:text-base">Project Description</span>
+                          <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-zinc-100">Project Description</span>
                         </FormLabel>
                         <FormControl>
                           <Textarea
                             placeholder="A production-ready ML project for sentiment analysis using transformer models..."
-                            className="min-h-[80px] sm:min-h-[100px] lg:min-h-[120px] resize-none border-gray-200 focus:border-purple-500 focus:ring-purple-500 text-sm sm:text-base"
+                            className="min-h-[100px] sm:min-h-[120px] lg:min-h-[140px] resize-none text-sm sm:text-base lg:text-base"
                             {...field}
                           />
                         </FormControl>
-                        <FormDescription className="text-xs text-gray-500 dark:text-gray-400">
+                        <FormDescription className="text-sm text-gray-500 dark:text-zinc-400">
                           <span className="hidden sm:inline">Brief description of your ML project, its purpose, and key features</span>
                           <span className="sm:hidden">Brief project description</span>
                         </FormDescription>
@@ -487,18 +486,18 @@ export default function MLOpsForm() {
                 {/* Generate Button */}
                 <Button 
                   type="submit" 
-                  className="w-full"
+                  className="w-full h-12 text-base font-semibold"
                   disabled={isGenerating}
-                  size="sm"
+                  size="lg"
                 >
                   {isGenerating ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                       Generating...
                     </>
                   ) : (
                     <>
-                      <Rocket className="h-4 w-4 mr-2" />
+                      <Rocket className="h-5 w-5 mr-2" />
                       Generate Project
                     </>
                   )}
@@ -513,17 +512,17 @@ export default function MLOpsForm() {
           <DialogContent className="sm:max-w-md mx-3 sm:mx-4 max-w-[95vw]">
             <DialogHeader className="pb-3 sm:pb-4">
               <DialogTitle className="flex items-center space-x-1 sm:space-x-2 text-base sm:text-lg lg:text-xl">
-                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-green-600 dark:text-zinc-400 flex-shrink-0" />
                 <span className="text-base sm:text-lg lg:text-xl break-words">Project Generated Successfully!</span>
               </DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              <DialogDescription className="text-xs sm:text-sm text-gray-600 dark:text-zinc-400">
                 Thank you for using the MLOps Project Generator!
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col space-y-3 sm:space-y-4">
-              <div className="text-center p-2 sm:p-3 lg:p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-green-600 dark:text-green-400 mx-auto mb-1 sm:mb-2" />
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 px-1 sm:px-2">
+              <div className="text-center p-2 sm:p-3 lg:p-4 bg-green-50 dark:bg-zinc-900 rounded-lg">
+                <CheckCircle className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-green-600 dark:text-zinc-400 mx-auto mb-1 sm:mb-2" />
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-zinc-300 px-1 sm:px-2">
                   Your MLOps project has been generated with best practices.
                 </p>
               </div>
