@@ -18,7 +18,7 @@ import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { toast } from "sonner"
-import { Loader2, Download, Rocket, Settings, Info, User, FileText, CheckCircle, X, Brain, BarChart, Microscope, GitBranch, Shield, Cpu, Globe, Activity } from "lucide-react"
+import { Loader2, Download, Rocket, Settings, Info, User, FileText, CheckCircle, X, Brain, BarChart, Microscope, GitBranch, Shield, Cpu, Globe, Activity, Github, Linkedin, Mail } from "lucide-react"
 
 const formSchema = z.object({
   framework: z.string().optional(),
@@ -64,6 +64,7 @@ export default function MLOpsForm() {
   const [progress, setProgress] = useState(0)
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [copiedEmail, setCopiedEmail] = useState(false)
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -195,11 +196,11 @@ export default function MLOpsForm() {
             <ThemeToggle />
           </div>
           <div className="flex items-center justify-center mb-2 sm:mb-3 lg:mb-4 pr-12 sm:pr-0">
-            <Rocket className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-blue-600 dark:text-zinc-400 mr-1 sm:mr-2 lg:mr-3 flex-shrink-0" />
+            <Rocket className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-zinc-900 dark:text-zinc-100 mr-1 sm:mr-2 lg:mr-3 flex-shrink-0" />
             <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 dark:text-gray-100 break-words">MLOps Project Generator</h1>
           </div>
           <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-zinc-400 max-w-2xl mx-auto px-2 sm:px-4">
-            Generate production-ready MLOps project templates with best practices built-in
+            A CLI tool that generates production-ready MLOps project templates for Scikit-learn, PyTorch, and TensorFlow.
           </p>
         </div>
 
@@ -208,13 +209,15 @@ export default function MLOpsForm() {
           <CardHeader className="pb-3 sm:pb-4 lg:pb-6 px-3 sm:px-4 lg:px-6">
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <CardTitle className="flex items-center text-base sm:text-lg lg:text-xl">
-                  <Settings className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
-                  <span className="break-words">Project Configuration</span>
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm lg:text-base mt-1.5">
-                  Choose your ML stack and deployment preferences
-                </CardDescription>
+                <div className="flex items-center space-x-3 pb-2">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                    <Settings className="w-4 h-4 text-white dark:text-zinc-900" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 break-words">Project Configuration</h3>
+                    <p className="text-sm text-gray-600 dark:text-zinc-400 mt-0.5">Choose your ML stack and deployment preferences</p>
+                  </div>
+                </div>
               </div>
               <Button
                 type="button"
@@ -358,8 +361,8 @@ export default function MLOpsForm() {
                 {/* Enhanced Separator */}
                 <div className="border-t border-gray-200 dark:border-zinc-800 pt-4 sm:pt-6 lg:pt-8">
                   <div className="flex items-center space-x-3 pb-2">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
-                      <Settings className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                      <Settings className="w-4 h-4 text-white dark:text-zinc-900" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100 break-words">Project Details</h3>
@@ -377,8 +380,8 @@ export default function MLOpsForm() {
                       render={({ field }) => (
                         <FormItem className="space-y-1 sm:space-y-2">
                           <FormLabel className="flex items-center space-x-2 sm:space-x-3">
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
-                              <Info className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                              <Info className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-zinc-900" />
                             </div>
                             <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-zinc-100">Project Name</span>
                             <div className="group relative">
@@ -412,8 +415,8 @@ export default function MLOpsForm() {
                       render={({ field }) => (
                         <FormItem className="space-y-1 sm:space-y-2">
                           <FormLabel className="flex items-center space-x-2 sm:space-x-3">
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
-                              <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                              <User className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-zinc-900" />
                             </div>
                             <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-zinc-100">Author Name</span>
                           </FormLabel>
@@ -439,8 +442,8 @@ export default function MLOpsForm() {
                     render={({ field }) => (
                       <FormItem className="space-y-1 sm:space-y-2">
                         <FormLabel className="flex items-center space-x-2 sm:space-x-3">
-                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
-                            <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                          <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                            <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-zinc-900" />
                           </div>
                           <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-zinc-100">Project Description</span>
                         </FormLabel>
@@ -488,8 +491,8 @@ export default function MLOpsForm() {
                 {/* Project Summary */}
                 <div className="border-t border-gray-200 dark:border-zinc-800 pt-6 sm:pt-8">
                   <div className="flex items-center space-x-3 pb-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-zinc-700 to-zinc-800 dark:from-zinc-700 dark:to-zinc-600 flex items-center justify-center flex-shrink-0">
-                      <FileText className="w-4 h-4 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                      <FileText className="w-4 h-4 text-white dark:text-zinc-900" />
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-900 dark:text-zinc-100">Project Summary</h3>
@@ -636,6 +639,127 @@ export default function MLOpsForm() {
                 </Button>
               </form>
             </Form>
+          </CardContent>
+        </Card>
+        
+        {/* About Creator */}
+        <Card className="shadow-lg w-full overflow-hidden dark:bg-zinc-800/80 mt-6">
+          <CardContent className="p-2 sm:p-3 sm:p-4 sm:p-6 sm:p-8">
+            <div className="flex flex-col items-center space-y-2 sm:space-y-3 sm:flex-row sm:items-start sm:space-y-0 sm:space-x-6 lg:flex-row lg:items-center lg:space-x-8">
+              {/* Profile Section */}
+              <div className="flex flex-col items-center space-y-2 sm:space-y-4 lg:space-y-4 sm:w-auto lg:w-auto">
+                <div className="relative group">
+                  <img 
+                    src="https://github.com/NotHarshhaa.png" 
+                    alt="HARSHHAA" 
+                    className="w-20 h-20 sm:w-20 sm:h-20 lg:w-28 lg:h-28 rounded-full border-4 border-white dark:border-zinc-700 shadow-xl transition-transform group-hover:scale-105"
+                  />
+                  <div className="absolute -bottom-2 -right-2 w-5 h-5 sm:w-6 sm:h-6 bg-zinc-900 dark:bg-zinc-100 rounded-full flex items-center justify-center">
+                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white dark:text-zinc-900" />
+                  </div>
+                </div>
+                <div className="text-center sm:text-left lg:text-center">
+                  <div className="flex items-center justify-center sm:justify-start lg:justify-center space-x-2 mb-1">
+                    <h3 className="text-lg sm:text-xl lg:text-3xl font-bold text-gray-900 dark:text-zinc-100">HARSHHAA</h3>
+                    <div className="w-2 h-2 bg-zinc-900 dark:bg-zinc-100 rounded-full"></div>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-zinc-400 font-medium">@NotHarshhaa</p>
+                  <div className="flex items-center justify-center sm:justify-start lg:justify-center space-x-2 mt-1 sm:mt-2">
+                    <span className="inline-flex items-center px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-semibold rounded-full">
+                      Open to collaborate
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* About Content */}
+              <div className="flex-1 text-center sm:text-left lg:text-left">
+                <div className="flex items-center justify-center sm:justify-start lg:justify-center space-x-2 sm:space-x-3 mb-2 sm:mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center flex-shrink-0">
+                    <User className="w-4 h-4 text-white dark:text-zinc-900" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900 dark:text-zinc-100">About Me</h4>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-zinc-900/50 rounded-xl p-2 sm:p-3 sm:p-4 sm:p-6 border border-gray-200 dark:border-zinc-700 mb-3 sm:mb-4 sm:mb-6">
+                  <p className="text-sm sm:text-base text-gray-700 dark:text-zinc-300 leading-relaxed mb-2 sm:mb-4 text-center sm:text-left">
+                    <span className="font-bold text-gray-900 dark:text-white">DevOps Engineer & Automation Specialist</span> with expertise in building robust cloud infrastructure, CI/CD pipelines, and MLOps solutions. Passionate about driving innovation and efficiency through cutting-edge technology.
+                  </p>
+                  
+                  <div className="flex flex-wrap justify-center gap-1 sm:gap-2 mb-2 sm:mb-4 sm:justify-start">
+                    <span className="inline-flex items-center px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-semibold rounded-lg">
+                      Cloud Architecture
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-semibold rounded-lg">
+                      DevOps
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-semibold rounded-lg">
+                      MLOps
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-semibold rounded-lg">
+                      CI/CD
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 sm:grid-cols-3 gap-2 sm:gap-4 text-center">
+                    <div className="bg-white dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">5+</div>
+                      <p className="text-xs text-gray-600 dark:text-zinc-400 mt-0.5 sm:mt-1">Years Experience</p>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">50+</div>
+                      <p className="text-xs text-gray-600 dark:text-zinc-400 mt-0.5 sm:mt-1">Projects Delivered</p>
+                    </div>
+                    <div className="bg-white dark:bg-zinc-800 rounded-lg p-2 sm:p-3 border border-gray-200 dark:border-zinc-600">
+                      <div className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">Global</div>
+                      <p className="text-xs text-gray-600 dark:text-zinc-400 mt-0.5 sm:mt-1">Reach & Impact</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
+                  <div className="flex items-center space-x-4">
+                    <a 
+                      href="https://github.com/NotHarshhaa" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all hover:scale-105"
+                    >
+                      <GitBranch className="w-4 h-4" />
+                      <span className="text-sm font-medium">GitHub</span>
+                    </a>
+                    <a 
+                      href="https://linkedin.com/in/NotHarshhaa" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center space-x-2 px-4 py-2 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 rounded-lg hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all hover:scale-105"
+                    >
+                      <User className="w-4 h-4" />
+                      <span className="text-sm font-medium">LinkedIn</span>
+                    </a>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-zinc-400">
+                    <Info className="w-4 h-4" />
+                    <span>harshhaa03@gmail.com</span>
+                    <button
+                      onClick={async () => {
+                        try {
+                          await navigator.clipboard.writeText('harshhaa03@gmail.com')
+                          setCopiedEmail(true)
+                          setTimeout(() => setCopiedEmail(false), 2000)
+                        } catch (err) {
+                          console.error('Failed to copy email:', err)
+                        }
+                      }}
+                      className="inline-flex items-center px-2 py-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-medium rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                    >
+                      {copiedEmail ? 'Copied!' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
         
