@@ -16,6 +16,11 @@ from generator.renderer import ProjectRenderer
 from generator.utils import get_next_steps
 from generator.validators import validate_choices
 from generator.validator import validate_project
+from generator.config_manager import ConfigManager
+from generator.analytics import ProjectAnalytics
+from generator.template_customizer import TemplateCustomizer
+from generator.cloud_deployer import CloudDeployer
+from generator.project_browser import ProjectBrowser
 
 app = typer.Typer(
     name="mlops-project-generator",
@@ -70,6 +75,10 @@ def init(
         renderer = ProjectRenderer(choices)
         renderer.generate_project()
         
+        # Record project generation in analytics
+        analytics = ProjectAnalytics()
+        analytics.record_project_generation(choices, str(renderer.output_dir))
+        
         # Simple success message for CI/CD
         console.print(f"✅ Project '{choices['project_name']}' generated successfully!")
         
@@ -118,6 +127,10 @@ def init(
             # Render the project
             renderer = ProjectRenderer(choices)
             renderer.generate_project()
+            
+            # Record project generation in analytics
+            analytics = ProjectAnalytics()
+            analytics.record_project_generation(choices, str(renderer.output_dir))
 
             # Success message with great UI
             success_title = Text("🎉 Project Generated Successfully!", style="bold green")
@@ -181,7 +194,7 @@ def init(
 @app.command()
 def version():
     """Show version information"""
-    console.print("mlops-project-generator v1.0.6")
+    console.print("mlops-project-generator v1.0.7")
 
 
 @app.command()
@@ -221,6 +234,189 @@ def validate(
             )
         )
         raise typer.Exit(1)
+
+
+# Configuration Management Commands
+@app.command()
+def save_preset(
+    name: str = typer.Argument(..., help="Name of the preset"),
+    config_file: str = typer.Option(None, "--config", "-c", help="Configuration file to load"),
+    description: str = typer.Option("", "--description", "-d", help="Description of the preset")
+):
+    """Save a project configuration as a preset"""
+    config_manager = ConfigManager()
+    
+    if config_file:
+        # Load from file
+        config = config_manager.load_config(config_file)
+        if not config:
+            console.print(f"❌ Configuration file '{config_file}' not found")
+            raise typer.Exit(1)
+    else:
+        # Use current directory configuration
+        console.print("🔍 Analyzing current project...")
+        # This would analyze the current project to extract configuration
+        console.print("⚠️  Please provide a configuration file with --config option")
+        raise typer.Exit(1)
+    
+    config_manager.save_preset(name, config, description)
+
+
+@app.command()
+def list_presets():
+    """List all available presets"""
+    config_manager = ConfigManager()
+    config_manager.display_presets()
+
+
+@app.command()
+def load_preset(
+    name: str = typer.Argument(..., help="Name of the preset to load"),
+    output_file: str = typer.Option(None, "--output", "-o", help="Output file for configuration")
+):
+    """Load a preset configuration"""
+    config_manager = ConfigManager()
+    preset = config_manager.get_preset(name)
+    
+    if not preset:
+        console.print(f"❌ Preset '{name}' not found")
+        raise typer.Exit(1)
+    
+    if output_file:
+        config_manager.save_config(preset["config"], output_file)
+    else:
+        # Display the configuration
+        console.print(f"📋 Preset: {preset['name']}")
+        console.print(f"📝 Description: {preset['description']}")
+        console.print("⚙️  Configuration:")
+        for key, value in preset["config"].items():
+            console.print(f"  {key}: {value}")
+
+
+@app.command()
+def delete_preset(
+    name: str = typer.Argument(..., help="Name of the preset to delete")
+):
+    """Delete a preset"""
+    config_manager = ConfigManager()
+    
+    if config_manager.delete_preset(name):
+        console.print(f"✅ Preset '{name}' deleted successfully")
+    else:
+        console.print(f"❌ Preset '{name}' not found")
+        raise typer.Exit(1)
+
+
+# Template Management Commands
+@app.command()
+def create_template(
+    name: str = typer.Argument(..., help="Name of the custom template"),
+    framework: str = typer.Argument(..., help="Base framework (sklearn, pytorch, tensorflow)"),
+    description: str = typer.Option("", "--description", "-d", help="Description of the template")
+):
+    """Create a custom template based on an existing framework"""
+    customizer = TemplateCustomizer()
+    customizer.create_custom_template(name, framework, description)
+
+
+@app.command()
+def list_templates():
+    """List all custom templates"""
+    customizer = TemplateCustomizer()
+    customizer.display_custom_templates()
+
+
+@app.command()
+def delete_template(
+    name: str = typer.Argument(..., help="Name of the template to delete")
+):
+    """Delete a custom template"""
+    customizer = TemplateCustomizer()
+    customizer.delete_template(name)
+
+
+@app.command()
+def add_template_file(
+    template_name: str = typer.Argument(..., help="Name of the template"),
+    file_path: str = typer.Argument(..., help="Path of the file to add"),
+    content: str = typer.Option("", "--content", "-c", help="Content of the file")
+):
+    """Add a custom file to a template"""
+    customizer = TemplateCustomizer()
+    customizer.add_custom_file(template_name, file_path, content)
+
+
+# Analytics Commands
+@app.command()
+def stats():
+    """Show project generation statistics"""
+    analytics = ProjectAnalytics()
+    analytics.display_project_stats()
+
+
+@app.command()
+def analyze(
+    project_path: str = typer.Argument(".", help="Path to the project to analyze")
+):
+    """Analyze a generated project"""
+    analytics = ProjectAnalytics()
+    analytics.display_project_analysis(project_path)
+
+
+# Cloud Deployment Commands
+@app.command()
+def cloud_services():
+    """List available cloud deployment services"""
+    deployer = CloudDeployer()
+    deployer.display_cloud_services()
+
+
+@app.command()
+def cloud_deploy(
+    provider: str = typer.Argument(..., help="Cloud provider (aws, gcp, azure)"),
+    service: str = typer.Argument(..., help="Cloud service"),
+    project_path: str = typer.Option(".", "--project", "-p", help="Path to the project")
+):
+    """Generate cloud deployment templates"""
+    deployer = CloudDeployer()
+    
+    # Load project configuration
+    # This would need to be implemented to extract config from existing project
+    choices = {
+        "project_name": Path(project_path).name,
+        "framework": "sklearn",  # Default, should be detected
+        "task_type": "classification",
+        "deployment": "fastapi",
+        "monitoring": "none"
+    }
+    
+    deployer.generate_cloud_templates(provider, service, Path(project_path), choices)
+
+
+# Project Browser Commands
+@app.command()
+def browse():
+    """Interactive project browser"""
+    browser = ProjectBrowser()
+    browser.browse_projects()
+
+
+@app.command()
+def export_projects(
+    output_file: str = typer.Argument(..., help="Output file for project list")
+):
+    """Export project list to a file"""
+    browser = ProjectBrowser()
+    browser.export_project_list(output_file)
+
+
+@app.command()
+def import_projects(
+    input_file: str = typer.Argument(..., help="Input file with project list")
+):
+    """Import project list from a file"""
+    browser = ProjectBrowser()
+    browser.import_project_list(input_file)
 
 
 if __name__ == "__main__":

@@ -25,7 +25,7 @@ class TestCLI:
         """Test version command"""
         result = self.runner.invoke(app, ["version"])
         assert result.exit_code == 0
-        assert "mlops-project-generator v1.0.5" in result.stdout
+        assert "mlops-project-generator v1.0.7" in result.stdout
 
     def test_non_interactive_mode_with_all_flags(self):
         """Test non-interactive mode with all CLI flags"""

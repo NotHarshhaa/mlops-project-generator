@@ -3,6 +3,7 @@ Template renderer for generating MLOps projects
 """
 
 import shutil
+import json
 from pathlib import Path
 from typing import Any, Dict
 
@@ -11,6 +12,9 @@ from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from generator.utils import create_gitignore_content
+from generator.config_manager import ConfigManager
+from generator.template_customizer import TemplateCustomizer
+from generator.cloud_deployer import CloudDeployer
 
 console = Console()
 
@@ -28,6 +32,11 @@ class ProjectRenderer:
         package_dir = Path(__file__).parent.parent
         self.template_dir = package_dir / "templates"
         self.output_dir = Path.cwd() / self.project_name
+        
+        # Initialize additional components
+        self.config_manager = ConfigManager()
+        self.template_customizer = TemplateCustomizer()
+        self.cloud_deployer = CloudDeployer()
 
     def generate_project(self) -> None:
         """
@@ -63,6 +72,17 @@ class ProjectRenderer:
             task = progress.add_task("Creating additional directories...", total=None)
             self._create_additional_directories()
             progress.update(task, description="Additional directories created")
+            
+            # Generate cloud deployment templates if requested
+            if self.choices.get("cloud_provider") and self.choices.get("cloud_service"):
+                task = progress.add_task("Generating cloud templates...", total=None)
+                self._generate_cloud_templates()
+                progress.update(task, description="Cloud templates generated")
+            
+            # Save project configuration
+            task = progress.add_task("Saving project configuration...", total=None)
+            self._save_project_config()
+            progress.update(task, description="Project configuration saved")
 
     def _create_project_directory(self) -> None:
         """Create the main project directory"""
@@ -186,6 +206,31 @@ class ProjectRenderer:
         # Create directories
         for directory in directories:
             (self.output_dir / directory).mkdir(parents=True, exist_ok=True)
+
+    def _generate_cloud_templates(self) -> None:
+        """Generate cloud deployment templates"""
+        provider = self.choices.get("cloud_provider")
+        service = self.choices.get("cloud_service")
+        
+        if provider and service:
+            self.cloud_deployer.generate_cloud_templates(
+                provider, service, self.output_dir, self.choices
+            )
+
+    def _save_project_config(self) -> None:
+        """Save project configuration to file"""
+        config_file = self.output_dir / "project_config.json"
+        
+        # Add metadata to configuration
+        config_with_metadata = self.choices.copy()
+        config_with_metadata.update({
+            "generated_at": str(Path().cwd()),
+            "project_path": str(self.output_dir),
+            "generator_version": "1.0.7"
+        })
+        
+        with open(config_file, "w", encoding="utf-8") as f:
+            json.dump(config_with_metadata, f, indent=2)
 
     def get_template_context(self) -> Dict[str, Any]:
         """Get template context with additional computed values"""
