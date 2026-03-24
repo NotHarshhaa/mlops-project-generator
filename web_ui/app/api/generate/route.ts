@@ -1,148 +1,101 @@
 import { NextResponse } from "next/server"
 import { randomUUID } from "crypto"
-import path from "path"
 import os from "os"
+import path from "path"
 import fs from "fs/promises"
-import { execFile } from "child_process"
-import { promisify } from "util"
 import { setTask, updateTask } from "@/lib/task-store"
-
-const execFileAsync = promisify(execFile)
+import { generateProject, type GeneratorConfig } from "@/lib/generator"
+import type { VirtualFile } from "@/lib/generator"
 
 export const dynamic = "force-dynamic"
 
-// Temp directory for generated projects (system temp — auto-cleaned by OS)
 const TEMP_DIR = path.join(os.tmpdir(), "mlops_projects")
 
-// Path to the Python CLI script (relative to repo root)
-const CLI_SCRIPT = path.join(process.cwd(), "..", "generator", "cli.py")
+// ─── Validation ───────────────────────────────────────────────────────────────
 
-// ─── Validation ─────────────────────────────────────────────────────────────
-
-const VALID = {
-  framework:            ["sklearn", "pytorch", "tensorflow"],
-  task_type:            ["classification", "regression", "timeseries", "nlp", "computer-vision"],
-  experiment_tracking:  ["mlflow", "wandb", "custom", "none"],
-  orchestration:        ["airflow", "kubeflow", "none"],
-  deployment:           ["fastapi", "docker", "kubernetes"],
-  monitoring:           ["evidently", "custom", "none"],
-} as const
+const VALID: Record<string, string[]> = {
+  framework:           ["sklearn", "pytorch", "tensorflow"],
+  task_type:           ["classification", "regression", "timeseries", "nlp", "computer-vision"],
+  experiment_tracking: ["mlflow", "wandb", "custom", "none"],
+  orchestration:       ["airflow", "kubeflow", "none"],
+  deployment:          ["fastapi", "docker", "kubernetes"],
+  monitoring:          ["evidently", "custom", "none"],
+}
 
 function validateConfig(cfg: Record<string, string>): string | null {
   const required = ["framework", "task_type", "experiment_tracking", "orchestration", "deployment", "monitoring", "project_name", "author_name"]
-  for (const field of required) {
-    if (!cfg[field]?.trim()) return `Missing required field: ${field}`
+  for (const f of required) {
+    if (!cfg[f]?.trim()) return `Missing required field: ${f}`
   }
-
   for (const [key, allowed] of Object.entries(VALID)) {
-    if (cfg[key] && !(allowed as readonly string[]).includes(cfg[key])) {
-      return `Invalid value for ${key}: "${cfg[key]}"`
-    }
+    if (cfg[key] && !allowed.includes(cfg[key])) return `Invalid value for ${key}: "${cfg[key]}"`
   }
-
   if (!/^[a-zA-Z0-9_-]+$/.test(cfg.project_name)) {
     return "Project name can only contain letters, numbers, hyphens and underscores"
   }
-  if (cfg.project_name.length > 50) {
-    return "Project name must be 50 characters or less"
-  }
-
-  return null // valid
+  if (cfg.project_name.length > 50) return "Project name must be 50 characters or less"
+  return null
 }
 
-// ─── POST /api/generate ──────────────────────────────────────────────────────
+// ─── POST /api/generate ───────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
   try {
     const config = await request.json() as Record<string, string>
 
     const error = validateConfig(config)
-    if (error) {
-      return NextResponse.json({ detail: error }, { status: 400 })
-    }
+    if (error) return NextResponse.json({ detail: error }, { status: 400 })
 
     const taskId = randomUUID()
 
-    setTask(taskId, {
-      task_id: taskId,
-      status: "pending",
-      message: "Project generation queued",
+    setTask(taskId, { task_id: taskId, status: "pending", message: "Project generation queued" })
+
+    // Fire-and-forget — response returns immediately while generation runs
+    runGeneratorBackground(taskId, config).catch(err => {
+      console.error(`[generate] unhandled error task ${taskId}:`, err)
     })
 
-    // Fire and forget — do NOT await so the response is immediate
-    runGeneratorBackground(taskId, config).catch((err) => {
-      console.error(`[generate] unhandled error for task ${taskId}:`, err)
-    })
-
-    return NextResponse.json({
-      task_id: taskId,
-      status: "pending",
-      message: "Project generation started",
-    })
+    return NextResponse.json({ task_id: taskId, status: "pending", message: "Project generation started" })
   } catch (err: any) {
     console.error("[generate] POST error:", err)
     return NextResponse.json({ detail: "Failed to start project generation" }, { status: 500 })
   }
 }
 
-// ─── Background generator ────────────────────────────────────────────────────
+// ─── Background generation (pure TypeScript — no Python needed) ───────────────
 
-async function runGeneratorBackground(taskId: string, config: Record<string, string>) {
-  const projectDir = path.join(TEMP_DIR, taskId)
+async function runGeneratorBackground(taskId: string, raw: Record<string, string>) {
   const zipPath = path.join(TEMP_DIR, `${taskId}.zip`)
 
   try {
-    // Mark as processing
     updateTask(taskId, { status: "processing", message: "Generating project structure…" })
 
-    // Ensure temp directory exists
-    await fs.mkdir(projectDir, { recursive: true })
-
-    // Build CLI args — use execFile (no shell injection risk)
-    const args = [
-      CLI_SCRIPT,
-      "init",
-      "--framework",       config.framework,
-      "--task-type",       config.task_type,
-      "--tracking",        config.experiment_tracking,
-      "--orchestration",   config.orchestration,
-      "--deployment",      config.deployment,
-      "--monitoring",      config.monitoring,
-      "--project-name",    config.project_name,
-      "--author-name",     config.author_name,
-      "--description",     config.description || "A production-ready ML project",
-    ]
-
-    // Optional flags
-    if (config.cloud_provider && config.cloud_service) {
-      args.push("--cloud-provider", config.cloud_provider)
-      args.push("--cloud-service",  config.cloud_service)
-    }
-    if (config.preset_config)   args.push("--preset",   config.preset_config)
-    if (config.custom_template) args.push("--template", config.custom_template)
-    if (config.enable_analytics === "true" || config.enable_analytics === true as any) {
-      args.push("--enable-analytics")
+    // Build typed config
+    const cfg: GeneratorConfig = {
+      framework:           raw.framework as any,
+      task_type:           raw.task_type,
+      experiment_tracking: raw.experiment_tracking,
+      orchestration:       raw.orchestration,
+      deployment:          raw.deployment,
+      monitoring:          raw.monitoring,
+      project_name:        raw.project_name,
+      author_name:         raw.author_name || "ML Engineer",
+      description:         raw.description || "A production-ready ML project",
+      cloud_provider:      raw.cloud_provider || undefined,
+      cloud_service:       raw.cloud_service  || undefined,
+      preset_config:       raw.preset_config  || undefined,
+      custom_template:     raw.custom_template || undefined,
+      enable_analytics:    raw.enable_analytics === "true",
     }
 
-    const { stdout, stderr } = await execFileAsync("python", args, {
-      cwd: projectDir,
-      env: {
-        ...process.env,
-        PYTHONIOENCODING: "utf-8",
-        PYTHONUNBUFFERED: "1",
-      },
-      maxBuffer: 50 * 1024 * 1024, // 50 MB
-    })
+    // Generate all virtual files in memory
+    const files: VirtualFile[] = generateProject(cfg)
 
-    if (stderr) console.warn(`[generate] Python stderr for ${taskId}:`, stderr)
-    if (stdout) console.log(`[generate] Python stdout for ${taskId}:`, stdout.slice(0, 500))
-
-    // Zip the output directory
     updateTask(taskId, { message: "Creating project archive…" })
-    await createZip(projectDir, zipPath)
 
-    // Cleanup project dir (keep only the zip)
-    await fs.rm(projectDir, { recursive: true, force: true })
+    // Write zip
+    await fs.mkdir(TEMP_DIR, { recursive: true })
+    await writeZip(files, cfg.project_name, zipPath)
 
     updateTask(taskId, {
       status:       "completed",
@@ -150,22 +103,18 @@ async function runGeneratorBackground(taskId: string, config: Record<string, str
       download_url: `/api/download/${taskId}`,
     })
   } catch (err: any) {
-    console.error(`[generate] background error for ${taskId}:`, err)
+    console.error(`[generate] error for ${taskId}:`, err)
     updateTask(taskId, {
       status:  "failed",
       message: `Generation failed: ${err.message ?? String(err)}`,
     })
-
-    // Cleanup on failure
-    await fs.rm(projectDir, { recursive: true, force: true }).catch(() => {})
     await fs.rm(zipPath, { force: true }).catch(() => {})
   }
 }
 
-// ─── ZIP helper (uses Node.js built-ins via archiver) ────────────────────────
+// ─── ZIP writer ───────────────────────────────────────────────────────────────
 
-async function createZip(sourceDir: string, zipPath: string): Promise<void> {
-  // Dynamic import so TypeScript doesn't need @types/archiver available at compile
+async function writeZip(files: VirtualFile[], projectName: string, zipPath: string): Promise<void> {
   const archiver = (await import("archiver")).default
   const { createWriteStream } = await import("fs")
 
@@ -178,7 +127,12 @@ async function createZip(sourceDir: string, zipPath: string): Promise<void> {
     archive.on("error", reject)
 
     archive.pipe(output)
-    archive.directory(sourceDir, false)
+
+    for (const file of files) {
+      // Nest everything under the project name folder
+      archive.append(file.content, { name: `${projectName}/${file.path}` })
+    }
+
     archive.finalize()
   })
 }
