@@ -14,8 +14,9 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Python lib/ build output — root-scoped so web_ui/src/lib/ is still tracked
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -143,6 +144,14 @@ logs/
 # Temporary files
 tmp/
 temp/
+
+# Next.js build output
+web_ui/.next/
+web_ui/out/
+
+# Generated MLOps project temp files (written to OS temp dir at runtime)
+# If using web_ui/temp/ locally, ignore it
+web_ui/temp/
 
 # Docker
 .dockerignore
