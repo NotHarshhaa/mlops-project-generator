@@ -437,11 +437,11 @@ export default function MLOpsForm() {
 
   return (
     <div className="min-h-screen hero-gradient overflow-x-hidden">
-      {/* ── Ambient mesh blobs ─────────────────────────────── */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-0">
-        <div className="mesh-blob w-[600px] h-[600px] -top-48 -left-48 bg-violet-400/10 dark:bg-violet-500/8 animate-mesh" />
-        <div className="mesh-blob w-[500px] h-[500px] top-1/3 -right-48 bg-cyan-400/10 dark:bg-cyan-500/8" style={{ animationDelay: '-4s', animation: 'mesh-move 14s ease-in-out infinite reverse' }} />
-        <div className="mesh-blob w-[400px] h-[400px] -bottom-32 left-1/3 bg-indigo-400/10 dark:bg-indigo-500/8" style={{ animationDelay: '-8s', animation: 'mesh-move 16s ease-in-out infinite' }} />
+      {/* ── Ambient mesh blobs (absolute, not fixed — fixed+animated = scroll jank) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none -z-0" aria-hidden="true">
+        <div className="mesh-blob w-[700px] h-[700px] -top-64 -left-64 text-violet-400/15 dark:text-violet-500/10 animate-mesh" />
+        <div className="mesh-blob w-[600px] h-[600px] top-1/3 -right-64 text-cyan-400/15 dark:text-cyan-500/10" style={{ animation: 'mesh-move 14s ease-in-out infinite reverse' }} />
+        <div className="mesh-blob w-[500px] h-[500px] bottom-0 left-1/4 text-indigo-400/12 dark:text-indigo-500/8" style={{ animation: 'mesh-move 16s ease-in-out infinite' }} />
       </div>
 
       <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">

@@ -144,9 +144,11 @@
   100% { transform: translateX(100%); }
 }
 
+/* glow-pulse: animate opacity of a pseudo-element instead of box-shadow
+   so it stays on the compositor (no repaint, no layout) */
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px -5px oklch(0.65 0.22 264 / 0.4); }
-  50% { box-shadow: 0 0 35px -5px oklch(0.65 0.22 264 / 0.7); }
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.04); }
 }
 
 @keyframes slide-in-up {
@@ -181,6 +183,7 @@
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+  will-change: transform;
 }
 
 .animate-shimmer {
@@ -189,6 +192,7 @@
 
 .animate-glow-pulse {
   animation: glow-pulse 2.5s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 
 .animate-slide-in-up {
@@ -205,50 +209,45 @@
 
 .animate-mesh {
   animation: mesh-move 12s ease-in-out infinite;
+  will-change: transform;
 }
 
-/* Hero gradient background */
+/* Hero gradient background — static, no animation to avoid per-frame repaint */
 .hero-gradient {
   background: linear-gradient(
-    135deg,
+    145deg,
     oklch(0.97 0.02 264) 0%,
-    oklch(0.95 0.03 290) 35%,
-    oklch(0.97 0.02 200) 70%,
-    oklch(0.97 0.02 264) 100%
+    oklch(0.95 0.03 290) 40%,
+    oklch(0.96 0.025 220) 70%,
+    oklch(0.97 0.015 264) 100%
   );
-  background-size: 300% 300%;
-  animation: gradient-shift 8s ease infinite;
 }
 
 .dark .hero-gradient {
   background: linear-gradient(
-    135deg,
-    oklch(0.10 0.03 265) 0%,
-    oklch(0.09 0.04 280) 35%,
-    oklch(0.10 0.03 240) 70%,
-    oklch(0.09 0.03 265) 100%
+    145deg,
+    oklch(0.095 0.025 265) 0%,
+    oklch(0.085 0.035 280) 40%,
+    oklch(0.09 0.03 245) 70%,
+    oklch(0.085 0.02 265) 100%
   );
-  background-size: 300% 300%;
-  animation: gradient-shift 8s ease infinite;
 }
 
-/* Glass card effect */
+/* Glass card — solid opaque background, no backdrop-filter
+   backdrop-filter:blur triggers a new GPU compositing layer for every
+   card on the page, causing severe scroll jank. Use solid bg instead. */
 .glass-card {
-  background: oklch(1 0 0 / 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid oklch(0.88 0.02 265 / 0.6);
-  box-shadow: 0 4px 24px -4px oklch(0.52 0.22 264 / 0.08),
-              0 1px 0 0 oklch(1 0 0 / 0.5) inset;
+  background: oklch(1 0 0);
+  border: 1px solid oklch(0.88 0.02 265 / 0.7);
+  box-shadow: 0 2px 16px -4px oklch(0.52 0.22 264 / 0.07),
+              0 1px 3px -1px oklch(0 0 0 / 0.05);
 }
 
 .dark .glass-card {
-  background: oklch(0.12 0.02 265 / 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid oklch(0.25 0.04 265 / 0.5);
-  box-shadow: 0 4px 32px -4px oklch(0 0 0 / 0.4),
-              0 1px 0 0 oklch(1 0 0 / 0.04) inset;
+  background: oklch(0.13 0.022 265);
+  border: 1px solid oklch(0.24 0.035 265 / 0.7);
+  box-shadow: 0 2px 20px -4px oklch(0 0 0 / 0.35),
+              0 1px 3px -1px oklch(0 0 0 / 0.3);
 }
 
 /* Primary gradient */
@@ -301,10 +300,15 @@
   background: linear-gradient(135deg, oklch(0.58 0.22 340), oklch(0.60 0.20 310));
 }
 
-/* Mesh blobs */
+/* Mesh blobs — use radial-gradient background instead of filter:blur.
+   filter:blur on large elements forces a full GPU re-raster every animation
+   frame. radial-gradient is rasterized once and only transform is animated. */
 .mesh-blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
   pointer-events: none;
+  /* Soft edge via radial-gradient — zero filter cost */
+  background: radial-gradient(circle, currentColor 0%, transparent 70%);
+  will-change: transform;
+  contain: layout style;
 }
