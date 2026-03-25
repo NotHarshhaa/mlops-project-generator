@@ -41,7 +41,7 @@ export function StackPresets({ activePreset, onApply, onClear }: Props) {
             <button
               key={preset.id}
               type="button"
-              onClick={() => onApply(preset)}
+              onClick={() => isActive ? onClear() : onApply(preset)}
               className={`relative group text-left rounded-2xl border p-4 transition-all duration-200 cursor-pointer ${
                 isActive
                   ? "border-transparent ring-2 ring-primary/40 bg-primary/8 dark:bg-primary/12 shadow-xl shadow-primary/20 dark:shadow-primary/30 transform scale-[1.02] backdrop-blur-sm"
