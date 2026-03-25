@@ -39,7 +39,24 @@ Data → Train → Track → Orchestrate → Deploy → Monitor → Improve
 
 ---
 
-## 🌐 Web UI (Recommended)
+## � MLOps Presets
+
+Choose from 6 pre-configured MLOps stacks tailored for different use cases:
+
+| Preset | Framework | Tracking | Orchestration | Deploy | Monitor |
+|--------|-----------|----------|---------------|-------|---------|
+| ⚡ Quick Start | Sklearn | None | None | FastAPI | None |
+| 🧪 Data Science | Sklearn | MLflow | None | FastAPI | Custom |
+| 🧠 Deep Learning | PyTorch | W&B | None | Docker | None |
+| 📡 Production MLOps | PyTorch | MLflow | Airflow | Docker | Evidently |
+| 🏢 Enterprise | TensorFlow | MLflow | Kubeflow | Kubernetes | Evidently |
+| 🔬 Research | PyTorch | W&B | None | FastAPI | None |
+
+Use presets via CLI: `mlops-project-generator init --preset <name>` or select them in the Web UI.
+
+---
+
+## �🌐 Web UI (Recommended)
 
 The fastest way to generate a project — open it in your browser, fill in the form, and download a ready-to-use ZIP.
 

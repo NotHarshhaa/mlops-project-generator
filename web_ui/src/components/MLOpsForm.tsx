@@ -19,7 +19,8 @@ import {
   Loader2, Download, Rocket, Settings, Info, User, FileText,
   CheckCircle, X, Brain, BarChart, Microscope, GitBranch, Shield,
   Cloud, Database, Palette, TrendingUp, Linkedin, Github, Mail,
-  Sparkles, Zap, Star, ChevronDown, Check
+  Sparkles, Zap, Star, ChevronDown, Check, Layers, FlaskConical,
+  Building2, Beaker, Activity, BookOpen
 } from "lucide-react"
 
 const formSchema = z.object({
@@ -66,6 +67,102 @@ interface Options {
   preset_config: Option[]
   custom_template: Option[]
 }
+
+// ─── Stack Presets ───────────────────────────────────────────────
+interface StackPreset {
+  id: string
+  label: string
+  tagline: string
+  icon: any
+  accentFrom: string
+  accentTo: string
+  iconBg: string
+  badgeColor: string
+  fields: {
+    framework: string
+    task_type: string
+    experiment_tracking: string
+    orchestration: string
+    deployment: string
+    monitoring: string
+  }
+  tags: string[]
+}
+
+const STACK_PRESETS: StackPreset[] = [
+  {
+    id: "quick-start",
+    label: "Quick Start",
+    tagline: "Zero friction — get a working project in seconds",
+    icon: Zap,
+    accentFrom: "from-amber-500",
+    accentTo: "to-orange-500",
+    iconBg: "bg-gradient-to-br from-amber-500 to-orange-500",
+    badgeColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/50",
+    fields: { framework: "sklearn", task_type: "classification", experiment_tracking: "none", orchestration: "none", deployment: "fastapi", monitoring: "none" },
+    tags: ["Scikit-learn", "FastAPI", "No tracking"],
+  },
+  {
+    id: "data-science",
+    label: "Data Science",
+    tagline: "Ideal for exploratory analysis and Jupyter workflows",
+    icon: Beaker,
+    accentFrom: "from-emerald-500",
+    accentTo: "to-teal-500",
+    iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500",
+    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50",
+    fields: { framework: "sklearn", task_type: "regression", experiment_tracking: "mlflow", orchestration: "none", deployment: "fastapi", monitoring: "custom" },
+    tags: ["Scikit-learn", "MLflow", "FastAPI"],
+  },
+  {
+    id: "deep-learning",
+    label: "Deep Learning",
+    tagline: "PyTorch-first setup with experiment tracking",
+    icon: Brain,
+    accentFrom: "from-violet-500",
+    accentTo: "to-purple-600",
+    iconBg: "bg-gradient-to-br from-violet-500 to-purple-600",
+    badgeColor: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800/50",
+    fields: { framework: "pytorch", task_type: "classification", experiment_tracking: "wandb", orchestration: "none", deployment: "docker", monitoring: "none" },
+    tags: ["PyTorch", "W&B", "Docker"],
+  },
+  {
+    id: "production-mlops",
+    label: "Production MLOps",
+    tagline: "Battle-tested stack with full observability",
+    icon: Activity,
+    accentFrom: "from-blue-500",
+    accentTo: "to-cyan-500",
+    iconBg: "bg-gradient-to-br from-blue-500 to-cyan-500",
+    badgeColor: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/50",
+    fields: { framework: "pytorch", task_type: "classification", experiment_tracking: "mlflow", orchestration: "airflow", deployment: "docker", monitoring: "evidently" },
+    tags: ["PyTorch", "MLflow", "Airflow", "Evidently"],
+  },
+  {
+    id: "enterprise",
+    label: "Enterprise",
+    tagline: "Maximum scale — Kubernetes & full MLOps suite",
+    icon: Building2,
+    accentFrom: "from-rose-500",
+    accentTo: "to-pink-600",
+    iconBg: "bg-gradient-to-br from-rose-500 to-pink-600",
+    badgeColor: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/50",
+    fields: { framework: "tensorflow", task_type: "classification", experiment_tracking: "mlflow", orchestration: "kubeflow", deployment: "kubernetes", monitoring: "evidently" },
+    tags: ["TensorFlow", "Kubeflow", "Kubernetes", "Evidently"],
+  },
+  {
+    id: "research",
+    label: "Research",
+    tagline: "Flexible setup optimised for experimentation",
+    icon: FlaskConical,
+    accentFrom: "from-indigo-500",
+    accentTo: "to-sky-500",
+    iconBg: "bg-gradient-to-br from-indigo-500 to-sky-500",
+    badgeColor: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800/50",
+    fields: { framework: "pytorch", task_type: "regression", experiment_tracking: "wandb", orchestration: "none", deployment: "fastapi", monitoring: "none" },
+    tags: ["PyTorch", "W&B", "FastAPI"],
+  },
+]
 
 // ─── Progress Step Badge ───────────────────────────────────────
 const ProgressStep = ({ label, colorClass, active }: { label: string; colorClass: string; active: boolean }) => (
@@ -122,6 +219,7 @@ export default function MLOpsForm() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null)
   const [showSuccessDialog, setShowSuccessDialog] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
+  const [activePreset, setActivePreset] = useState<string | null>(null)
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -406,7 +504,32 @@ export default function MLOpsForm() {
     form.setValue("preset_config", "")
     form.setValue("custom_template", "")
     form.setValue("enable_analytics", true)
+    setActivePreset(null)
     toast.success("All selections cleared")
+  }
+
+  const applyPreset = (preset: StackPreset) => {
+    Object.entries(preset.fields).forEach(([key, value]) => {
+      form.setValue(key as any, value)
+    })
+    setActivePreset(preset.id)
+    toast.success(`"${preset.label}" stack applied — customize as needed`)
+    // Scroll to form
+    setTimeout(() => {
+      const formCard = document.getElementById("project-config-card")
+      if (formCard) formCard.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 150)
+  }
+
+  const clearPreset = () => {
+    form.setValue("framework", "")
+    form.setValue("task_type", "")
+    form.setValue("experiment_tracking", "")
+    form.setValue("orchestration", "")
+    form.setValue("deployment", "")
+    form.setValue("monitoring", "")
+    setActivePreset(null)
+    toast.success("Preset cleared")
   }
 
   // ─── Loading state ────────────────────────────────────────
@@ -497,6 +620,81 @@ export default function MLOpsForm() {
           </div>
         </div>
 
+        {/* ── Stack Presets ───────────────────────────────── */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                <Layers className="w-4 h-4 text-primary" />
+                Stack Presets
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Pick a ready-made stack — all fields pre-filled, fully editable</p>
+            </div>
+            {activePreset && (
+              <button
+                type="button"
+                onClick={clearPreset}
+                className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border/60 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
+              >
+                <X className="w-3 h-3" /> Clear preset
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {STACK_PRESETS.map((preset) => {
+              const Icon = preset.icon
+              const isActive = activePreset === preset.id
+              return (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => applyPreset(preset)}
+                  className={`relative group text-left rounded-2xl border p-4 transition-all duration-200 cursor-pointer ${
+                    isActive
+                      ? `border-transparent ring-2 ring-primary/60 bg-primary/5 dark:bg-primary/8 shadow-lg shadow-primary/10`
+                      : `border-border/60 bg-card dark:bg-card hover:border-primary/40 hover:shadow-md hover:-translate-y-0.5`
+                  }`}
+                >
+                  {/* Active glow top bar */}
+                  {isActive && (
+                    <div className={`absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl bg-gradient-to-r ${preset.accentFrom} ${preset.accentTo}`} />
+                  )}
+
+                  {/* Icon + active check */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`w-9 h-9 rounded-xl ${preset.iconBg} flex items-center justify-center shadow-md flex-shrink-0`}>
+                      <Icon className="w-4.5 h-4.5 text-white w-[18px] h-[18px]" />
+                    </div>
+                    {isActive && (
+                      <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 flex-shrink-0">
+                        <Check className="w-3 h-3 text-primary" />
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Label + tagline */}
+                  <p className={`text-sm font-bold mb-0.5 leading-tight ${isActive ? "text-primary" : "text-foreground"}`}>
+                    {preset.label}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-snug mb-3">
+                    {preset.tagline}
+                  </p>
+
+                  {/* Tech tags */}
+                  <div className="flex flex-wrap gap-1">
+                    {preset.tags.map(tag => (
+                      <span key={tag} className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${preset.badgeColor}`}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* ── Completion Progress Bar ────────────────────────── */}
         {completedCount > 0 && completedCount < requiredFields.length && (
           <div className="glass-card rounded-2xl p-4 mb-6 flex items-center gap-4 animate-slide-in-up">
@@ -520,14 +718,18 @@ export default function MLOpsForm() {
         <div className="glass-card rounded-3xl overflow-hidden">
 
           {/* Card header */}
-          <div className="px-6 sm:px-8 py-5 sm:py-6 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/5 via-transparent to-primary/3 dark:from-primary/8">
+          <div id="project-config-card" className="px-6 sm:px-8 py-5 sm:py-6 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/5 via-transparent to-primary/3 dark:from-primary/8">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl icon-gradient-violet flex items-center justify-center shadow-md">
                 <Settings className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-foreground leading-tight">Project Configuration</h2>
-                <p className="text-sm text-muted-foreground">Choose your ML stack and deployment preferences</p>
+                <p className="text-sm text-muted-foreground">
+                  {activePreset
+                    ? `Using "${STACK_PRESETS.find(p => p.id === activePreset)?.label}" preset — tweak any field below`
+                    : "Choose your ML stack and deployment preferences"}
+                </p>
               </div>
             </div>
             <Button
