@@ -21,6 +21,7 @@ from generator.analytics import ProjectAnalytics
 from generator.template_customizer import TemplateCustomizer
 from generator.cloud_deployer import CloudDeployer
 from generator.project_browser import ProjectBrowser
+from generator.stack_presets import get_preset_choices, list_presets as get_all_presets, STACK_PRESETS
 
 app = typer.Typer(
     name="mlops-project-generator",
@@ -32,6 +33,7 @@ console = Console()
 
 @app.command()
 def init(
+    preset: str = typer.Option(None, "--preset", help="Use a stack preset (quick-start, data-science, deep-learning, production-mlops, enterprise, research)"),
     framework: str = typer.Option(None, "--framework", "-f", help="ML framework (sklearn, pytorch, tensorflow)"),
     task_type: str = typer.Option(None, "--task-type", "-t", help="Task type (classification, regression, time-series, nlp, computer-vision)"),
     tracking: str = typer.Option(None, "--tracking", "-r", help="Experiment tracking (mlflow, wandb, custom, none)"),
@@ -43,8 +45,63 @@ def init(
     description: str = typer.Option(None, "--description", "--desc", help="Project description"),
 ):
     """
-    Initialize a new MLOps project with interactive prompts or CLI flags
+    Initialize a new MLOps project with interactive prompts, CLI flags, or presets
     """
+    # Check if using a preset
+    if preset:
+        try:
+            # Get preset configuration
+            choices = get_preset_choices(
+                preset, 
+                project_name=project_name,
+                author_name=author_name,
+                description=description
+            )
+            
+            # Allow individual flags to override preset values
+            if framework:
+                choices["framework"] = framework
+            if task_type:
+                choices["task_type"] = task_type
+            if tracking:
+                choices["experiment_tracking"] = tracking
+            if orchestration:
+                choices["orchestration"] = orchestration
+            if deployment:
+                choices["deployment"] = deployment
+            if monitoring:
+                choices["monitoring"] = monitoring
+            
+            # Validate choices
+            validate_choices(choices)
+            
+            # Show preset info
+            preset_info = STACK_PRESETS[preset.lower()]
+            console.print(f"🎯 Using preset: [bold cyan]{preset_info['name']}[/bold cyan]")
+            console.print(f"📝 {preset_info['description']}")
+            console.print(f"🚀 Generating {choices['project_name']}...\n")
+            
+            # Render the project
+            renderer = ProjectRenderer(choices)
+            renderer.generate_project()
+            
+            # Record project generation in analytics
+            analytics = ProjectAnalytics()
+            analytics.record_project_generation(choices, str(renderer.output_dir))
+            
+            # Success message
+            console.print(f"✅ Project '{choices['project_name']}' generated successfully using [bold cyan]{preset_info['name']}[/bold cyan] preset!")
+            return
+            
+        except ValueError as e:
+            console.print(
+                Panel(
+                    Text(f"❌ {str(e)}", style="bold red"),
+                    border_style="red",
+                )
+            )
+            raise typer.Exit(1)
+    
     # Check if running in non-interactive mode (any flag provided)
     non_interactive = any([
         framework, task_type, tracking, orchestration, 
@@ -264,7 +321,39 @@ def save_preset(
 
 @app.command()
 def list_presets():
-    """List all available presets"""
+    """List all available stack presets and saved configuration presets"""
+    # Show stack presets
+    console.print("\n[bold cyan]📦 Stack Presets[/bold cyan]\n")
+    
+    table = Table(show_header=True, header_style="bold magenta", box=None)
+    table.add_column("Preset", style="cyan", width=20)
+    table.add_column("Framework", style="green", width=12)
+    table.add_column("Tracking", style="yellow", width=12)
+    table.add_column("Orchestration", style="blue", width=14)
+    table.add_column("Deploy", style="magenta", width=12)
+    table.add_column("Monitor", style="red", width=12)
+    
+    for preset_id, preset in STACK_PRESETS.items():
+        table.add_row(
+            f"⚡ {preset['name']}" if preset_id == "quick-start" else
+            f"🧪 {preset['name']}" if preset_id == "data-science" else
+            f"🧠 {preset['name']}" if preset_id == "deep-learning" else
+            f"📡 {preset['name']}" if preset_id == "production-mlops" else
+            f"🏢 {preset['name']}" if preset_id == "enterprise" else
+            f"🔬 {preset['name']}",
+            preset['framework'].title(),
+            preset['experiment_tracking'].title(),
+            preset['orchestration'].title(),
+            preset['deployment'].title(),
+            preset['monitoring'].title()
+        )
+    
+    console.print(table)
+    console.print("\n[dim]Usage: mlops-project-generator init --preset <name>[/dim]")
+    console.print("[dim]Example: mlops-project-generator init --preset quick-start[/dim]\n")
+    
+    # Show saved configuration presets
+    console.print("[bold cyan]💾 Saved Configuration Presets[/bold cyan]\n")
     config_manager = ConfigManager()
     config_manager.display_presets()
 
