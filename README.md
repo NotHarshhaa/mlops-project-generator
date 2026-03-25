@@ -23,6 +23,24 @@ Data → Train → Track → Orchestrate → Deploy → Monitor → Improve
 
 ---
 
+## 🎉 What's New in v1.0.8
+
+🆕 **Stack Presets** - 6 pre-configured MLOps stacks for common use cases:
+- ⚡ Quick Start - Zero friction setup
+- 🧪 Data Science - Exploration focused
+- 🧠 Deep Learning - PyTorch + W&B
+- 📡 Production MLOps - Full observability
+- 🏢 Enterprise - Maximum scale
+- 🔬 Research - Experimentation optimized
+
+🚀 **New CLI Commands:**
+```bash
+mlops-project-generator init --preset quick-start
+mlops-project-generator list-presets
+```
+
+---
+
 ## 🚀 Features
 
 - **🔧 Framework Support**: Scikit-learn, PyTorch, TensorFlow/Keras
@@ -100,7 +118,7 @@ Prefer the command line? Install the Python package:
 ### From PyPI
 
 ```bash
-pip install mlops-project-generator
+pip install mlops-project-generator==1.0.8
 ```
 
 ### From Source
@@ -125,6 +143,22 @@ pip install -e ".[dev]"
 
 ```bash
 mlops-project-generator init
+```
+
+### Using Stack Presets (NEW!)
+
+```bash
+# Quick start with preset
+mlops-project-generator init --preset quick-start
+
+# Enterprise stack with custom project name
+mlops-project-generator init --preset enterprise --project-name my-platform
+
+# Override preset values
+mlops-project-generator init --preset production-mlops --deployment kubernetes
+
+# List all available presets
+mlops-project-generator list-presets
 ```
 
 ### Non-interactive mode (CI/CD)
@@ -484,6 +518,7 @@ MIT — see [LICENSE](LICENSE) for details.
 - [x] Project analytics and validation
 - [x] **Web UI** — Next.js app with glassmorphism UI (v1.0.8)
 - [x] **Backend migration** — generator ported to pure TypeScript, no Python runtime needed on the server (v1.0.8)
+- [x] **Stack Presets** — 6 pre-configured MLOps stacks (Quick Start, Data Science, Deep Learning, Production MLOps, Enterprise, Research) (v1.0.8)
 
 ### 🚀 Upcoming
 

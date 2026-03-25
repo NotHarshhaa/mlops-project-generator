@@ -7,6 +7,82 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.8] - 2026-03-25
+
+### 🎉 **MAJOR NEW FEATURES**
+
+#### 📦 **Stack Presets System**
+- **6 Pre-configured Stacks**: Ready-to-use MLOps configurations for common use cases
+- **Quick Start**: Zero friction setup with Scikit-learn + FastAPI
+- **Data Science**: Exploration focused with Scikit-learn + MLflow + FastAPI
+- **Deep Learning**: PyTorch-first setup with Weights & Biases tracking
+- **Production MLOps**: Full observability with PyTorch + MLflow + Airflow + Docker + Evidently
+- **Enterprise**: Maximum scale with TensorFlow + MLflow + Kubeflow + Kubernetes + Evidently
+- **Research**: Experimentation optimized with PyTorch + W&B + FastAPI
+
+#### 🚀 **Enhanced CLI Experience**
+- **New `--preset` Flag**: Generate projects with pre-configured stacks
+- **Preset Override Support**: Individual flags can override preset values
+- **Enhanced `list-presets`**: Beautiful table display of all stack presets
+- **Case-Insensitive Preset Names**: Flexible preset selection
+- **Comprehensive Error Handling**: Clear messages for invalid presets
+
+### 🔧 **TECHNICAL IMPROVEMENTS**
+
+#### **New Stack Presets Module**
+- **`generator/stack_presets.py`**: Centralized preset configuration management
+- **Preset Validation**: Ensures all preset values are valid options
+- **Flexible Override System**: Individual flags can modify preset values
+- **Comprehensive Testing**: Full test coverage for preset functionality
+
+#### **CLI Enhancements**
+- **Updated `init` Command**: Added `--preset` parameter with full integration
+- **Enhanced Help System**: Updated command documentation and examples
+- **Better Error Messages**: Improved user feedback for invalid inputs
+- **Version Consistency**: Updated version across all modules (v1.0.8)
+
+### 📚 **DOCUMENTATION & EXAMPLES**
+
+#### **Updated Documentation**
+- **README Updates**: New "What's New in v1.0.8" section
+- **CLI Examples**: Comprehensive preset usage examples
+- **Installation Guide**: Updated to show specific version (1.0.8)
+- **Feature Highlights**: Stack presets prominently featured
+
+#### **Usage Examples**
+```bash
+# Quick start with preset
+mlops-project-generator init --preset quick-start
+
+# Enterprise stack with custom project name
+mlops-project-generator init --preset enterprise --project-name my-platform
+
+# Override preset values
+mlops-project-generator init --preset production-mlops --deployment kubernetes
+
+# List all available presets
+mlops-project-generator list-presets
+```
+
+### 🧪 **TESTING**
+- **New Test Suite**: `tests/test_stack_presets.py` with comprehensive coverage
+- **Preset Validation Tests**: All 6 presets tested for correctness
+- **Override Functionality Tests**: Verify preset override behavior
+- **Error Handling Tests**: Invalid preset name and edge cases
+- **Integration Tests**: End-to-end preset workflow testing
+
+### 🔄 **BACKWARD COMPATIBILITY**
+- **Fully Compatible**: All existing functionality preserved
+- **Seamless Upgrade**: No breaking changes from v1.0.7
+- **Optional Feature**: Presets are completely optional, existing workflows unchanged
+
+### 📦 **PYPI RELEASE**
+- **Version 1.0.8**: Successfully published to PyPI
+- **Package Validation**: All checks passed before upload
+- **Installation**: `pip install mlops-project-generator==1.0.8`
+
+---
+
 ## [1.0.7] - 2026-01-26
 
 ### 🚀 **MAJOR NEW FEATURES**

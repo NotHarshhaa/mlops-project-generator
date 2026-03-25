@@ -5,4 +5,4 @@ A CLI tool that generates production-ready MLOps project templates
 for Scikit-learn, PyTorch, and TensorFlow.
 """
 
-__version__ = "1.0.0"
+__version__ = "1.0.8"
