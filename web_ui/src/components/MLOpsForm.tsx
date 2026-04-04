@@ -223,7 +223,7 @@ export default function MLOpsForm() {
         <div className="mesh-blob w-[500px] h-[500px] bottom-0 left-1/4 text-indigo-400/12 dark:text-indigo-500/8" style={{ animation: "mesh-move 16s ease-in-out infinite" }} />
       </div>
 
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <div className="text-center mb-10 relative">
@@ -322,22 +322,25 @@ export default function MLOpsForm() {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
 
-                <CoreMLStack options={options} />
+                {/* Core ML Stack and Infrastructure in a single row on desktop */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <CoreMLStack options={options} />
+                  <Infrastructure options={options} />
+                </div>
                 <div className="border-t border-border/50" />
 
-                <Infrastructure options={options} />
+                {/* Cloud Deployment and Config Templates in a single row on desktop */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <CloudDeployment />
+                  <ConfigTemplates />
+                </div>
                 <div className="border-t border-border/50" />
 
-                <CloudDeployment />
-                <div className="border-t border-border/50" />
-
-                <ConfigTemplates />
-                <div className="border-t border-border/50" />
-
-                <AnalyticsToggle />
-                <div className="border-t border-border/50" />
-
-                <ProjectDetails />
+                {/* Analytics Toggle and Project Details in a single row on desktop */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <AnalyticsToggle />
+                  <ProjectDetails />
+                </div>
 
                 {/* Generation progress */}
                 {isGenerating && <GenerationProgress progress={progress} />}
