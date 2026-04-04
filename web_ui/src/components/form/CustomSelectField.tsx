@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useFormContext } from "react-hook-form"
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { ChevronDown, Check } from "lucide-react"
@@ -16,8 +16,26 @@ interface Props {
 export function CustomSelectField({ name, label, description, options, placeholder }: Props) {
   const form = useFormContext()
   const [isOpen, setIsOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
   const fieldValue = form.watch(name)
   const selectedOption = options.find(opt => opt.value === fieldValue)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [isOpen])
 
   const handleSelect = (value: string) => {
     form.setValue(name, value)
@@ -31,7 +49,7 @@ export function CustomSelectField({ name, label, description, options, placehold
       render={() => (
         <FormItem data-field={name}>
           <FormLabel className="text-sm font-semibold text-foreground">{label}</FormLabel>
-          <div className="relative">
+          <div className="relative" ref={dropdownRef}>
             <FormControl>
               <div
                 onClick={() => setIsOpen(!isOpen)}
