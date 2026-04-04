@@ -287,35 +287,35 @@ export default function MLOpsForm() {
         <div className="mesh-blob w-[500px] h-[500px] bottom-0 left-1/4 text-indigo-400/12 dark:text-indigo-500/8" style={{ animation: "mesh-move 16s ease-in-out infinite" }} />
       </div>
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-4 sm:px-6 py-6 sm:py-8 sm:py-12">
 
         {/* ── Hero ─────────────────────────────────────────────────────── */}
-        <div className="text-center mb-10 relative">
+        <div className="text-center mb-6 sm:mb-10 relative">
           <div className="absolute top-0 right-0"><ThemeToggle /></div>
 
-          <div className="flex justify-center mb-5">
+          <div className="flex justify-center mb-3 sm:mb-5">
             <div className="relative inline-flex">
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl gradient-primary flex items-center justify-center shadow-2xl animate-glow-pulse animate-float">
-                <Rocket className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl sm:rounded-3xl gradient-primary flex items-center justify-center shadow-2xl animate-glow-pulse animate-float">
+                <Rocket className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 text-white" />
               </div>
-              <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-amber-400 dark:bg-amber-300 flex items-center justify-center shadow-lg">
-                <Sparkles className="w-3 h-3 text-amber-900" />
+              <div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-amber-400 dark:bg-amber-300 flex items-center justify-center shadow-lg">
+                <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-900" />
               </div>
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight mb-2 sm:mb-3">
             <span className="bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-600 dark:from-violet-400 dark:via-indigo-400 dark:to-cyan-400 bg-clip-text text-transparent">
               MLOps Project
             </span>
             <br />
             <span className="text-foreground">Generator</span>
           </h1>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-7">
+          <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-4 sm:mb-7 px-2">
             Generate <span className="font-semibold text-foreground">production-ready</span> MLOps project templates with cloud deployment, experiment tracking, and modern ML workflows — in seconds.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-2.5">
+          <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2.5 px-2">
             {[
               { icon: Cloud,      label: "Cloud Deployment",  cls: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/60" },
               { icon: Database,   label: "Config Presets",    cls: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800/60" },
@@ -325,11 +325,12 @@ export default function MLOpsForm() {
             ].map(({ icon: Icon, label, cls }, i) => (
               <span
                 key={label}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold border ${cls} animate-badge-pop`}
+                className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs font-semibold border ${cls} animate-badge-pop`}
                 style={{ animationDelay: `${i * 0.08}s` }}
               >
-                <Icon className="w-3.5 h-3.5" />
-                {label}
+                <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                <span className="hidden sm:inline">{label}</span>
+                <span className="sm:hidden">{label.split(' ')[0]}</span>
               </span>
             ))}
           </div>
@@ -340,7 +341,7 @@ export default function MLOpsForm() {
 
         {/* ── Config progress bar ───────────────────────────────────────── */}
         {completedCount > 0 && completedCount < REQUIRED_FIELDS.length && (
-          <div className="glass-card rounded-2xl p-4 mb-6 flex items-center gap-4 animate-slide-in-up">
+          <div className="glass-card rounded-xl sm:rounded-2xl p-3 sm:p-4 mb-4 sm:mb-6 flex items-center gap-3 sm:gap-4 animate-slide-in-up">
             <div className="flex-1">
               <div className="flex justify-between text-xs font-semibold mb-2">
                 <span className="text-foreground">Configuration Progress</span>
@@ -355,17 +356,17 @@ export default function MLOpsForm() {
         )}
 
         {/* ── Main Form Card ────────────────────────────────────────────── */}
-        <div className="glass-card rounded-3xl overflow-hidden">
+        <div className="glass-card rounded-2xl sm:rounded-3xl overflow-hidden">
 
           {/* Card header */}
-          <div id="project-config-card" className="px-6 sm:px-8 py-5 sm:py-6 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/5 via-transparent to-primary/3 dark:from-primary/8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl icon-gradient-violet flex items-center justify-center shadow-md">
-                <Settings className="w-5 h-5 text-white" />
+          <div id="project-config-card" className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/5 via-transparent to-primary/3 dark:from-primary/8">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl icon-gradient-violet flex items-center justify-center shadow-md">
+                <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-foreground leading-tight">Project Configuration</h2>
-                <p className="text-sm text-muted-foreground">
+                <h2 className="text-lg sm:text-xl font-bold text-foreground leading-tight">Project Configuration</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {presetLabel
                     ? `Using "${presetLabel}" preset — tweak any field below`
                     : "Choose your ML stack and deployment preferences"}
@@ -374,7 +375,7 @@ export default function MLOpsForm() {
             </div>
             <Button
               type="button" variant="outline" size="sm" onClick={unselectAll}
-              className="rounded-xl border-border/70 gap-1.5 text-muted-foreground hover:text-foreground"
+              className="rounded-lg sm:rounded-xl border-border/70 gap-1.5 text-muted-foreground hover:text-foreground px-2 sm:px-3"
             >
               <X className="h-3.5 w-3.5" />
               <span className="hidden sm:inline text-xs font-medium">Clear All</span>
@@ -382,26 +383,26 @@ export default function MLOpsForm() {
           </div>
 
           {/* Form body */}
-          <div className="p-6 sm:p-8">
+          <div className="p-4 sm:p-6 lg:p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-10">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8 lg:space-y-10">
 
                 {/* Core ML Stack and Infrastructure in a single row on desktop */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
                   <CoreMLStack options={options} />
                   <Infrastructure options={options} />
                 </div>
                 <div className="border-t border-border/50" />
 
                 {/* Cloud Deployment and Config Templates in a single row on desktop */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
                   <CloudDeployment />
                   <ConfigTemplates />
                 </div>
                 <div className="border-t border-border/50" />
 
                 {/* Analytics Toggle and Project Details in a single row on desktop */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
                   <AnalyticsToggle />
                   <ProjectDetails />
                 </div>
@@ -435,14 +436,14 @@ export default function MLOpsForm() {
                 {/* Generate button */}
                 <Button
                   type="submit"
-                  className="w-full h-14 text-base font-bold rounded-2xl gradient-primary btn-shine shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 border-0 text-white"
+                  className="w-full h-12 sm:h-14 text-sm sm:text-base font-bold rounded-xl sm:rounded-2xl gradient-primary btn-shine shadow-xl shadow-primary/25 hover:shadow-primary/40 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 border-0 text-white"
                   disabled={isGenerating}
                   size="lg"
                 >
                   {isGenerating ? (
-                    <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Generating Your Project…</>
+                    <><Loader2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 animate-spin" />Generating Your Project…</>
                   ) : (
-                    <><Rocket className="h-5 w-5 mr-2" />Generate Project<Sparkles className="h-4 w-4 ml-2 opacity-80" /></>
+                    <><Rocket className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />Generate Project<Sparkles className="h-3.5 h-3.5 sm:h-4 sm:w-4 ml-2 opacity-80" /></>
                   )}
                 </Button>
 
