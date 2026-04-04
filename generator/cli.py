@@ -4,6 +4,7 @@ CLI interface for MLOps Project Generator
 """
 
 import os
+from pathlib import Path
 import typer
 from rich.align import Align
 from rich.console import Console
@@ -22,6 +23,9 @@ from generator.template_customizer import TemplateCustomizer
 from generator.cloud_deployer import CloudDeployer
 from generator.project_browser import ProjectBrowser
 from generator.stack_presets import get_preset_choices, list_presets as get_all_presets, STACK_PRESETS
+from generator.project_lifecycle import ProjectLifecycleManager
+from generator.dependency_checker import DependencyChecker
+from generator.performance_profiler import PerformanceProfiler
 
 app = typer.Typer(
     name="mlops-project-generator",
@@ -251,7 +255,7 @@ def init(
 @app.command()
 def version():
     """Show version information"""
-    console.print("mlops-project-generator v1.0.8")
+    console.print("mlops-project-generator v2.0.1")
 
 
 @app.command()
@@ -506,6 +510,187 @@ def import_projects(
     """Import project list from a file"""
     browser = ProjectBrowser()
     browser.import_project_list(input_file)
+
+
+@app.command()
+def clone(
+    source_project: str = typer.Argument(..., help="Source project path or name"),
+    target_name: str = typer.Option(None, "--name", "-n", help="Target project name"),
+    target_dir: str = typer.Option(None, "--dir", "-d", help="Target directory"),
+    deep_clone: bool = typer.Option(False, "--deep", help="Deep clone with all artifacts")
+):
+    """
+    Clone an existing project with configuration
+    """
+    lifecycle = ProjectLifecycleManager()
+    
+    try:
+        # Determine if source is a path or project name from analytics
+        if Path(source_project).exists():
+            source_path = Path(source_project)
+        else:
+            # Find project by name in analytics
+            analytics = ProjectAnalytics()
+            projects = analytics.load_projects()["projects"]
+            matching_projects = [p for p in projects if p["project_name"] == source_project]
+            if not matching_projects:
+                console.print(f"❌ Project '{source_project}' not found")
+                raise typer.Exit(1)
+            source_path = Path(matching_projects[0]["project_path"])
+        
+        # Perform clone
+        target_path = lifecycle.clone_project(
+            source_path, 
+            target_name or f"{source_path.name}-clone",
+            target_dir,
+            deep_clone
+        )
+        
+        console.print(f"✅ Project cloned to: {target_path}")
+        
+    except Exception as e:
+        console.print(f"❌ Clone failed: {str(e)}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def archive(
+    project_path: str = typer.Argument(..., help="Project path to archive"),
+    archive_type: str = typer.Option("zip", "--type", "-t", help="Archive type (zip, tar, gzip)"),
+    include_data: bool = typer.Option(False, "--data", help="Include data directories"),
+    include_models: bool = typer.Option(True, "--models", help="Include model files")
+):
+    """
+    Archive a project with selective content inclusion
+    """
+    lifecycle = ProjectLifecycleManager()
+    
+    try:
+        archive_path = lifecycle.archive_project(
+            project_path, archive_type, include_data, include_models
+        )
+        console.print(f"✅ Project archived to: {archive_path}")
+        
+    except Exception as e:
+        console.print(f"❌ Archive failed: {str(e)}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def check_deps(
+    project_path: str = typer.Option(".", "--path", "-p", help="Project path to check"),
+    update: bool = typer.Option(False, "--update", "-u", help="Update dependencies"),
+    security: bool = typer.Option(False, "--security", "-s", help="Check for security vulnerabilities")
+):
+    """
+    Check and manage project dependencies
+    """
+    checker = DependencyChecker()
+    
+    try:
+        issues = checker.check_dependencies(project_path)
+        
+        if issues:
+            console.print("🔍 Dependency Issues Found:")
+            for issue in issues:
+                console.print(f"  • {issue}")
+        
+        if security:
+            vulns = checker.check_security_vulnerabilities(project_path)
+            if vulns:
+                console.print("\n🚨 Security Vulnerabilities:")
+                for vuln in vulns:
+                    console.print(f"  • {vuln}")
+        
+        if update:
+            checker.update_dependencies(project_path)
+            console.print("✅ Dependencies updated")
+        else:
+            console.print("\n💡 Use --update to fix dependency issues")
+            
+    except Exception as e:
+        console.print(f"❌ Dependency check failed: {str(e)}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def profile(
+    project_path: str = typer.Option(".", "--path", "-p", help="Project path to profile"),
+    model_file: str = typer.Option(None, "--model", "-m", help="Model file to profile"),
+    output_format: str = typer.Option("table", "--format", "-f", help="Output format (table, json, csv)")
+):
+    """
+    Profile model performance and resource usage
+    """
+    profiler = PerformanceProfiler()
+    
+    try:
+        results = profiler.profile_project(project_path, model_file)
+        profiler.display_results(results, output_format)
+        
+    except Exception as e:
+        console.print(f"❌ Profiling failed: {str(e)}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def migrate(
+    old_project: str = typer.Argument(..., help="Old project path"),
+    new_framework: str = typer.Argument(..., help="Target framework"),
+    config_file: str = typer.Option(None, "--config", "-c", help="Migration configuration file")
+):
+    """
+    Migrate project between frameworks
+    """
+    lifecycle = ProjectLifecycleManager()
+    
+    try:
+        migration_plan = lifecycle.create_migration_plan(old_project, new_framework)
+        
+        console.print("🔄 Migration Plan:")
+        for step in migration_plan["steps"]:
+            console.print(f"  • {step}")
+        
+        if Confirm.ask("Proceed with migration?"):
+            result = lifecycle.execute_migration(old_project, new_framework, config_file)
+            console.print(f"✅ Migration completed: {result['new_project_path']}")
+        
+    except Exception as e:
+        console.print(f"❌ Migration failed: {str(e)}")
+        raise typer.Exit(1)
+
+
+@app.command()
+def doctor(
+    project_path: str = typer.Option(".", "--path", "-p", help="Project path to check"),
+    fix: bool = typer.Option(False, "--fix", "-f", help="Automatically fix issues"),
+    deep_scan: bool = typer.Option(False, "--deep", "-d", help="Perform deep scan")
+):
+    """
+    Comprehensive project health check and diagnostics
+    """
+    lifecycle = ProjectLifecycleManager()
+    
+    try:
+        health_report = lifecycle.health_check(project_path, deep_scan)
+        
+        console.print("🏥 Project Health Report:")
+        console.print(f"Overall Score: {health_report['overall_score']}/100")
+        
+        for category, issues in health_report['categories'].items():
+            console.print(f"\n{category.replace('_', ' ').title()}:")
+            for issue in issues:
+                status = "✅" if issue['status'] == 'healthy' else "⚠️" if issue['status'] == 'warning' else "❌"
+                console.print(f"  {status} {issue['message']}")
+        
+        if fix and health_report['fixable_issues']:
+            console.print("\n🔧 Auto-fixing issues...")
+            fixed = lifecycle.auto_fix_issues(project_path, health_report['fixable_issues'])
+            console.print(f"✅ Fixed {len(fixed)} issues")
+        
+    except Exception as e:
+        console.print(f"❌ Health check failed: {str(e)}")
+        raise typer.Exit(1)
 
 
 if __name__ == "__main__":

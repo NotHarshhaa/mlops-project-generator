@@ -7,6 +7,132 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.1] - 2026-04-04
+
+### 🔧 **BUG FIXES**
+- **Version Consistency**: Fixed version display across all components
+- **PyPI Compatibility**: Resolved filename reuse issue with v2.0.1 release
+- **Test Fixes**: Updated version tests to match current version
+
+### 📦 **PYPI RELEASE**
+- **Version 2.0.1**: Corrected enterprise release with proper versioning
+- **Installation**: `pip install mlops-project-generator==2.0.1`
+
+---
+
+## [2.0.0] - 2026-04-04
+
+### 🎉 **MAJOR ENTERPRISE RELEASE**
+
+#### 🚀 **Advanced CLI Commands**
+- **clone**: Smart project cloning with configuration preservation
+- **archive**: Selective project archiving (exclude data/models)
+- **check_deps**: Dependency management with security vulnerability scanning
+- **profile**: Performance profiling and resource usage analysis
+- **migrate**: Framework migration with automated code conversion
+- **doctor**: Comprehensive health checks with auto-fix capabilities
+
+#### 📊 **Enhanced Analytics System**
+- **AI-Powered Insights**: Actionable recommendations based on project patterns
+- **Trending Analysis**: Framework usage, complexity trends, deployment patterns
+- **Benchmarking**: Compare projects against historical data
+- **Productivity Metrics**: Projects per month, file/line generation statistics
+- **Export Reports**: Comprehensive analytics reports in JSON format
+
+#### ⚙️ **Advanced Configuration Management**
+- **Environment Configs**: Development/staging/production configurations
+- **Configuration Templates**: Reusable templates for different use cases
+- **Configuration Pipelines**: Multi-stage deployment configurations
+- **Diff & Merge**: Configuration comparison and merging capabilities
+- **Backup & Restore**: Configuration backup and restoration system
+
+#### ☁️ **Production-Ready Cloud Deployment**
+- **Real AWS Templates**: Multi-stage Dockerfiles, proper error handling, security best practices
+- **GitHub Actions CI/CD**: Testing, security scanning, automated deployment
+- **CloudWatch Monitoring**: Dashboards, alerting configurations
+- **Security Best Practices**: IAM roles, VPC configuration, encryption
+- **Production Configs**: Resource limits, scaling policies, security configurations
+
+#### 🔒 **Security-First Approach**
+- **Vulnerability Scanning**: Automated security checks for dependencies
+- **Compliance Templates**: SOC2, GDPR, HIPAA-ready configurations
+- **Security Best Practices**: IAM roles, VPC, encryption by default
+- **Automated Security Updates**: Dependency security patching
+- **Security Reporting**: Comprehensive security analysis reports
+
+#### 🔄 **Project Lifecycle Management**
+- **Smart Cloning**: Preserve configuration while excluding unnecessary files
+- **Framework Migration**: Automated code conversion between ML frameworks
+- **Health Checks**: Comprehensive project validation with auto-fix
+- **Performance Profiling**: Resource usage analysis, optimization recommendations
+- **Dependency Management**: Security scanning, version pinning, conflict resolution
+
+### 🔧 **TECHNICAL IMPROVEMENTS**
+
+#### **Enterprise Architecture**
+- **Modular Design**: Separate concerns for scalability
+- **Production Error Handling**: Enterprise-grade error management
+- **Security Integration**: Security scanning throughout the pipeline
+- **Performance Optimization**: Resource usage optimization
+- **Real-world Integrations**: Actual cloud services and tools
+
+#### **No Dummy Content**
+- **Real Dockerfiles**: Multi-stage builds with security best practices
+- **Production Code**: Proper error handling, logging, monitoring integration
+- **Real Cloud Templates**: Actual CloudFormation, Terraform-ready configurations
+- **Security Best Practices**: IAM roles, VPC configuration, encryption
+- **Monitoring Integration**: Real metrics, alerts, dashboard configurations
+
+### 📚 **DOCUMENTATION & EXAMPLES**
+
+#### **Enhanced Documentation**
+- **README Updates**: Complete v2.0.0 feature documentation
+- **Enterprise Features**: Security, monitoring, CI/CD documentation
+- **CLI Examples**: Comprehensive examples for all new commands
+- **Best Practices**: Production deployment guides
+- **Security Guides**: Security configuration and compliance
+
+#### **Usage Examples**
+```bash
+# Clone project with configuration preservation
+mlops-project-generator clone existing-project --name new-project --exclude-data
+
+# Check dependencies with security scanning
+mlops-project-generator check_deps --update --security --fix
+
+# Profile project performance
+mlops-project-generator profile --project my-ml-platform --format json
+
+# Migrate between frameworks
+mlops-project-generator migrate sklearn-project pytorch --auto-convert
+
+# Comprehensive health check
+mlops-project-generator doctor --fix --deep --generate-report
+
+# Export analytics report
+mlops-project-generator export-analytics --format json --output report.json
+```
+
+### 🧪 **TESTING**
+- **Enterprise Test Suite**: Comprehensive testing for all new features
+- **Security Testing**: Vulnerability scanning and security validation
+- **Performance Testing**: Resource usage and optimization testing
+- **Integration Testing**: End-to-end testing of enterprise workflows
+- **CI/CD Testing**: Complete pipeline testing with real deployments
+
+### 🔄 **BACKWARD COMPATIBILITY**
+- **Fully Compatible**: All existing v1.x functionality preserved
+- **Seamless Upgrade**: No breaking changes from v1.0.8
+- **Optional Features**: New enterprise features are completely optional
+- **Migration Path**: Clear upgrade path for existing projects
+
+### 📦 **PYPI RELEASE**
+- **Version 2.0.0**: Enterprise-ready release
+- **Package Validation**: All security and quality checks passed
+- **Installation**: `pip install mlops-project-generator==2.0.0`
+
+---
+
 ## [1.0.8] - 2026-03-25
 
 ### 🎉 **MAJOR NEW FEATURES**

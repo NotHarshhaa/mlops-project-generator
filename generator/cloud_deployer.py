@@ -2,6 +2,9 @@
 Cloud deployment templates for MLOps Project Generator
 """
 
+import json
+import os
+import time
 from pathlib import Path
 from typing import Any, Dict, List
 
@@ -300,7 +303,7 @@ class CloudDeployer:
 
     def _generate_sagemaker_templates(self, output_dir: Path, choices: Dict[str, Any]):
         """Generate AWS SageMaker templates"""
-        # Dockerfile
+        # Basic Dockerfile
         dockerfile_content = f"""FROM python:3.9-slim
 
 # Set working directory
@@ -325,11 +328,11 @@ CMD ["python", "train.py"]
         with open(output_dir / "Dockerfile", "w") as f:
             f.write(dockerfile_content)
         
-        # Training script
-        train_script = f"""#!/usr/bin/env python3
-\"\"\"
+        # Basic training script
+        train_script = f'''#!/usr/bin/env python3
+"""
 SageMaker training script for {choices['framework']} model
-\"\"\"
+"""
 
 import argparse
 import json
@@ -342,22 +345,22 @@ sys.path.append('/opt/ml/src')
 
 {self._get_framework_import(choices['framework'])}
 
-def train(args):
-    \"\"\"Train the model\"\"\"
-    print("Starting training...")
-    
-    # Load data
-    train_path = Path(args.train)
-    test_path = Path(args.test)
-    
-    # Training logic here
-    print(f"Training {args.epochs} epochs...")
-    
-    # Save model
-    model_dir = Path(args.model_dir)
-    model_dir.mkdir(parents=True, exist_ok=True)
-    
-    print("Training completed!")
+    def train(args):
+        """Train the model"""
+        print("Starting training...")
+        
+        # Load data
+        train_path = Path(args.train)
+        test_path = Path(args.test)
+        
+        # Training logic here
+        print(f"Training {{args.epochs}} epochs...")
+        
+        # Save model
+        model_dir = Path(args.model_dir)
+        model_dir.mkdir(parents=True, exist_ok=True)
+        
+        print("Training completed!")
 
 def main():
     parser = argparse.ArgumentParser()
@@ -378,7 +381,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-"""
+'''
         
         with open(output_dir / "train.py", "w") as f:
             f.write(train_script)
@@ -386,10 +389,10 @@ if __name__ == '__main__':
     def _generate_cloud_run_templates(self, output_dir: Path, choices: Dict[str, Any]):
         """Generate Google Cloud Run templates"""
         # Main application
-        main_content = f"""#!/usr/bin/env python3
-\"\"\"
+        main_content = f'''#!/usr/bin/env python3
+"""
 Cloud Run deployment for {choices['framework']} model
-\"\"\"
+"""
 
 import os
 from fastapi import FastAPI
@@ -409,7 +412,7 @@ class PredictionResponse(BaseModel):
 
 @app.get("/")
 async def root():
-    return {{"message": "{choices['project_name']} API is running"}}
+    return {{"message": f"{choices['project_name']} API is running"}}
 
 @app.get("/health")
 async def health_check():
@@ -417,7 +420,7 @@ async def health_check():
 
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(request: PredictionRequest):
-    \"\"\"Make predictions\"\"\"
+    """Make predictions"""
     # Load your model and make predictions
     prediction = {{"result": "placeholder"}}
     
@@ -427,13 +430,13 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8080))
     uvicorn.run(app, host="0.0.0.0", port=port)
-"""
+'''
         
         with open(output_dir / "main.py", "w") as f:
             f.write(main_content)
         
         # Cloud Build configuration
-        cloudbuild_content = f"""steps:
+        cloudbuild_content = f'''steps:
   # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
     args: ['build', '-t', 'gcr.io/$PROJECT_ID/{choices["project_name"]}', '.']
@@ -459,7 +462,7 @@ if __name__ == "__main__":
 
 images:
   - 'gcr.io/$PROJECT_ID/{choices["project_name"]}'
-"""
+'''
         
         with open(output_dir / "cloudbuild.yaml", "w") as f:
             f.write(cloudbuild_content)
@@ -467,7 +470,7 @@ images:
     def _generate_azure_ml_templates(self, output_dir: Path, choices: Dict[str, Any]):
         """Generate Azure ML Studio templates"""
         # Conda environment
-        conda_content = f"""name: {choices["project_name"]}-env
+        conda_content = f'''name: {choices["project_name"]}-env
 channels:
   - defaults
   - conda-forge
@@ -481,16 +484,16 @@ dependencies:
     - pandas
     - numpy
     - azureml-defaults
-"""
+'''
         
         with open(output_dir / "conda.yml", "w") as f:
             f.write(conda_content)
         
         # Scoring script
-        score_content = f"""#!/usr/bin/env python3
-\"\"\"
+        score_content = f'''#!/usr/bin/env python3
+"""
 Azure ML scoring script for {choices['framework']} model
-\"\"\"
+"""
 
 import json
 import numpy as np
@@ -500,7 +503,7 @@ from pathlib import Path
 {self._get_framework_import(choices['framework'])}
 
 def init():
-    \"\"\"Initialize the model\"\"\"
+    """Initialize the model"""
     global model
     
     # Get the model path
@@ -510,7 +513,7 @@ def init():
     print("Model loaded successfully")
 
 def run(raw_data):
-    \"\"\"Make predictions\"\"\"
+    """Make predictions"""
     try:
         data = json.loads(raw_data)
         
@@ -526,14 +529,14 @@ if __name__ == "__main__":
     # Test the scoring script
     test_data = json.dumps({{"data": [1, 2, 3, 4, 5]}})
     print(run(test_data))
-"""
+'''
         
         with open(output_dir / "score.py", "w") as f:
             f.write(score_content)
 
     def _generate_cloud_config(self, config_file: Path, provider: str, service: str, service_info: Dict[str, Any], choices: Dict[str, Any]):
         """Generate cloud configuration file"""
-        config_content = f"""# Cloud Deployment Configuration
+        config_content = f'''# Cloud Deployment Configuration
 # Generated for {provider.upper()} {service_info['name']}
 
 provider: {provider}
@@ -543,13 +546,13 @@ framework: {choices['framework']}
 
 # Service-specific configuration
 {service.lower().replace('-', '_')}:
-"""
+'''
         
         for key, value in service_info["config"].items():
             config_content += f"  {key}: {value}\n"
-        
+            
         # Add project-specific configuration
-        config_content += f"""
+        config_content += f'''
 # Project configuration
 project:
   name: {choices['project_name']}
@@ -564,26 +567,26 @@ deployment:
   health_check: true
   logging: true
   monitoring: {choices['monitoring'] != 'none'}
-"""
+'''
         
         with open(config_file, "w") as f:
             f.write(config_content)
 
     def _generate_deployment_scripts(self, output_dir: Path, provider: str, service: str, choices: Dict[str, Any]):
         """Generate deployment scripts"""
-        deploy_script = f"""#!/bin/bash
+        deploy_script = f'''#!/bin/bash
 # Deployment script for {provider.upper()} {service}
 
 set -e
 
-echo "🚀 Starting deployment to {provider.upper()} {service}..."
+echo "Starting deployment to {provider.upper()} {service}..."
 
 # Provider-specific deployment commands
-{self._get_deployment_commands(provider, service, choices)}
+{self._generate_deployment_commands(provider, service, choices)}
 
-echo "✅ Deployment completed successfully!"
-echo "🌐 Your application is now live!"
-"""
+echo "Deployment completed successfully!"
+echo "Your application is now live!"
+'''
         
         with open(output_dir / "deploy.sh", "w") as f:
             f.write(deploy_script)
@@ -591,32 +594,32 @@ echo "🌐 Your application is now live!"
         # Make it executable
         os.chmod(output_dir / "deploy.sh", 0o755)
 
-    def _get_deployment_commands(self, provider: str, service: str, choices: Dict[str, Any]) -> str:
+    def _generate_deployment_commands(self, provider: str, service: str, choices: Dict[str, Any]) -> str:
         """Get provider-specific deployment commands"""
         if provider == "aws" and service == "sagemaker":
-            return """
+            return '''
 # AWS SageMaker deployment
-aws sagemaker create-training-job \
-    --training-job-name "${{PROJECT_NAME}}-$(date +%s)" \
-    --role-arn "arn:aws:iam::${{AWS_ACCOUNT_ID}}:role/SageMakerExecutionRole" \
-    --resource-config "InstanceType=ml.m5.large,InstanceCount=1,VolumeSizeInGB=50" \
+aws sagemaker create-training-job \\
+    --training-job-name "${{PROJECT_NAME}}-$(date +%s)" \\
+    --role-arn "arn:aws:iam::${{AWS_ACCOUNT_ID}}:role/SageMakerExecutionRole" \\
+    --resource-config "InstanceType=ml.m5.large,InstanceCount=1,VolumeSizeInGB=50" \\
     --stopping-condition "MaxRuntimeInSeconds=86400"
-"""
+'''
         elif provider == "gcp" and service == "cloud-run":
-            return """
+            return '''
 # Google Cloud Run deployment
 gcloud builds submit --tag gcr.io/${{PROJECT_ID}}/${{PROJECT_NAME}}
-gcloud run deploy ${{PROJECT_NAME}} \
-    --image gcr.io/${{PROJECT_ID}}/${{PROJECT_NAME}} \
-    --region us-central1 \
+gcloud run deploy ${{PROJECT_NAME}} \\
+    --image gcr.io/${{PROJECT_ID}}/${{PROJECT_NAME}} \\
+    --region us-central1 \\
     --allow-unauthenticated
-"""
+'''
         elif provider == "azure" and service == "ml-studio":
-            return """
+            return '''
 # Azure ML Studio deployment
 az ml model create -n ${{PROJECT_NAME}} -p ./model
 az ml endpoint create -n ${{PROJECT_NAME}}-endpoint --model ${{PROJECT_NAME}}:1
-"""
+'''
         else:
             return "# Add your deployment commands here"
 

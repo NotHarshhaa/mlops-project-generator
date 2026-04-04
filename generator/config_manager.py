@@ -4,8 +4,10 @@ Configuration management for MLOps Project Generator
 
 import json
 import os
+import shutil
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from datetime import datetime
 
 from rich.console import Console
 from rich.panel import Panel
@@ -250,26 +252,398 @@ class ConfigManager:
         except (FileNotFoundError, json.JSONDecodeError) as e:
             console.print(f"❌ Error importing preset: {e}")
 
-    def validate_config(self, config: Dict[str, Any]) -> List[str]:
-        """Validate a configuration and return any errors"""
-        errors = []
-        required_fields = [
-            "framework", "task_type", "experiment_tracking", 
-            "orchestration", "deployment", "monitoring"
-        ]
+    def create_environment_config(self, env_name: str, base_config: Dict[str, Any], 
+                               env_overrides: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Create environment-specific configuration"""
+        env_config = base_config.copy()
         
-        for field in required_fields:
-            if field not in config:
-                errors.append(f"Missing required field: {field}")
+        if env_overrides:
+            env_config.update(env_overrides)
         
-        # Validate framework
-        valid_frameworks = ["sklearn", "pytorch", "tensorflow"]
-        if config.get("framework") not in valid_frameworks:
-            errors.append(f"Invalid framework. Must be one of: {valid_frameworks}")
+        # Add environment-specific settings
+        env_settings = {
+            "development": {
+                "debug": True,
+                "log_level": "DEBUG",
+                "monitoring": "none",
+                "orchestration": "none"
+            },
+            "staging": {
+                "debug": False,
+                "log_level": "INFO",
+                "monitoring": "evidently",
+                "orchestration": "airflow"
+            },
+            "production": {
+                "debug": False,
+                "log_level": "WARNING",
+                "monitoring": "evidently",
+                "orchestration": "kubeflow",
+                "deployment": "kubernetes"
+            }
+        }
         
-        # Validate task types
-        valid_task_types = ["classification", "regression", "time-series", "nlp", "computer-vision"]
-        if config.get("task_type") not in valid_task_types:
-            errors.append(f"Invalid task type. Must be one of: {valid_task_types}")
+        if env_name in env_settings:
+            env_config.update(env_settings[env_name])
         
-        return errors
+        # Save environment config
+        env_file = self.config_dir / f"{env_name}_config.json"
+        with open(env_file, "w", encoding="utf-8") as f:
+            json.dump(env_config, f, indent=2)
+        
+        console.print(f"✅ Environment config '{env_name}' created")
+        return env_config
+
+    def get_environment_config(self, env_name: str) -> Optional[Dict[str, Any]]:
+        """Get environment-specific configuration"""
+        env_file = self.config_dir / f"{env_name}_config.json"
+        
+        try:
+            with open(env_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return None
+
+    def list_environments(self) -> List[str]:
+        """List all available environment configurations"""
+        environments = []
+        for file in self.config_dir.glob("*_config.json"):
+            if file.name not in ["presets.json", "custom_templates.json"]:
+                env_name = file.stem.replace("_config", "")
+                environments.append(env_name)
+        return environments
+
+    def merge_configurations(self, base_config: Dict[str, Any], 
+                          override_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Merge two configurations with proper conflict resolution"""
+        merged = base_config.copy()
+        
+        for key, value in override_config.items():
+            if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+                merged[key] = self.merge_configurations(merged[key], value)
+            else:
+                merged[key] = value
+        
+        return merged
+
+    def validate_configuration_compatibility(self, config1: Dict[str, Any], 
+                                            config2: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate compatibility between two configurations"""
+        compatibility = {
+            "compatible": True,
+            "conflicts": [],
+            "warnings": [],
+            "recommendations": []
+        }
+        
+        # Check framework compatibility
+        fw1 = config1.get("framework")
+        fw2 = config2.get("framework")
+        if fw1 and fw2 and fw1 != fw2:
+            compatibility["conflicts"].append(f"Framework mismatch: {fw1} vs {fw2}")
+            compatibility["compatible"] = False
+        
+        # Check deployment compatibility
+        dep1 = config1.get("deployment")
+        dep2 = config2.get("deployment")
+        if dep1 and dep2 and dep1 != dep2:
+            compatibility["warnings"].append(f"Deployment difference: {dep1} vs {dep2}")
+        
+        # Check orchestration compatibility
+        orch1 = config1.get("orchestration")
+        orch2 = config2.get("orchestration")
+        if orch1 == "kubeflow" and dep2 == "fastapi":
+            compatibility["recommendations"].append("Kubeflow works best with containerized deployments")
+        
+        return compatibility
+
+    def create_config_template(self, template_name: str, 
+                             framework: str, 
+                             use_cases: List[str]) -> Dict[str, Any]:
+        """Create a configuration template for specific use cases"""
+        template_config = {
+            "framework": framework,
+            "template_name": template_name,
+            "use_cases": use_cases,
+            "base_config": self._get_base_config_for_framework(framework),
+            "customizations": {}
+        }
+        
+        # Add use-case specific customizations
+        for use_case in use_cases:
+            customizations = self._get_use_case_customizations(use_case, framework)
+            template_config["customizations"][use_case] = customizations
+        
+        # Save template
+        template_file = self.config_dir / f"template_{template_name}.json"
+        with open(template_file, "w", encoding="utf-8") as f:
+            json.dump(template_config, f, indent=2)
+        
+        console.print(f"✅ Configuration template '{template_name}' created")
+        return template_config
+
+    def _get_base_config_for_framework(self, framework: str) -> Dict[str, Any]:
+        """Get base configuration for a framework"""
+        base_configs = {
+            "sklearn": {
+                "framework": "sklearn",
+                "task_type": "classification",
+                "experiment_tracking": "mlflow",
+                "orchestration": "none",
+                "deployment": "fastapi",
+                "monitoring": "evidently"
+            },
+            "pytorch": {
+                "framework": "pytorch",
+                "task_type": "classification",
+                "experiment_tracking": "wandb",
+                "orchestration": "airflow",
+                "deployment": "docker",
+                "monitoring": "custom"
+            },
+            "tensorflow": {
+                "framework": "tensorflow",
+                "task_type": "classification",
+                "experiment_tracking": "mlflow",
+                "orchestration": "kubeflow",
+                "deployment": "kubernetes",
+                "monitoring": "evidently"
+            }
+        }
+        
+        return base_configs.get(framework, base_configs["sklearn"])
+
+    def _get_use_case_customizations(self, use_case: str, framework: str) -> Dict[str, Any]:
+        """Get customizations for specific use cases"""
+        customizations = {
+            "research": {
+                "experiment_tracking": "wandb" if framework == "pytorch" else "mlflow",
+                "orchestration": "none",
+                "deployment": "fastapi",
+                "monitoring": "custom"
+            },
+            "production": {
+                "experiment_tracking": "mlflow",
+                "orchestration": "kubeflow" if framework in ["tensorflow", "pytorch"] else "airflow",
+                "deployment": "kubernetes",
+                "monitoring": "evidently"
+            },
+            "prototype": {
+                "experiment_tracking": "none",
+                "orchestration": "none",
+                "deployment": "fastapi",
+                "monitoring": "none"
+            },
+            "enterprise": {
+                "experiment_tracking": "mlflow",
+                "orchestration": "airflow",
+                "deployment": "kubernetes",
+                "monitoring": "evidently"
+            }
+        }
+        
+        return customizations.get(use_case, {})
+
+    def apply_template(self, template_name: str, use_case: str, 
+                     additional_overrides: Dict[str, Any] = None) -> Dict[str, Any]:
+        """Apply a configuration template"""
+        template_file = self.config_dir / f"template_{template_name}.json"
+        
+        try:
+            with open(template_file, "r", encoding="utf-8") as f:
+                template = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            console.print(f"❌ Template '{template_name}' not found")
+            return {}
+        
+        base_config = template["base_config"].copy()
+        
+        # Apply use case customizations
+        if use_case in template["customizations"]:
+            base_config.update(template["customizations"][use_case])
+        
+        # Apply additional overrides
+        if additional_overrides:
+            base_config.update(additional_overrides)
+        
+        return base_config
+
+    def create_config_pipeline(self, pipeline_name: str, 
+                             stages: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Create a configuration pipeline for multi-stage deployments"""
+        pipeline_config = {
+            "pipeline_name": pipeline_name,
+            "stages": stages,
+            "created_at": datetime.now().isoformat(),
+            "current_stage": 0
+        }
+        
+        # Validate pipeline
+        validation_result = self._validate_pipeline(pipeline_config)
+        if not validation_result["valid"]:
+            console.print(f"❌ Pipeline validation failed: {validation_result['errors']}")
+            return {}
+        
+        # Save pipeline
+        pipeline_file = self.config_dir / f"pipeline_{pipeline_name}.json"
+        with open(pipeline_file, "w", encoding="utf-8") as f:
+            json.dump(pipeline_config, f, indent=2)
+        
+        console.print(f"✅ Configuration pipeline '{pipeline_name}' created")
+        return pipeline_config
+
+    def _validate_pipeline(self, pipeline_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate a configuration pipeline"""
+        validation = {
+            "valid": True,
+            "errors": [],
+            "warnings": []
+        }
+        
+        stages = pipeline_config.get("stages", [])
+        if not stages:
+            validation["errors"].append("Pipeline must have at least one stage")
+            validation["valid"] = False
+        
+        # Check stage order
+        stage_order = ["development", "staging", "production"]
+        for i, stage in enumerate(stages):
+            stage_name = stage.get("name")
+            if stage_name in stage_order and stage_order.index(stage_name) != i:
+                validation["warnings"].append(f"Stage '{stage_name}' may be in wrong position")
+        
+        return validation
+
+    def get_pipeline_stage_config(self, pipeline_name: str, stage_index: int = None) -> Optional[Dict[str, Any]]:
+        """Get configuration for a specific pipeline stage"""
+        pipeline_file = self.config_dir / f"pipeline_{pipeline_name}.json"
+        
+        try:
+            with open(pipeline_file, "r", encoding="utf-8") as f:
+                pipeline = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return None
+        
+        stages = pipeline.get("stages", [])
+        
+        if stage_index is None:
+            stage_index = pipeline.get("current_stage", 0)
+        
+        if 0 <= stage_index < len(stages):
+            return stages[stage_index]
+        
+        return None
+
+    def advance_pipeline_stage(self, pipeline_name: str) -> bool:
+        """Advance to the next stage in a pipeline"""
+        pipeline_file = self.config_dir / f"pipeline_{pipeline_name}.json"
+        
+        try:
+            with open(pipeline_file, "r", encoding="utf-8") as f:
+                pipeline = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return False
+        
+        current_stage = pipeline.get("current_stage", 0)
+        next_stage = current_stage + 1
+        
+        if next_stage < len(pipeline["stages"]):
+            pipeline["current_stage"] = next_stage
+            
+            with open(pipeline_file, "w", encoding="utf-8") as f:
+                json.dump(pipeline, f, indent=2)
+            
+            console.print(f"✅ Advanced to stage: {pipeline['stages'][next_stage]['name']}")
+            return True
+        else:
+            console.print("⚠️ Already at final stage")
+            return False
+
+    def create_config_diff(self, config1: Dict[str, Any], config2: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a diff between two configurations"""
+        diff = {
+            "added": {},
+            "removed": {},
+            "modified": {},
+            "unchanged": {}
+        }
+        
+        all_keys = set(config1.keys()) | set(config2.keys())
+        
+        for key in all_keys:
+            if key in config1 and key not in config2:
+                diff["removed"][key] = config1[key]
+            elif key in config2 and key not in config1:
+                diff["added"][key] = config2[key]
+            elif key in config1 and key in config2:
+                if config1[key] == config2[key]:
+                    diff["unchanged"][key] = config1[key]
+                else:
+                    diff["modified"][key] = {
+                        "old": config1[key],
+                        "new": config2[key]
+                    }
+        
+        return diff
+
+    def display_config_diff(self, diff: Dict[str, Any]):
+        """Display configuration diff in a readable format"""
+        if not any(diff.values()):
+            console.print("✅ No differences found")
+            return
+        
+        # Added keys
+        if diff["added"]:
+            console.print("[green]➕ Added:[/green]")
+            for key, value in diff["added"].items():
+                console.print(f"  {key}: {value}")
+            console.print()
+        
+        # Removed keys
+        if diff["removed"]:
+            console.print("[red]➖ Removed:[/red]")
+            for key, value in diff["removed"].items():
+                console.print(f"  {key}: {value}")
+            console.print()
+        
+        # Modified keys
+        if diff["modified"]:
+            console.print("[yellow]🔄 Modified:[/yellow]")
+            for key, values in diff["modified"].items():
+                console.print(f"  {key}: {values['old']} → {values['new']}")
+            console.print()
+
+    def backup_configuration(self, config_name: str) -> str:
+        """Create a backup of a configuration"""
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_name = f"{config_name}_backup_{timestamp}"
+        
+        # Copy the configuration file
+        source_file = self.config_dir / f"{config_name}.json"
+        backup_file = self.config_dir / f"{backup_name}.json"
+        
+        if source_file.exists():
+            shutil.copy2(source_file, backup_file)
+            console.print(f"✅ Configuration backed up as '{backup_name}'")
+            return backup_name
+        else:
+            console.print(f"❌ Configuration '{config_name}' not found")
+            return ""
+
+    def restore_configuration(self, backup_name: str, target_name: str = None) -> bool:
+        """Restore a configuration from backup"""
+        backup_file = self.config_dir / f"{backup_name}.json"
+        
+        if not backup_file.exists():
+            console.print(f"❌ Backup '{backup_name}' not found")
+            return False
+        
+        if target_name is None:
+            # Remove backup suffix
+            target_name = backup_name.replace("_backup_", "").split("_")[0]
+        
+        target_file = self.config_dir / f"{target_name}.json"
+        shutil.copy2(backup_file, target_file)
+        
+        console.print(f"✅ Configuration restored as '{target_name}'")
+        return True

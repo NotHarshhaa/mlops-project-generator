@@ -23,37 +23,72 @@ Data → Train → Track → Orchestrate → Deploy → Monitor → Improve
 
 ---
 
-## 🎉 What's New in v1.0.8
+## 🎉 What's New in v2.0.0
 
-🆕 **Stack Presets** - 6 pre-configured MLOps stacks for common use cases:
-- ⚡ Quick Start - Zero friction setup
-- 🧪 Data Science - Exploration focused
-- 🧠 Deep Learning - PyTorch + W&B
-- 📡 Production MLOps - Full observability
-- 🏢 Enterprise - Maximum scale
-- 🔬 Research - Experimentation optimized
+🚀 **Major Enterprise-Grade Enhancements:**
+- **🔧 Advanced CLI Commands** - clone, archive, check_deps, profile, migrate, doctor
+- **📊 Enhanced Analytics System** - AI-powered insights, trending analysis, benchmarking
+- **⚙️ Advanced Configuration Management** - Environment configs, templates, pipelines
+- **☁️ Production-Ready Cloud Deployment** - Real AWS templates, CI/CD, monitoring
+- **🔄 Project Lifecycle Management** - Smart cloning, migration, health checks
+- **� Security-First Approach** - Vulnerability scanning, best practices, compliance
 
-🚀 **New CLI Commands:**
+🆕 **New CLI Commands:**
 ```bash
-mlops-project-generator init --preset quick-start
-mlops-project-generator list-presets
+mlops-project-generator clone <source> --name <target>
+mlops-project-generator archive <project> --type zip
+mlops-project-generator check_deps --update --security
+mlops-project-generator profile --format json
+mlops-project-generator migrate <old> <new-framework>
+mlops-project-generator doctor --fix --deep
 ```
 
 ---
 
 ## 🚀 Features
 
+### 🏗️ Core Generation
 - **🔧 Framework Support**: Scikit-learn, PyTorch, TensorFlow/Keras
 - **📊 Task Types**: Classification, Regression, Time-Series, NLP, Computer Vision
-- **🔬 Experiment Tracking**: MLflow, W&B, Custom solutions
-- **🎯 Orchestration**: Airflow, Kubeflow
-- **🚀 Deployment**: FastAPI, Docker, Kubernetes, Cloud platforms
-- **📈 Monitoring**: Evidently AI, Custom solutions
-- **☁️ Cloud Deployment**: Multi-cloud templates (AWS, GCP, Azure)
+- **🎯 Stack Presets**: 6 pre-configured MLOps stacks (Quick Start, Data Science, Deep Learning, Production MLOps, Enterprise, Research)
 - **🌐 Web UI**: Browser-based generator — no install needed
 - **🤖 CI/CD Ready**: Non-interactive CLI mode for DevOps pipelines
-- **⚙️ Config Presets**: Save, load, and reuse project configurations
-- **🎨 Custom Templates**: Create and manage framework templates
+
+### 🔬 MLOps Integration
+- **📈 Experiment Tracking**: MLflow, W&B, Custom solutions
+- **🎯 Orchestration**: Airflow, Kubeflow
+- **🚀 Deployment**: FastAPI, Docker, Kubernetes, Cloud platforms
+- **� Monitoring**: Evidently AI, Custom solutions
+- **☁️ Cloud Deployment**: Multi-cloud templates (AWS, GCP, Azure)
+
+### 🛠️ Advanced CLI Commands
+- **📋 clone**: Smart project cloning with configuration preservation
+- **📦 archive**: Selective project archiving (exclude data/models)
+- **🔍 check_deps**: Dependency management with security vulnerability scanning
+- **📊 profile**: Performance profiling and resource usage analysis
+- **🔄 migrate**: Framework migration with automated code conversion
+- **🩺 doctor**: Comprehensive health checks with auto-fix capabilities
+
+### 📈 Enhanced Analytics
+- **📊 Trending Analysis**: Framework usage, complexity trends, deployment patterns
+- **🤖 AI-Powered Insights**: Actionable recommendations based on project patterns
+- **📈 Benchmarking**: Compare projects against historical data
+- **📊 Productivity Metrics**: Projects per month, file/line generation statistics
+- **📋 Export Reports**: Comprehensive analytics reports in JSON format
+
+### ⚙️ Configuration Management
+- **🌍 Environment Configs**: Development/staging/production configurations
+- **📋 Configuration Templates**: Reusable templates for different use cases
+- **🔄 Configuration Pipelines**: Multi-stage deployment configurations
+- **🔍 Diff & Merge**: Configuration comparison and merging capabilities
+- **💾 Backup & Restore**: Configuration backup and restoration system
+
+### 🚀 Production-Ready Deployment
+- **🐳 Real Dockerfiles**: Multi-stage builds with security best practices
+- **☁️ AWS Templates**: Production-grade CloudFormation, Terraform-ready
+- **🔄 CI/CD Integration**: GitHub Actions with testing, security scanning, deployment
+- **📊 Monitoring Setup**: CloudWatch dashboards, alerting configurations
+- **🔒 Security Best Practices**: IAM roles, VPC configuration, encryption
 
 ---
 
@@ -118,7 +153,7 @@ Prefer the command line? Install the Python package:
 ### From PyPI
 
 ```bash
-pip install mlops-project-generator==1.0.8
+pip install mlops-project-generator==2.0.1
 ```
 
 ### From Source
@@ -201,13 +236,35 @@ mlops-project-generator init \
 | `delete-template <name>` | Delete a template |
 | `add-template-file <template> <path>` | Add a file to a template |
 
-#### Analytics & Cloud
+#### Advanced CLI Commands (NEW!)
 | Command | Description |
 |---|---|
-| `stats` | Show generation statistics |
-| `analyze <path>` | Analyze a generated project |
-| `cloud-services` | List available cloud services |
-| `cloud-deploy <provider> <service>` | Generate cloud deployment templates |
+| `clone <source>` | Clone existing projects with configuration preservation |
+| `archive <project>` | Project archiving with selective content inclusion |
+| `check_deps` | Dependency management with security vulnerability scanning |
+| `profile` | Performance profiling and resource usage analysis |
+| `migrate <old> <new>` | Framework migration with automated conversion |
+| `doctor` | Comprehensive project health check with auto-fix capabilities |
+
+#### Analytics & Insights (NEW!)
+| Command | Description |
+|---|---|
+| `stats` | Show generation statistics and trends |
+| `analyze <path>` | Analyze a generated project with AI insights |
+| `benchmark <project>` | Compare project against historical baselines |
+| `export-analytics` | Export comprehensive analytics reports |
+
+#### Configuration Management (ENHANCED!)
+| Command | Description |
+|---|---|
+| `save-preset <name>` | Save current config as a preset |
+| `list-presets` | List all presets |
+| `load-preset <name>` | Load a preset |
+| `delete-preset <name>` | Delete a preset |
+| `backup-config` | Backup all project configurations |
+| `restore-config <backup>` | Restore from configuration backup |
+| `diff-configs <config1> <config2>` | Compare two configurations |
+| `merge-configs <base> <other>` | Merge configuration files |
 
 ### `init` Flag Reference
 
@@ -225,9 +282,72 @@ mlops-project-generator init \
 
 ---
 
-## 🖼️ Screenshots
+## 🏢 Enterprise-Grade Features
 
-### CLI Commands
+### � Security & Compliance
+- **Vulnerability Scanning**: Automated security checks for dependencies
+- **IAM Best Practices**: Proper role-based access controls
+- **VPC Configuration**: Network isolation and security groups
+- **Encryption**: Data encryption at rest and in transit
+- **Compliance Templates**: SOC2, GDPR, HIPAA-ready configurations
+
+### 📊 Production Monitoring
+- **CloudWatch Integration**: Real-time metrics and alerting
+- **Dashboard Templates**: Pre-built monitoring dashboards
+- **Performance Profiling**: Resource usage analysis and optimization
+- **Health Checks**: Comprehensive system validation with auto-fix
+- **SLA Monitoring**: Service level agreement tracking
+
+### 🚀 Real-World CI/CD
+- **GitHub Actions**: Complete workflows with testing, security, deployment
+- **Multi-Stage Dockerfiles**: Optimized builds with security best practices
+- **Automated Testing**: Unit, integration, and end-to-end tests
+- **Security Scanning**: Code quality and vulnerability analysis
+- **Rollback Strategies**: Automated rollback capabilities
+
+### 📈 Advanced Analytics
+```bash
+# Generate comprehensive analytics report
+mlops-project-generator export-analytics --format json --output report.json
+
+# Analyze project performance
+mlops-project-generator profile --project my-ml-platform --format json
+
+# Benchmark against historical data
+mlops-project-generator benchmark my-project --baseline industry-standard
+```
+
+---
+
+## 🔄 Project Lifecycle Management
+
+### Smart Project Cloning
+```bash
+# Clone project with configuration preservation
+mlops-project-generator clone existing-project --name new-project --exclude-data
+```
+
+### Framework Migration
+```bash
+# Migrate from sklearn to pytorch
+mlops-project-generator migrate sklearn-project pytorch --auto-convert
+```
+
+### Dependency Management
+```bash
+# Check dependencies with security scanning
+mlops-project-generator check_deps --update --security --fix
+```
+
+### Project Health Checks
+```bash
+# Comprehensive health check with auto-fix
+mlops-project-generator doctor --fix --deep --generate-report
+```
+
+---
+
+## 🖼️ Screenshots
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/cli-commands.png" alt="CLI Commands" width="700"/>
@@ -519,6 +639,11 @@ MIT — see [LICENSE](LICENSE) for details.
 - [x] **Web UI** — Next.js app with glassmorphism UI (v1.0.8)
 - [x] **Backend migration** — generator ported to pure TypeScript, no Python runtime needed on the server (v1.0.8)
 - [x] **Stack Presets** — 6 pre-configured MLOps stacks (Quick Start, Data Science, Deep Learning, Production MLOps, Enterprise, Research) (v1.0.8)
+- [x] **Advanced CLI Commands** — clone, archive, check_deps, profile, migrate, doctor (v2.0.0)
+- [x] **Enhanced Analytics** — AI-powered insights, trending analysis, benchmarking (v2.0.0)
+- [x] **Production-Ready Deployment** — Real AWS templates, CI/CD, monitoring (v2.0.0)
+- [x] **Security-First Approach** — Vulnerability scanning, best practices (v2.0.0)
+- [x] **Configuration Management** — Environment configs, templates, pipelines (v2.0.0)
 
 ### 🚀 Upcoming
 
