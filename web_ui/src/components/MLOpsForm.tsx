@@ -22,6 +22,7 @@ import { GenerationProgress } from "./form/GenerationProgress"
 import { ProjectSummary } from "./form/ProjectSummary"
 import { SuccessDialog } from "./form/SuccessDialog"
 import { CreatorCard } from "./form/CreatorCard"
+import { RecentProjects } from "./form/RecentProjects"
 
 const REQUIRED_FIELDS = ["framework", "task_type", "experiment_tracking", "orchestration", "deployment", "monitoring"] as const
 
@@ -72,6 +73,41 @@ export default function MLOpsForm() {
       .catch(() => toast.error("Failed to load options."))
   }, [])
 
+  // ─── Handle recent projects ─────────────────────────────────────────────────
+  useEffect(() => {
+    const handleAddRecentProject = (event: CustomEvent) => {
+      const { projectName, framework, taskType, deployment, downloadUrl } = event.detail
+      
+      // Save to localStorage
+      const newProject = {
+        id: Date.now().toString(),
+        projectName,
+        framework,
+        taskType,
+        deployment,
+        downloadUrl,
+        generatedAt: new Date().toLocaleString(),
+        timestamp: Date.now()
+      }
+
+      try {
+        const stored = localStorage.getItem('recentMLOpsProjects')
+        const projects = stored ? JSON.parse(stored) : []
+        const updatedProjects = [newProject, ...projects].slice(0, 10)
+        localStorage.setItem('recentMLOpsProjects', JSON.stringify(updatedProjects))
+      } catch (error) {
+        console.error('Failed to save recent project:', error)
+      }
+    }
+
+    // Listen for custom event
+    window.addEventListener('addRecentProject', handleAddRecentProject as EventListener)
+    
+    return () => {
+      window.removeEventListener('addRecentProject', handleAddRecentProject as EventListener)
+    }
+  }, [])
+
   // ─── Preset handlers ──────────────────────────────────────────────────────
   const applyPreset = (preset: StackPreset) => {
     Object.entries(preset.fields).forEach(([key, val]) => form.setValue(key as any, val))
@@ -108,6 +144,34 @@ export default function MLOpsForm() {
         setShowSuccessDialog(true)
         toast.success("Project generated successfully!")
         setIsGenerating(false)
+        
+        // Save to recent projects
+        const projectData = {
+          projectName: formValues.project_name || "Untitled Project",
+          framework: formValues.framework,
+          taskType: formValues.task_type,
+          deployment: formValues.deployment,
+          downloadUrl: task.download_url
+        }
+        
+        try {
+          const stored = localStorage.getItem('recentMLOpsProjects')
+          const projects = stored ? JSON.parse(stored) : []
+          const newProject = {
+            id: Date.now().toString(),
+            projectName: projectData.projectName,
+            framework: projectData.framework,
+            taskType: projectData.taskType,
+            deployment: projectData.deployment,
+            downloadUrl: projectData.downloadUrl,
+            generatedAt: new Date().toLocaleString(),
+            timestamp: Date.now()
+          }
+          const updatedProjects = [newProject, ...projects].slice(0, 10)
+          localStorage.setItem('recentMLOpsProjects', JSON.stringify(updatedProjects))
+        } catch (error) {
+          console.error('Failed to save recent project:', error)
+        }
       } else if (task.status === "failed") {
         toast.error(`Generation failed: ${task.message}`)
         setIsGenerating(false)
@@ -386,6 +450,9 @@ export default function MLOpsForm() {
             </Form>
           </div>
         </div>
+
+        {/* ── Recent Projects ──────────────────────────────────────────── */}
+        <RecentProjects />
 
         {/* ── Creator + footer ──────────────────────────────────────────── */}
         <CreatorCard />
