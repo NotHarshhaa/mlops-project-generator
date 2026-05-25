@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import path from "path"
 import os from "os"
 import fs from "fs"
-import { getTask } from "@/lib/task-store"
+import { getTask } from "@/lib/tasks"
 
 export const dynamic = "force-dynamic"
 

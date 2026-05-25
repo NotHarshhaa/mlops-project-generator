@@ -4,14 +4,14 @@ import { CheckCircle, Download, Rocket, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
-interface Props {
+interface SuccessDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onDownload: () => void
   onReset: () => void
 }
 
-export function SuccessDialog({ open, onOpenChange, onDownload, onReset }: Props) {
+export function SuccessDialog({ open, onOpenChange, onDownload, onReset }: SuccessDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-w-[95vw] glass-card border-0 rounded-3xl overflow-hidden p-0">

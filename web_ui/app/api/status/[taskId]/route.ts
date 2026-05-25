@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { getTask } from "@/lib/task-store"
+import { getTask } from "@/lib/tasks"
 
 export const dynamic = "force-dynamic"
 

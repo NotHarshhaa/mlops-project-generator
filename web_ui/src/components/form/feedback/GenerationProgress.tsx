@@ -1,13 +1,13 @@
 "use client"
 
 import { Loader2 } from "lucide-react"
-import { ProgressStep } from "./UIHelpers"
+import { ProgressStep } from "../ui"
 
-interface Props {
+interface GenerationProgressProps {
   progress: number
 }
 
-export function GenerationProgress({ progress }: Props) {
+export function GenerationProgress({ progress }: GenerationProgressProps) {
   return (
     <div className="glass-card rounded-2xl p-5 border-primary/20 animate-slide-in-up">
       <div className="flex items-center justify-between mb-4">
@@ -20,7 +20,7 @@ export function GenerationProgress({ progress }: Props) {
           </div>
           <div>
             <p className="text-sm font-semibold text-foreground">
-              {progress < 25  && "🚀 Initializing project generation…"}
+              {progress < 25 && "🚀 Initializing project generation…"}
               {progress >= 25 && progress < 50 && "📁 Creating project structure…"}
               {progress >= 50 && progress < 75 && "⚙️ Configuring MLOps components…"}
               {progress >= 75 && progress < 100 && "🔧 Finalizing setup…"}
@@ -44,10 +44,10 @@ export function GenerationProgress({ progress }: Props) {
       </div>
 
       <div className="grid grid-cols-4 gap-2">
-        <ProgressStep label="Init"   colorClass="bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300" active={progress >= 0}  />
-        <ProgressStep label="Build"  colorClass="bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"                   active={progress >= 25} />
-        <ProgressStep label="Config" colorClass="bg-violet-100 dark:bg-violet-900/30 border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300"        active={progress >= 50} />
-        <ProgressStep label="Final"  colorClass="bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300"        active={progress >= 75} />
+        <ProgressStep label="Init" colorClass="bg-emerald-100 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300" active={progress >= 0} />
+        <ProgressStep label="Build" colorClass="bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300" active={progress >= 25} />
+        <ProgressStep label="Config" colorClass="bg-violet-100 dark:bg-violet-900/30 border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300" active={progress >= 50} />
+        <ProgressStep label="Final" colorClass="bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-300" active={progress >= 75} />
       </div>
     </div>
   )

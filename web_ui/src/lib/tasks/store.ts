@@ -5,16 +5,8 @@
  * For multi-process / production deployments, swap this for Redis or a DB.
  */
 
-export type TaskStatus = "pending" | "processing" | "completed" | "failed"
+import type { Task } from "./types"
 
-export interface Task {
-  task_id: string
-  status: TaskStatus
-  message: string
-  download_url?: string
-}
-
-// Module-level singleton — shared across all API route invocations in dev
 const globalForTasks = globalThis as typeof globalThis & {
   __mlopsTaskStore?: Map<string, Task>
 }

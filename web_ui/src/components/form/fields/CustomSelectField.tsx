@@ -4,23 +4,29 @@ import { useState, useEffect, useRef } from "react"
 import { useFormContext } from "react-hook-form"
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { ChevronDown, Check } from "lucide-react"
+import type { FormValues } from "../schema"
 
-interface Props {
-  name: string
+interface SelectOption {
+  value: string
+  label: string
+  description?: string
+}
+
+interface CustomSelectFieldProps {
+  name: keyof FormValues
   label: string
   description: string
-  options: Array<{ value: string; label: string; description?: string }>
+  options: SelectOption[]
   placeholder: string
 }
 
-export function CustomSelectField({ name, label, description, options, placeholder }: Props) {
-  const form = useFormContext()
+export function CustomSelectField({ name, label, description, options, placeholder }: CustomSelectFieldProps) {
+  const form = useFormContext<FormValues>()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const fieldValue = form.watch(name)
   const selectedOption = options.find(opt => opt.value === fieldValue)
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -29,12 +35,10 @@ export function CustomSelectField({ name, label, description, options, placehold
     }
 
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener("mousedown", handleClickOutside)
     }
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [isOpen])
 
   const handleSelect = (value: string) => {

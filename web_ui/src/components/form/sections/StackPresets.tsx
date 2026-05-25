@@ -1,15 +1,15 @@
 "use client"
 
 import { X, Check, Layers } from "lucide-react"
-import { STACK_PRESETS, type StackPreset } from "./types"
+import { STACK_PRESETS, type StackPreset } from "../presets"
 
-interface Props {
+interface StackPresetsProps {
   activePreset: string | null
   onApply: (preset: StackPreset) => void
   onClear: () => void
 }
 
-export function StackPresets({ activePreset, onApply, onClear }: Props) {
+export function StackPresets({ activePreset, onApply, onClear }: StackPresetsProps) {
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-4">
@@ -48,7 +48,6 @@ export function StackPresets({ activePreset, onApply, onClear }: Props) {
                   : "border-border/60 bg-card/50 dark:bg-card/80 hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5 hover:bg-card dark:hover:bg-card/90"
               }`}
             >
-              {/* Icon + check */}
               <div className="flex items-start justify-between mb-3">
                 <div className={`w-9 h-9 rounded-xl ${preset.iconBg} flex items-center justify-center shadow-md flex-shrink-0`}>
                   <Icon className="w-[18px] h-[18px] text-white" />

@@ -5,10 +5,11 @@ import { FileText, Info, User } from "lucide-react"
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { SectionHeader } from "./UIHelpers"
+import { SectionHeader } from "../ui"
+import type { FormValues } from "../schema"
 
 export function ProjectDetails() {
-  const form = useFormContext()
+  const form = useFormContext<FormValues>()
 
   return (
     <div className="space-y-6">
@@ -20,7 +21,6 @@ export function ProjectDetails() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Project Name */}
         <FormField
           control={form.control}
           name="project_name"
@@ -51,7 +51,6 @@ export function ProjectDetails() {
           )}
         />
 
-        {/* Author Name */}
         <FormField
           control={form.control}
           name="author_name"
@@ -77,7 +76,6 @@ export function ProjectDetails() {
         />
       </div>
 
-      {/* Description */}
       <FormField
         control={form.control}
         name="description"
