@@ -5,4 +5,5 @@ export interface Task {
   status: TaskStatus
   message: string
   download_url?: string
+  project_name?: string
 }

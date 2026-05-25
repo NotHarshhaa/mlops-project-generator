@@ -11,12 +11,14 @@ export async function startGeneration(values: FormValues): Promise<{ task_id: st
   return data
 }
 
-export type TaskStatus = "processing" | "completed" | "failed"
+export type TaskStatus = "pending" | "processing" | "completed" | "failed"
 
 export interface TaskResponse {
+  task_id?: string
   status: TaskStatus
-  download_url?: string
   message?: string
+  download_url?: string
+  project_name?: string
 }
 
 export async function fetchTaskStatus(taskId: string): Promise<TaskResponse> {

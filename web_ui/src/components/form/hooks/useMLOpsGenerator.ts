@@ -79,7 +79,7 @@ export function useMLOpsGenerator() {
     try {
       const task = await fetchTaskStatus(taskId)
 
-      if (task.status === "processing") {
+      if (task.status === "pending" || task.status === "processing") {
         setProgress(p => (p < 80 ? p + 20 : p + 5))
         setTimeout(() => pollTaskStatus(taskId, values), 2000)
         return
