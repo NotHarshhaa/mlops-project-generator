@@ -1,0 +1,270 @@
+#!/usr/bin/env python3
+"""
+Inference script for {{ framework_display }} {{ task_type }} model
+"""
+
+import os
+import sys
+import argparse
+import logging
+import json
+from pathlib import Path
+from typing import Dict, Any, Union, List
+
+import pandas as pd
+import numpy as np
+import yaml
+import joblib
+
+{% if deployment == "fastapi" %}
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List, Union
+import uvicorn
+{% endif %}
+
+# Add src to path
+sys.path.append(str(Path(__file__).parent.parent))
+
+from src.data.data_loader import DataLoader
+from src.features.feature_engineering import FeatureEngineer
+
+
+def setup_logging(config: Dict[str, Any]) -> None:
+    """Setup logging configuration"""
+    log_config = config.get("logging", {})
+    log_level = getattr(logging, log_config.get("level", "INFO"))
+    log_format = log_config.get("format", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    
+    logging.basicConfig(
+        level=log_level,
+        format=log_format,
+        handlers=[
+            logging.FileHandler(log_config.get("file", "logs/inference.log")),
+            logging.StreamHandler() if log_config.get("console", True) else logging.NullHandler()
+        ]
+    )
+
+
+def load_config(config_path: str) -> Dict[str, Any]:
+    """Load configuration from YAML file"""
+    with open(config_path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def load_model(model_path: str) -> Any:
+    """Load trained model"""
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model not found at {model_path}")
+    
+    model = joblib.load(model_path)
+    logging.info(f"Model loaded from {model_path}")
+    return model
+
+
+def preprocess_data(data: Union[pd.DataFrame, np.ndarray], feature_engineer: FeatureEngineer) -> np.ndarray:
+    """Preprocess input data"""
+    if isinstance(data, pd.DataFrame):
+        return feature_engineer.transform(data)
+    elif isinstance(data, np.ndarray):
+        return feature_engineer.transform_array(data)
+    else:
+        raise ValueError("Data must be pandas DataFrame or numpy array")
+
+
+def predict_single(model: Any, data: np.ndarray) -> Union[int, float]:
+    """Make prediction for single sample"""
+    if data.ndim == 1:
+        data = data.reshape(1, -1)
+    
+    prediction = model.predict(data)[0]
+    
+    {% if task_type == "classification" %}
+    # For classification, return the predicted class
+    return int(prediction)
+    {% elif task_type == "regression" %}
+    # For regression, return the predicted value
+    return float(prediction)
+    {% endif %}
+
+
+def predict_batch(model: Any, data: np.ndarray) -> List[Union[int, float]]:
+    """Make predictions for batch of samples"""
+    predictions = model.predict(data)
+    
+    {% if task_type == "classification" %}
+    return [int(pred) for pred in predictions]
+    {% elif task_type == "regression" %}
+    return [float(pred) for pred in predictions]
+    {% endif %}
+
+
+def save_predictions(predictions: List[Union[int, float]], output_path: str) -> None:
+    """Save predictions to file"""
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
+    with open(output_path, 'w') as f:
+        json.dump(predictions, f, indent=2)
+    
+    logging.info(f"Predictions saved to {output_path}")
+
+
+{% if deployment == "fastapi" %}
+# FastAPI app
+app = FastAPI(title="{{ project_name }} API", version="0.1.0")
+
+# Pydantic models
+{% if task_type == "classification" %}
+class PredictionRequest(BaseModel):
+    features: List[float]
+
+class PredictionResponse(BaseModel):
+    prediction: int
+    confidence: float = None
+{% elif task_type == "regression" %}
+class PredictionRequest(BaseModel):
+    features: List[float]
+
+class PredictionResponse(BaseModel):
+    prediction: float
+{% endif %}
+
+class BatchPredictionRequest(BaseModel):
+    data: List[List[float]]
+
+class BatchPredictionResponse(BaseModel):
+    predictions: List[Union[int, float]]
+
+# Global variables for model and feature engineer
+model = None
+feature_engineer = None
+config = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Load model and feature engineer on startup"""
+    global model, feature_engineer, config
+    
+    config_path = "configs/config.yaml"
+    config = load_config(config_path)
+    setup_logging(config)
+    
+    model_path = "models/production/{{ task_type }}_model.joblib"
+    model = load_model(model_path)
+    
+    feature_engineer = FeatureEngineer(config)
+    feature_engineer.load_fitted_transformers()
+    
+    logging.info("API startup completed")
+
+
+@app.post("/predict", response_model=PredictionResponse)
+async def predict(request: PredictionRequest):
+    """Make single prediction"""
+    try:
+        data = np.array(request.features).reshape(1, -1)
+        data_processed = preprocess_data(data, feature_engineer)
+        prediction = predict_single(model, data_processed)
+        
+        {% if task_type == "classification" %}
+        # Get prediction probabilities for confidence
+        probabilities = model.predict_proba(data_processed)[0]
+        confidence = float(max(probabilities))
+        
+        return PredictionResponse(prediction=prediction, confidence=confidence)
+        {% elif task_type == "regression" %}
+        return PredictionResponse(prediction=prediction)
+        {% endif %}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/predict-batch", response_model=BatchPredictionResponse)
+async def predict_batch(request: BatchPredictionRequest):
+    """Make batch predictions"""
+    try:
+        data = np.array(request.data)
+        data_processed = preprocess_data(data, feature_engineer)
+        predictions = predict_batch(model, data_processed)
+        
+        return BatchPredictionResponse(predictions=predictions)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "model_loaded": model is not None}
+
+
+if __name__ == "__main__":
+    uvicorn.run(
+        "src.inference:app",
+        host=config["deployment"]["host"],
+        port=config["deployment"]["port"],
+        reload=True
+    )
+{% else %}
+def main() -> None:
+    """Main inference function"""
+    parser = argparse.ArgumentParser(description="Run inference with {{ framework_display }} {{ task_type }} model")
+    parser.add_argument("--config", type=str, default="configs/config.yaml", help="Path to configuration file")
+    parser.add_argument("--input-path", type=str, required=True, help="Path to input data")
+    parser.add_argument("--output-path", type=str, help="Path to save predictions")
+    parser.add_argument("--model-path", type=str, default="models/production/{{ task_type }}_model.joblib", help="Path to trained model")
+    args = parser.parse_args()
+    
+    # Load configuration
+    config = load_config(args.config)
+    setup_logging(config)
+    
+    logging.info("Starting inference process")
+    
+    # Load model
+    model = load_model(args.model_path)
+    
+    # Load feature engineer
+    feature_engineer = FeatureEngineer(config)
+    feature_engineer.load_fitted_transformers()
+    
+    # Load data
+    data_loader = DataLoader(config)
+    if args.input_path.endswith('.csv'):
+        data = data_loader.load_from_file(args.input_path)
+    else:
+        data = np.load(args.input_path)
+    
+    logging.info(f"Loaded data with shape: {data.shape}")
+    
+    # Preprocess data
+    data_processed = preprocess_data(data, feature_engineer)
+    
+    # Make predictions
+    if data_processed.shape[0] == 1:
+        # Single prediction
+        prediction = predict_single(model, data_processed)
+        predictions = [prediction]
+        logging.info(f"Single prediction: {prediction}")
+    else:
+        # Batch predictions
+        predictions = predict_batch(model, data_processed)
+        logging.info(f"Batch predictions: {len(predictions)} predictions made")
+    
+    # Save predictions if output path provided
+    if args.output_path:
+        save_predictions(predictions, args.output_path)
+    else:
+        print("Predictions:")
+        for i, pred in enumerate(predictions):
+            print(f"Sample {i}: {pred}")
+    
+    logging.info("Inference process completed successfully")
+
+
+if __name__ == "__main__":
+    main()
+{% endif %}

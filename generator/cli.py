@@ -255,7 +255,9 @@ def init(
 @app.command()
 def version():
     """Show version information"""
-    console.print("mlops-project-generator v2.0.1")
+    from generator import __version__
+
+    console.print(f"mlops-project-generator v{__version__}")
 
 
 @app.command()

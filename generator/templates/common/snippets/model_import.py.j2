@@ -1,0 +1,16 @@
+{# Unified model imports — fixes TimeseriesModel vs TimeSeriesModel naming #}
+{% if task_type == "classification" %}
+from src.models.classification_model import ClassificationModel as TaskModel
+{% elif task_type == "regression" %}
+from src.models.regression_model import RegressionModel as TaskModel
+{% elif task_type == "timeseries" %}
+from src.models.timeseries_model import TimeSeriesModel as TaskModel
+{% elif task_type == "nlp" %}
+raise ImportError(
+    "NLP projects use Hugging Face — run: python src/nlp/finetune.py (see configs/nlp.yaml)"
+)
+{% elif task_type == "computer-vision" %}
+from src.models.classification_model import ClassificationModel as TaskModel
+{% else %}
+raise ImportError(f"Unsupported task_type for this template: {{ task_type }}")
+{% endif %}

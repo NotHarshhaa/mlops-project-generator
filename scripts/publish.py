@@ -30,6 +30,7 @@ def check_git_status():
 def build_package():
     """Build the package"""
     print("🔨 Building package...")
+    run_command("python scripts/prepare_package.py")
     run_command("python -m pip install --upgrade build")
     run_command("python -m build")
     print("✅ Package built successfully")
@@ -51,7 +52,14 @@ def publish_to_test_pypi():
 
 
 def publish_to_pypi():
-    """Publish to PyPI"""
+    """Publish to PyPI (requires TWINE_USERNAME + TWINE_PASSWORD env vars)"""
+    import os
+
+    if not os.environ.get("TWINE_PASSWORD"):
+        print("❌ Set PyPI credentials first:")
+        print("   export TWINE_USERNAME=__token__")
+        print("   export TWINE_PASSWORD=pypi-<your-api-token>")
+        sys.exit(1)
     print("🚀 Publishing to PyPI...")
     run_command("twine upload dist/*")
     print("✅ Published to PyPI")
@@ -65,7 +73,6 @@ def main():
     # Check prerequisites
     check_git_status()
     
-    # Build and check package
     build_package()
     check_package()
     

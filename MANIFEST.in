@@ -4,7 +4,7 @@ include pyproject.toml
 include MANIFEST.in
 
 # Include templates
-recursive-include templates *.j2 *.yaml *.yml *.txt *.md *.gitignore Makefile
+recursive-include templates *.j2 *.yaml *.yml *.txt *.md *.py *.gitignore Makefile
 
 # Include source code
 recursive-include generator *.py

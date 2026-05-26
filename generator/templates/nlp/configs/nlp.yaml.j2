@@ -1,0 +1,16 @@
+# NLP / Hugging Face — {{ project_name }}
+model:
+  pretrained: "distilbert-base-uncased"
+  max_length: 256
+  num_labels: 2
+
+training:
+  epochs: 3
+  batch_size: 16
+  learning_rate: 2.0e-5
+
+data:
+  train_path: "data/raw/train.csv"
+  validation_path: "data/raw/val.csv"
+  text_column: "text"
+  label_column: "label"

@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <strong>Generate production-ready MLOps project templates — via Web UI or CLI.</strong><br/>
-  Scikit-learn · PyTorch · TensorFlow · Multi-cloud · Zero setup required.
+  <strong>Generate production-ready MLOps project scaffolds — via Web UI or Python CLI.</strong><br/>
+  Scikit-learn · PyTorch · TensorFlow · NLP (Hugging Face) · Multi-cloud · 40+ files per project
 </p>
 
 <p align="center">
@@ -23,95 +23,83 @@ Data → Train → Track → Orchestrate → Deploy → Monitor → Improve
 
 ---
 
-## 🎉 What's New in v2.0.0
+## 🎉 What's New (Web UI v1.2.0)
 
-🚀 **Major Enterprise-Grade Enhancements:**
-- **🔧 Advanced CLI Commands** - clone, archive, check_deps, profile, migrate, doctor
-- **📊 Enhanced Analytics System** - AI-powered insights, trending analysis, benchmarking
-- **⚙️ Advanced Configuration Management** - Environment configs, templates, pipelines
-- **☁️ Production-Ready Cloud Deployment** - Real AWS templates, CI/CD, monitoring
-- **🔄 Project Lifecycle Management** - Smart cloning, migration, health checks
-- **� Security-First Approach** - Vulnerability scanning, best practices, compliance
+Recent improvements to the **Next.js Web UI** and **TypeScript generator**:
 
-🆕 **New CLI Commands:**
-```bash
-mlops-project-generator clone <source> --name <target>
-mlops-project-generator archive <project> --type zip
-mlops-project-generator check_deps --update --security
-mlops-project-generator profile --format json
-mlops-project-generator migrate <old> <new-framework>
-mlops-project-generator doctor --fix --deep
-```
+### Web experience
+- **Observatory UI** — redesigned landing with mission, features, how-it-works, and generator sections
+- **Mobile-first layout** — compact on phones; desktop layout unchanged from `sm` breakpoint up
+- **Archive preview** — `GET /api/preview` (partial config, no strict validation) and `POST /api/preview?strict=true` before download
+- **File tree preview** in the form — see 40+ paths before generating
+- **Recent projects** — browser-local history with quick re-download
+
+### Generator (TypeScript v1.2.0)
+- **Legacy Jinja templates wired** — repo `templates/` synced into `web_ui/templates/` and rendered for classification / regression / timeseries
+- **Hugging Face NLP** — `src/nlp/finetune.py`, `configs/nlp.yaml`, Trainer + optional FastAPI inference
+- **Deployment artifacts** — root `Dockerfile`, `docker-compose.yml`, Kubernetes manifests (`k8s/`) when Docker/K8s is selected
+- **Orchestration files** — Airflow DAG (`dags/ml_training_dag.py`), Kubeflow pipeline stub
+- **Monitoring scripts** — Evidently drift report + custom metrics collector
+- **Config presets & templates** — `preset_config` and `custom_template` now affect output (CI, notebooks, minimal/comprehensive/microservice bundles)
+- **Stack presets** — also set preset + template fields when applied
+- **`generation_insights.json`** — optional recommendations when analytics is enabled
+
+### Template fixes (`templates/`)
+- Unified `timeseries` naming (was mixed with `time-series`)
+- Fixed `TimeSeriesModel` imports via `snippets/model_import.py.j2`
+- Improved `requirements.txt.j2`, `config.yaml.j2`, README/Makefile/.env Jinja templates
+- New `templates/nlp/` for Hugging Face fine-tuning (CLI + web sync)
 
 ---
 
 ## 🚀 Features
 
-### 🏗️ Core Generation
-- **🔧 Framework Support**: Scikit-learn, PyTorch, TensorFlow/Keras
-- **📊 Task Types**: Classification, Regression, Time-Series, NLP, Computer Vision
-- **🎯 Stack Presets**: 6 pre-configured MLOps stacks (Quick Start, Data Science, Deep Learning, Production MLOps, Enterprise, Research)
-- **🌐 Web UI**: Browser-based generator — no install needed
-- **🤖 CI/CD Ready**: Non-interactive CLI mode for DevOps pipelines
+### 🏗️ Core generation
+| Capability | Web UI | Python CLI |
+|------------|--------|------------|
+| Frameworks | sklearn, PyTorch, TensorFlow | Same |
+| Task types | classification, regression, timeseries, nlp, computer-vision | Same |
+| Stack presets | 6 curated stacks (form) | `init --preset` |
+| ZIP download | Yes | Project folder |
+| Generator runtime | Pure TypeScript (API routes) | Jinja2 + Python |
 
-### 🔬 MLOps Integration
-- **📈 Experiment Tracking**: MLflow, W&B, Custom solutions
-- **🎯 Orchestration**: Airflow, Kubeflow
-- **🚀 Deployment**: FastAPI, Docker, Kubernetes, Cloud platforms
-- **� Monitoring**: Evidently AI, Custom solutions
-- **☁️ Cloud Deployment**: Multi-cloud templates (AWS, GCP, Azure)
+### 🔬 MLOps integration (generated into ZIP)
+- **Experiment tracking** — MLflow, W&B, custom, or none
+- **Orchestration** — Airflow DAG, Kubeflow pipeline YAML (not empty folders only)
+- **Deployment** — FastAPI inference, Docker (+ compose), Kubernetes (deployment/service/configmap)
+- **Monitoring** — Evidently drift script, custom metrics collector
+- **Cloud packs** — AWS / GCP / Azure folders with Dockerfile, config, deploy scripts
 
-### 🛠️ Advanced CLI Commands
-- **📋 clone**: Smart project cloning with configuration preservation
-- **📦 archive**: Selective project archiving (exclude data/models)
-- **🔍 check_deps**: Dependency management with security vulnerability scanning
-- **📊 profile**: Performance profiling and resource usage analysis
-- **🔄 migrate**: Framework migration with automated code conversion
-- **🩺 doctor**: Comprehensive health checks with auto-fix capabilities
+### 📦 Template profiles (Web UI — optional fields)
+| Preset config | Effect |
+|---------------|--------|
+| `quick-start` | Lean output (e.g. skips Makefile) |
+| `production-ready` | CI workflow + stronger tests |
+| `research` | Starter Jupyter notebook |
+| `enterprise` | CI + pre-commit + notebook |
 
-### 📈 Enhanced Analytics
-- **📊 Trending Analysis**: Framework usage, complexity trends, deployment patterns
-- **🤖 AI-Powered Insights**: Actionable recommendations based on project patterns
-- **📈 Benchmarking**: Compare projects against historical data
-- **📊 Productivity Metrics**: Projects per month, file/line generation statistics
-- **📋 Export Reports**: Comprehensive analytics reports in JSON format
+| Custom template | Effect |
+|-----------------|--------|
+| `minimal` | Essentials only |
+| `comprehensive` | CI, pre-commit, notebook |
+| `microservice` | API middleware patterns for FastAPI |
 
-### ⚙️ Configuration Management
-- **🌍 Environment Configs**: Development/staging/production configurations
-- **📋 Configuration Templates**: Reusable templates for different use cases
-- **🔄 Configuration Pipelines**: Multi-stage deployment configurations
-- **🔍 Diff & Merge**: Configuration comparison and merging capabilities
-- **💾 Backup & Restore**: Configuration backup and restoration system
-
-### 🚀 Production-Ready Deployment
-- **🐳 Real Dockerfiles**: Multi-stage builds with security best practices
-- **☁️ AWS Templates**: Production-grade CloudFormation, Terraform-ready
-- **🔄 CI/CD Integration**: GitHub Actions with testing, security scanning, deployment
-- **📊 Monitoring Setup**: CloudWatch dashboards, alerting configurations
-- **🔒 Security Best Practices**: IAM roles, VPC configuration, encryption
-
----
-
-## � MLOps Presets
-
-Choose from 6 pre-configured MLOps stacks tailored for different use cases:
+### 🎯 Stack presets (Web UI cards)
 
 | Preset | Framework | Tracking | Orchestration | Deploy | Monitor |
-|--------|-----------|----------|---------------|-------|---------|
-| ⚡ Quick Start | Sklearn | None | None | FastAPI | None |
-| 🧪 Data Science | Sklearn | MLflow | None | FastAPI | Custom |
-| 🧠 Deep Learning | PyTorch | W&B | None | Docker | None |
-| 📡 Production MLOps | PyTorch | MLflow | Airflow | Docker | Evidently |
-| 🏢 Enterprise | TensorFlow | MLflow | Kubeflow | Kubernetes | Evidently |
-| 🔬 Research | PyTorch | W&B | None | FastAPI | None |
-
-Use presets via CLI: `mlops-project-generator init --preset <name>` or select them in the Web UI.
+|--------|-----------|----------|---------------|--------|---------|
+| Quick Start | Sklearn | None | None | FastAPI | None |
+| Data Science | Sklearn | MLflow | None | FastAPI | Custom |
+| Deep Learning | PyTorch | W&B | None | Docker | None |
+| Production MLOps | PyTorch | MLflow | Airflow | Docker | Evidently |
+| Enterprise | TensorFlow | MLflow | Kubeflow | Kubernetes | Evidently |
+| Research | PyTorch | W&B | None | FastAPI | None |
 
 ---
 
-## �🌐 Web UI (Recommended)
+## 🌐 Web UI (Recommended)
 
-The fastest way to generate a project — open it in your browser, fill in the form, and download a ready-to-use ZIP.
+The fastest path: open the app, pick a stack preset, configure options, preview files, generate, and download a ZIP.
 
 ### Run locally
 
@@ -119,84 +107,69 @@ The fastest way to generate a project — open it in your browser, fill in the f
 cd web_ui
 npm install
 npm run dev
+# Syncs templates/ from repo root, then starts Next.js
 # → http://localhost:3000
 ```
 
-### Self-host / Deploy
+### API routes
 
-The web UI is a **Next.js 15 app with no external backend dependency**. The generator runs entirely as Next.js API routes — deploy to Vercel, Netlify, Railway, or any Node.js host:
+| Method | Route | Description |
+|--------|-------|-------------|
+| `GET` | `/api/options` | Dropdown values for the form |
+| `GET` | `/api/preview?framework=...&task_type=...` | File tree preview (defaults for missing fields) |
+| `POST` | `/api/preview` | Preview with partial body |
+| `POST` | `/api/preview?strict=true` | Preview with full validation |
+| `POST` | `/api/generate` | Start async generation → `{ task_id }` |
+| `GET` | `/api/status/[taskId]` | Poll progress |
+| `GET` | `/api/download/[taskId]` | Download ZIP |
+
+### Web UI tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Framework | Next.js 16 (App Router, Turbopack) |
+| UI | Tailwind CSS v4, Syne + DM Sans + JetBrains Mono |
+| Forms | react-hook-form + Zod |
+| Generator | TypeScript (`web_ui/src/lib/generator/`) |
+| Templates | Jinja2 sources in `templates/` (synced on dev/build) |
+| Archive | archiver (ZIP) |
+
+### Deploy / self-host
 
 ```bash
 cd web_ui
-npm run build
+npm run build   # runs scripts/sync-templates.mjs then next build
 npm start
 ```
 
-> **Vercel one-click deploy:** set the root directory to `web_ui` and it works out of the box.
-
-### Web UI Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Framework | Next.js 15 (App Router) |
-| Styling | Tailwind CSS v4 + Glassmorphism |
-| Forms | react-hook-form + zod |
-| Generator | Pure TypeScript (no Python runtime needed) |
-| ZIP output | archiver |
+Set the deploy root to **`web_ui`**. The generator runs in API routes — no separate Python server required.
 
 ---
 
-## 📦 CLI Installation
+## 📦 Python CLI
 
-Prefer the command line? Install the Python package:
-
-### From PyPI
+Install and use the classic Typer CLI (renders `templates/` with Jinja2):
 
 ```bash
-pip install mlops-project-generator==2.0.1
-```
-
-### From Source
-
-```bash
-git clone https://github.com/NotHarshhaa/MLOps-Project-Generator.git
-cd MLOps-Project-Generator
+pip install mlops-project-generator==2.1.0
+# or from source:
 pip install -e .
 ```
 
-### Development Install
-
-```bash
-pip install -e ".[dev]"
-```
-
----
-
-## 🎯 CLI Quick Start
-
-### Interactive mode (recommended for beginners)
+### Interactive
 
 ```bash
 mlops-project-generator init
 ```
 
-### Using Stack Presets (NEW!)
+### With preset
 
 ```bash
-# Quick start with preset
-mlops-project-generator init --preset quick-start
-
-# Enterprise stack with custom project name
-mlops-project-generator init --preset enterprise --project-name my-platform
-
-# Override preset values
-mlops-project-generator init --preset production-mlops --deployment kubernetes
-
-# List all available presets
+mlops-project-generator init --preset production-mlops --project-name my-ml-platform
 mlops-project-generator list-presets
 ```
 
-### Non-interactive mode (CI/CD)
+### Non-interactive (CI/CD)
 
 ```bash
 mlops-project-generator init \
@@ -211,449 +184,198 @@ mlops-project-generator init \
   --description "Production ML pipeline"
 ```
 
-### Available CLI Commands
+### Advanced CLI (v2.x)
 
-#### Core
-| Command | Description |
-|---|---|
-| `init` | Generate a new MLOps project |
-| `validate` | Validate an existing project structure |
-| `version` | Show version |
+```bash
+mlops-project-generator clone <source> --name <target>
+mlops-project-generator archive <project> --type zip
+mlops-project-generator check_deps --update --security
+mlops-project-generator profile --format json
+mlops-project-generator migrate <old> <new-framework>
+mlops-project-generator doctor --fix --deep
+```
 
-#### Configuration Management
-| Command | Description |
-|---|---|
-| `save-preset <name>` | Save current config as a preset |
-| `list-presets` | List all presets |
-| `load-preset <name>` | Load a preset |
-| `delete-preset <name>` | Delete a preset |
+### `init` flags
 
-#### Template Management
-| Command | Description |
-|---|---|
-| `create-template <name> <framework>` | Create a custom template |
-| `list-templates` | List custom templates |
-| `delete-template <name>` | Delete a template |
-| `add-template-file <template> <path>` | Add a file to a template |
-
-#### Advanced CLI Commands (NEW!)
-| Command | Description |
-|---|---|
-| `clone <source>` | Clone existing projects with configuration preservation |
-| `archive <project>` | Project archiving with selective content inclusion |
-| `check_deps` | Dependency management with security vulnerability scanning |
-| `profile` | Performance profiling and resource usage analysis |
-| `migrate <old> <new>` | Framework migration with automated conversion |
-| `doctor` | Comprehensive project health check with auto-fix capabilities |
-
-#### Analytics & Insights (NEW!)
-| Command | Description |
-|---|---|
-| `stats` | Show generation statistics and trends |
-| `analyze <path>` | Analyze a generated project with AI insights |
-| `benchmark <project>` | Compare project against historical baselines |
-| `export-analytics` | Export comprehensive analytics reports |
-
-#### Configuration Management (ENHANCED!)
-| Command | Description |
-|---|---|
-| `save-preset <name>` | Save current config as a preset |
-| `list-presets` | List all presets |
-| `load-preset <name>` | Load a preset |
-| `delete-preset <name>` | Delete a preset |
-| `backup-config` | Backup all project configurations |
-| `restore-config <backup>` | Restore from configuration backup |
-| `diff-configs <config1> <config2>` | Compare two configurations |
-| `merge-configs <base> <other>` | Merge configuration files |
-
-### `init` Flag Reference
-
-| Flag | Short | Values |
-|---|---|---|
-| `--framework` | `-f` | `sklearn`, `pytorch`, `tensorflow` |
-| `--task-type` | `-t` | `classification`, `regression`, `timeseries`, `nlp`, `computer-vision` |
-| `--tracking` | `-r` | `mlflow`, `wandb`, `custom`, `none` |
-| `--orchestration` | `-o` | `airflow`, `kubeflow`, `none` |
-| `--deployment` | `-d` | `fastapi`, `docker`, `kubernetes` |
-| `--monitoring` | `-m` | `evidently`, `custom`, `none` |
-| `--project-name` | `-p` | Any valid identifier |
-| `--author-name` | `-a` | Any string |
-| `--description` | `--desc` | Any string |
+| Flag | Values |
+|------|--------|
+| `--framework` / `-f` | `sklearn`, `pytorch`, `tensorflow` |
+| `--task-type` / `-t` | `classification`, `regression`, `timeseries`, `nlp`, `computer-vision` |
+| `--tracking` / `-r` | `mlflow`, `wandb`, `custom`, `none` |
+| `--orchestration` / `-o` | `airflow`, `kubeflow`, `none` |
+| `--deployment` / `-d` | `fastapi`, `docker`, `kubernetes` |
+| `--monitoring` / `-m` | `evidently`, `custom`, `none` |
 
 ---
 
-## 🏢 Enterprise-Grade Features
+## 📁 Generated project structure
 
-### � Security & Compliance
-- **Vulnerability Scanning**: Automated security checks for dependencies
-- **IAM Best Practices**: Proper role-based access controls
-- **VPC Configuration**: Network isolation and security groups
-- **Encryption**: Data encryption at rest and in transit
-- **Compliance Templates**: SOC2, GDPR, HIPAA-ready configurations
-
-### 📊 Production Monitoring
-- **CloudWatch Integration**: Real-time metrics and alerting
-- **Dashboard Templates**: Pre-built monitoring dashboards
-- **Performance Profiling**: Resource usage analysis and optimization
-- **Health Checks**: Comprehensive system validation with auto-fix
-- **SLA Monitoring**: Service level agreement tracking
-
-### 🚀 Real-World CI/CD
-- **GitHub Actions**: Complete workflows with testing, security, deployment
-- **Multi-Stage Dockerfiles**: Optimized builds with security best practices
-- **Automated Testing**: Unit, integration, and end-to-end tests
-- **Security Scanning**: Code quality and vulnerability analysis
-- **Rollback Strategies**: Automated rollback capabilities
-
-### 📈 Advanced Analytics
-```bash
-# Generate comprehensive analytics report
-mlops-project-generator export-analytics --format json --output report.json
-
-# Analyze project performance
-mlops-project-generator profile --project my-ml-platform --format json
-
-# Benchmark against historical data
-mlops-project-generator benchmark my-project --baseline industry-standard
-```
-
----
-
-## 🔄 Project Lifecycle Management
-
-### Smart Project Cloning
-```bash
-# Clone project with configuration preservation
-mlops-project-generator clone existing-project --name new-project --exclude-data
-```
-
-### Framework Migration
-```bash
-# Migrate from sklearn to pytorch
-mlops-project-generator migrate sklearn-project pytorch --auto-convert
-```
-
-### Dependency Management
-```bash
-# Check dependencies with security scanning
-mlops-project-generator check_deps --update --security --fix
-```
-
-### Project Health Checks
-```bash
-# Comprehensive health check with auto-fix
-mlops-project-generator doctor --fix --deep --generate-report
-```
-
----
-
-## 🖼️ Screenshots
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/cli-commands.png" alt="CLI Commands" width="700"/>
-</p>
-
-### Scikit-learn Generation
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/sklearn-generation.png" alt="Scikit-learn Generation" width="700"/>
-</p>
-
-### PyTorch Generation
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/pytorch-generation.png" alt="PyTorch Generation" width="700"/>
-</p>
-
-### TensorFlow Generation
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/NotHarshhaa/MLOps-Project-Generator/master/images/tensorflow-generation.png" alt="TensorFlow Generation" width="700"/>
-</p>
-
----
-
-## 📁 Generated Project Structure
+Typical output (varies by stack, preset, and template):
 
 ```
 your-project/
 ├── src/
-│   ├── data/              # Data loading utilities
-│   ├── models/            # Model implementations
-│   ├── features/          # Feature engineering (sklearn)
-│   ├── utils/             # Training utilities (pytorch/tensorflow)
-│   ├── train.py           # Training entry point
-│   └── inference.py       # Inference / FastAPI server
+│   ├── train.py                 # or nlp/finetune.py for NLP
+│   ├── inference.py
+│   ├── data/                    # loaders (+ NLP/CV helpers)
+│   ├── models/                  # task-specific model modules
+│   └── nlp/                     # Hugging Face (NLP task)
 ├── configs/
-│   └── config.yaml        # Project configuration
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── external/
-├── models/
-│   ├── checkpoints/
-│   └── production/
-├── notebooks/
-├── tests/
-│   └── test_model.py
-├── cloud/                 # Cloud deployment files (if selected)
+│   ├── config.yaml
+│   └── nlp.yaml                 # NLP only
+├── dags/                        # Airflow (if selected)
+│   └── ml_training_dag.py
+├── pipelines/                   # Kubeflow (if selected)
+├── k8s/                         # Kubernetes (if selected)
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── configmap.yaml
+├── scripts/monitoring/          # Evidently / custom monitoring
+├── cloud/                       # Optional cloud provider pack
 │   └── <provider>/<service>/
-│       ├── Dockerfile
-│       ├── cloud-config.yaml
-│       └── deploy.sh
+├── Dockerfile                   # Docker / K8s deploy
+├── docker-compose.yml           # Docker deploy
+├── .github/workflows/ci.yml     # production-ready / enterprise preset
+├── tests/
+├── notebooks/
 ├── requirements.txt
 ├── Makefile
-├── .gitignore
 ├── .env.example
+├── generation_insights.json     # if analytics enabled
 ├── project_config.json
 └── README.md
 ```
 
 ---
 
-## 🛠️ Framework-Specific Features
+## 🛠️ Framework & task highlights
 
 ### Scikit-learn
-- RandomForest / Ridge with cross-validation and joblib serialization
-- `DataLoader` + `FeatureEngineer` classes ready to extend
-- FastAPI inference server included when `--deployment fastapi`
+- RandomForest / regression / time-series models via Jinja templates
+- `DataLoader`, `FeatureEngineering`, joblib persistence
 
-### PyTorch
-- Configurable `nn.Sequential` model with Dropout
-- Full training loop with `DataLoader`, early stopping
-- `torch.save` / `torch.load` model persistence
+### PyTorch & TensorFlow
+- Task-specific model templates (`classification_model`, `regression_model`, `timeseries_model`)
+- Training loops with tracking hooks; FastAPI inference when selected
 
-### TensorFlow / Keras
-- `keras.Sequential` with BatchNorm and Dropout
-- `EarlyStopping` callback pre-configured
-- `model.save()` / `tf.keras.models.load_model()` persistence
+### NLP (Hugging Face)
+- Fine-tune with `transformers` + `datasets` + `Trainer`
+- Config-driven (`configs/nlp.yaml`), demo data if CSV missing
+- FastAPI inference when deployment is FastAPI
 
----
-
-## 📊 Experiment Tracking
-
-### MLflow
-```python
-mlflow.set_tracking_uri("http://localhost:5000")
-with mlflow.start_run():
-    mlflow.log_params(config["model"])
-    mlflow.log_metrics({"accuracy": 0.95})
-```
-
-### W&B
-```python
-wandb.init(project="my-project")
-wandb.log({"loss": 0.12, "accuracy": 0.95})
-wandb.finish()
-```
+### Computer vision
+- Image dataset helper + OpenCV/Pillow in requirements
 
 ---
 
-## 🚀 Deployment Options
+## 🚀 Deployment & monitoring (generated)
 
-### FastAPI
-```bash
-uvicorn src.inference:app --reload
-# → http://localhost:8000/docs
-```
-
-### Docker
-```bash
-docker build -t my-ml-project .
-docker run -p 8000:8000 my-ml-project
-```
-
-### Kubernetes
-```bash
-kubectl apply -f k8s/
-```
+| Selection | Generated artifacts |
+|-----------|---------------------|
+| **FastAPI** | `src/inference.py` with `/health` and `/predict` |
+| **Docker** | `Dockerfile`, `.dockerignore`, `docker-compose.yml`, `scripts/run_docker.sh` |
+| **Kubernetes** | `k8s/*.yaml`, `scripts/deploy_k8s.sh` |
+| **Evidently** | `scripts/monitoring/drift_report.py` |
+| **Custom monitoring** | `scripts/monitoring/metrics_collector.py` |
 
 ---
 
-## 📈 Monitoring
-
-### Evidently AI
-```python
-from evidently.report import Report
-from evidently.metric_preset import DataDriftPreset
-
-report = Report(metrics=[DataDriftPreset()])
-report.run(current_data=current, reference_data=reference)
-```
-
----
-
-## 🤖 CI/CD Integration
-
-### GitHub Actions
-
-```yaml
-name: Generate ML Project
-on:
-  workflow_dispatch:
-    inputs:
-      framework:
-        type: choice
-        options: [sklearn, pytorch, tensorflow]
-      project_name:
-        type: string
-        default: ml-project
-
-jobs:
-  generate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - run: pip install mlops-project-generator
-      - run: |
-          mlops-project-generator init \
-            --framework ${{ github.event.inputs.framework }} \
-            --project-name ${{ github.event.inputs.project_name }} \
-            --tracking mlflow \
-            --deployment docker
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ${{ github.event.inputs.project_name }}
-          path: ${{ github.event.inputs.project_name }}/
-```
-
-### GitLab CI
-
-```yaml
-generate_ml_project:
-  image: python:3.11
-  script:
-    - pip install mlops-project-generator
-    - mlops-project-generator init \
-        --framework $FRAMEWORK \
-        --project-name $PROJECT_NAME \
-        --tracking mlflow \
-        --deployment docker
-  artifacts:
-    paths: [$PROJECT_NAME/]
-    expire_in: 1 week
-```
-
----
-
-## 🏗️ Repository Structure
+## 🏗️ Repository structure
 
 ```
 MLOps-Project-Generator/
-├── generator/              # Python CLI source
-│   ├── cli.py             # Typer CLI entry point
-│   ├── renderer.py        # Jinja2 template renderer
-│   ├── validators.py      # Input validation
-│   ├── cloud_deployer.py  # Cloud template generation
-│   └── ...
-├── templates/              # Jinja2 project templates
-│   ├── common/            # Shared across all frameworks
-│   ├── sklearn/
-│   ├── pytorch/
-│   └── tensorflow/
-├── web_ui/                 # Next.js web application
-│   ├── app/
-│   │   └── api/           # Next.js API routes (generator backend)
-│   │       ├── generate/  # POST — start generation
-│   │       ├── status/    # GET  — poll task status
-│   │       ├── download/  # GET  — download ZIP
-│   │       └── options/   # GET  — dropdown options
-│   └── src/
-│       └── lib/
-│           ├── generator/ # Pure TS generator (no Python needed)
-│           └── task-store.ts
-├── tests/                  # Python CLI tests
+├── generator/                 # Python CLI (Typer, renderer, cloud deployer, …)
+├── templates/                 # Jinja2 sources (shared by CLI + Web UI sync)
+│   ├── common/               # README, requirements, config, snippets, tests
+│   ├── sklearn/ | pytorch/ | tensorflow/
+│   └── nlp/                  # Hugging Face NLP templates
+├── web_ui/                    # Next.js application
+│   ├── app/api/              # generate, status, download, options, preview
+│   ├── src/
+│   │   ├── components/       # MLOpsForm, marketing, form sections
+│   │   └── lib/
+│   │       ├── generator/    # TS generator + legacy Jinja loader
+│   │       ├── server/       # validation, generation pipeline
+│   │       └── tasks/        # in-memory task store
+│   └── scripts/
+│       └── sync-templates.mjs  # copies ../templates → web_ui/templates
+├── tests/                     # Python CLI tests
 ├── pyproject.toml
 └── README.md
 ```
 
 ---
 
-## 🧪 Testing (CLI)
+## 🧪 Development
+
+### Web UI
 
 ```bash
-pytest tests/ -v
-pytest tests/ --cov=generator --cov-report=html
+cd web_ui
+npm install
+npm run dev
+npm run build
 ```
 
-## 🛠️ Development (CLI)
+### Python CLI
 
 ```bash
-git clone https://github.com/NotHarshhaa/MLOps-Project-Generator.git
-cd MLOps-Project-Generator
 pip install -e ".[dev]"
+pytest tests/ -v
 black generator/ tests/
-isort generator/ tests/
 flake8 generator/ tests/
-mypy generator/
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
+1. Fork the repository  
+2. Create a feature branch  
+3. Update `templates/` and/or `web_ui/src/lib/generator/` as needed  
+4. Run `cd web_ui && npm run build` and `pytest` for CLI changes  
+5. Open a pull request  
 
 ---
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE) for details.
-
----
-
-## 🙏 Acknowledgments
-
-- **Typer** · Beautiful Python CLI framework
-- **Next.js** · React framework powering the Web UI
-- **Rich** · Stunning terminal output
-- **archiver** · ZIP generation for project downloads
-
----
-
-## 📞 Support
-
-- 🐛 [GitHub Issues](https://github.com/NotHarshhaa/MLOps-Project-Generator/issues)
-- 💬 [GitHub Discussions](https://github.com/NotHarshhaa/MLOps-Project-Generator/discussions)
+MIT — see [LICENSE](LICENSE).
 
 ---
 
 ## 🗺️ Roadmap
 
-### ✅ Completed
-
+### Completed
 - [x] Python CLI with interactive + non-interactive modes
-- [x] Scikit-learn, PyTorch, TensorFlow project templates
-- [x] MLflow, W&B experiment tracking integration
+- [x] Scikit-learn, PyTorch, TensorFlow templates
+- [x] MLflow, W&B, Airflow, Kubeflow, Docker, K8s, Evidently scaffolds
 - [x] Multi-cloud deployment templates (AWS, GCP, Azure)
-- [x] Configuration presets and template customization
-- [x] Project analytics and validation
-- [x] **Web UI** — Next.js app with glassmorphism UI (v1.0.8)
-- [x] **Backend migration** — generator ported to pure TypeScript, no Python runtime needed on the server (v1.0.8)
-- [x] **Stack Presets** — 6 pre-configured MLOps stacks (Quick Start, Data Science, Deep Learning, Production MLOps, Enterprise, Research) (v1.0.8)
-- [x] **Advanced CLI Commands** — clone, archive, check_deps, profile, migrate, doctor (v2.0.0)
-- [x] **Enhanced Analytics** — AI-powered insights, trending analysis, benchmarking (v2.0.0)
-- [x] **Production-Ready Deployment** — Real AWS templates, CI/CD, monitoring (v2.0.0)
-- [x] **Security-First Approach** — Vulnerability scanning, best practices (v2.0.0)
-- [x] **Configuration Management** — Environment configs, templates, pipelines (v2.0.0)
+- [x] **Web UI** — Next.js generator with ZIP download
+- [x] **TypeScript generator** — no Python runtime on the server
+- [x] **Legacy Jinja integration** — `templates/` rendered in Web UI for core ML tasks
+- [x] **Hugging Face NLP** — fine-tune + inference stubs
+- [x] **Archive preview API** — GET/POST `/api/preview`
+- [x] **Deployment & orchestration files** — real DAGs, K8s manifests, Docker Compose
+- [x] **Config preset + custom template** profiles in generated ZIPs
+- [x] **UI redesign** — marketing sections, stack presets, mobile compact layout
+- [x] **Template quality pass** — timeseries naming, model imports, requirements fixes
 
-### 🚀 Upcoming
-
-- [ ] Additional frameworks (XGBoost, LightGBM, HuggingFace)
+### Upcoming
 - [ ] Shareable project config links
 - [ ] Template marketplace
-- [ ] Team collaboration features
+- [ ] Additional frameworks (XGBoost, LightGBM)
+- [ ] Deeper NLP/CV model templates in Jinja (beyond stubs)
 
 ---
 
-⭐ If you find this useful, please give it a star on GitHub!
+## 📞 Support
+
+- [GitHub Issues](https://github.com/NotHarshhaa/MLOps-Project-Generator/issues)
+- [GitHub Discussions](https://github.com/NotHarshhaa/MLOps-Project-Generator/discussions)
+
+---
+
+⭐ If this project helps you, consider starring the repo!
 
 Generated with ❤️ by [MLOps Project Generator](https://github.com/NotHarshhaa/MLOps-Project-Generator)

@@ -1,0 +1,285 @@
+"""
+Regression model implementation for PyTorch
+"""
+
+import torch
+import torch.nn as nn
+from typing import Dict, Any
+
+
+class RegressionModel(nn.Module):
+    """
+    Neural network for regression tasks
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize regression model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(RegressionModel, self).__init__()
+        
+        self.config = config
+        self.hidden_layers = config.get("hidden_layers", [128, 64, 32])
+        self.dropout = config.get("dropout", 0.2)
+        self.output_dim = config.get("output_dim", 1)
+        self.input_dim = config.get("input_dim", 20)  # Default, will be updated
+        
+        # Build network layers
+        layers = []
+        
+        # Input layer
+        prev_dim = self.input_dim
+        
+        # Hidden layers
+        for hidden_dim in self.hidden_layers:
+            layers.extend([
+                nn.Linear(prev_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(self.dropout)
+            ])
+            prev_dim = hidden_dim
+        
+        # Output layer
+        layers.append(nn.Linear(prev_dim, self.output_dim))
+        
+        self.network = nn.Sequential(*layers)
+        
+        # Initialize weights
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize network weights"""
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass
+        
+        Args:
+            x: Input tensor
+            
+        Returns:
+            Output tensor (predictions)
+        """
+        return self.network(x)
+    
+    def set_input_dim(self, input_dim: int):
+        """Set input dimension (for dynamic input size)"""
+        if input_dim != self.input_dim:
+            self.input_dim = input_dim
+            # Rebuild the first layer
+            layers = []
+            prev_dim = self.input_dim
+            
+            # Hidden layers
+            for hidden_dim in self.hidden_layers:
+                layers.extend([
+                    nn.Linear(prev_dim, hidden_dim),
+                    nn.ReLU(),
+                    nn.Dropout(self.dropout)
+                ])
+                prev_dim = hidden_dim
+            
+            # Output layer
+            layers.append(nn.Linear(prev_dim, self.output_dim))
+            
+            self.network = nn.Sequential(*layers)
+            self._initialize_weights()
+
+
+class DeepRegressionModel(nn.Module):
+    """
+    Deeper neural network with batch normalization for regression
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize deep regression model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(DeepRegressionModel, self).__init__()
+        
+        self.config = config
+        self.hidden_layers = config.get("hidden_layers", [256, 128, 64])
+        self.dropout = config.get("dropout", 0.3)
+        self.output_dim = config.get("output_dim", 1)
+        self.input_dim = config.get("input_dim", 20)
+        self.use_batch_norm = config.get("use_batch_norm", True)
+        
+        # Build network layers
+        layers = []
+        
+        # Input layer
+        prev_dim = self.input_dim
+        
+        # Hidden layers with optional batch normalization
+        for i, hidden_dim in enumerate(self.hidden_layers):
+            layers.append(nn.Linear(prev_dim, hidden_dim))
+            
+            if self.use_batch_norm:
+                layers.append(nn.BatchNorm1d(hidden_dim))
+            
+            layers.append(nn.ReLU())
+            layers.append(nn.Dropout(self.dropout))
+            prev_dim = hidden_dim
+        
+        # Output layer
+        layers.append(nn.Linear(prev_dim, self.output_dim))
+        
+        self.network = nn.Sequential(*layers)
+        
+        # Initialize weights
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize network weights"""
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm1d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass
+        
+        Args:
+            x: Input tensor
+            
+        Returns:
+            Output tensor (predictions)
+        """
+        return self.network(x)
+    
+    def set_input_dim(self, input_dim: int):
+        """Set input dimension (for dynamic input size)"""
+        if input_dim != self.input_dim:
+            self.input_dim = input_dim
+            # Rebuild the network
+            layers = []
+            prev_dim = self.input_dim
+            
+            for i, hidden_dim in enumerate(self.hidden_layers):
+                layers.append(nn.Linear(prev_dim, hidden_dim))
+                
+                if self.use_batch_norm:
+                    layers.append(nn.BatchNorm1d(hidden_dim))
+                
+                layers.append(nn.ReLU())
+                layers.append(nn.Dropout(self.dropout))
+                prev_dim = hidden_dim
+            
+            layers.append(nn.Linear(prev_dim, self.output_dim))
+            
+            self.network = nn.Sequential(*layers)
+            self._initialize_weights()
+
+
+class AttentionRegressionModel(nn.Module):
+    """
+    Regression model with attention mechanism
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize attention regression model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        super(AttentionRegressionModel, self).__init__()
+        
+        self.config = config
+        self.hidden_layers = config.get("hidden_layers", [128, 64])
+        self.dropout = config.get("dropout", 0.2)
+        self.output_dim = config.get("output_dim", 1)
+        self.input_dim = config.get("input_dim", 20)
+        self.attention_dim = config.get("attention_dim", 32)
+        
+        # Feature extractor
+        feature_layers = []
+        prev_dim = self.input_dim
+        
+        for hidden_dim in self.hidden_layers:
+            feature_layers.extend([
+                nn.Linear(prev_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Dropout(self.dropout)
+            ])
+            prev_dim = hidden_dim
+        
+        self.feature_extractor = nn.Sequential(*feature_layers)
+        
+        # Attention mechanism
+        self.attention = nn.Sequential(
+            nn.Linear(prev_dim, self.attention_dim),
+            nn.Tanh(),
+            nn.Linear(self.attention_dim, 1),
+            nn.Softmax(dim=1)
+        )
+        
+        # Output layer
+        self.output_layer = nn.Linear(prev_dim, self.output_dim)
+        
+        self._initialize_weights()
+    
+    def _initialize_weights(self):
+        """Initialize network weights"""
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass
+        
+        Args:
+            x: Input tensor
+            
+        Returns:
+            Output tensor (predictions)
+        """
+        # Extract features
+        features = self.feature_extractor(x)
+        
+        # Apply attention
+        attention_weights = self.attention(features)
+        attended_features = features * attention_weights
+        
+        # Output prediction
+        output = self.output_layer(attended_features)
+        
+        return output
+    
+    def set_input_dim(self, input_dim: int):
+        """Set input dimension (for dynamic input size)"""
+        if input_dim != self.input_dim:
+            self.input_dim = input_dim
+            # Rebuild the feature extractor
+            feature_layers = []
+            prev_dim = self.input_dim
+            
+            for hidden_dim in self.hidden_layers:
+                feature_layers.extend([
+                    nn.Linear(prev_dim, hidden_dim),
+                    nn.ReLU(),
+                    nn.Dropout(self.dropout)
+                ])
+                prev_dim = hidden_dim
+            
+            self.feature_extractor = nn.Sequential(*feature_layers)
+            self._initialize_weights()

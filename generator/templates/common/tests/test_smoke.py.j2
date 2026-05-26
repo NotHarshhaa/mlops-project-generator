@@ -1,0 +1,19 @@
+"""Smoke tests for {{ project_name }}"""
+from pathlib import Path
+
+
+def test_config_exists():
+    assert Path("configs/config.yaml").exists()
+
+
+def test_requirements_exists():
+    assert Path("requirements.txt").exists()
+
+
+{% if task_type != "nlp" %}
+def test_train_script_exists():
+    assert Path("src/train.py").exists()
+{% else %}
+def test_nlp_finetune_exists():
+    assert Path("src/nlp/finetune.py").exists()
+{% endif %}

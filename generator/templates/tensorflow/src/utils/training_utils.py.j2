@@ -1,0 +1,465 @@
+"""
+Training utilities for TensorFlow/Keras
+"""
+
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras import callbacks
+import numpy as np
+import logging
+from typing import Dict, Any, List, Tuple
+
+
+class EarlyStopping(callbacks.Callback):
+    """
+    Custom early stopping callback
+    """
+    
+    def __init__(self, patience: int = 10, min_delta: float = 0.0, restore_best_weights: bool = True):
+        """
+        Initialize early stopping
+        
+        Args:
+            patience: Number of epochs to wait before stopping
+            min_delta: Minimum change to qualify as improvement
+            restore_best_weights: Whether to restore best model weights
+        """
+        super(EarlyStopping, self).__init__()
+        self.patience = patience
+        self.min_delta = min_delta
+        self.restore_best_weights = restore_best_weights
+        self.best_loss = float('inf')
+        self.counter = 0
+        self.best_weights = None
+        
+    def on_epoch_end(self, epoch, logs=None):
+        """Check early stopping condition at end of epoch"""
+        current_loss = logs.get('val_loss')
+        if current_loss is None:
+            return
+        
+        if current_loss < self.best_loss - self.min_delta:
+            self.best_loss = current_loss
+            self.counter = 0
+            if self.restore_best_weights:
+                self.best_weights = self.model.get_weights()
+        else:
+            self.counter += 1
+            if self.counter >= self.patience:
+                self.model.stop_training = True
+                if self.restore_best_weights and self.best_weights is not None:
+                    self.model.set_weights(self.best_weights)
+
+
+class MetricsCalculator:
+    """
+    Calculate various metrics for model evaluation
+    """
+    
+    @staticmethod
+    def calculate_accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """
+        Calculate accuracy for classification
+        
+        Args:
+            y_true: True labels
+            y_pred: Predicted labels
+            
+        Returns:
+            Accuracy as percentage
+        """
+        y_pred_classes = np.argmax(y_pred, axis=1) if y_pred.ndim > 1 else y_pred
+        y_true_classes = np.argmax(y_true, axis=1) if y_true.ndim > 1 else y_true
+        
+        correct = np.sum(y_pred_classes == y_true_classes)
+        total = len(y_true_classes)
+        return 100.0 * correct / total
+    
+    @staticmethod
+    def calculate_mse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """
+        Calculate Mean Squared Error
+        
+        Args:
+            y_true: True values
+            y_pred: Predicted values
+            
+        Returns:
+            MSE value
+        """
+        return np.mean(np.square(y_true - y_pred))
+    
+    @staticmethod
+    def calculate_mae(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """
+        Calculate Mean Absolute Error
+        
+        Args:
+            y_true: True values
+            y_pred: Predicted values
+            
+        Returns:
+            MAE value
+        """
+        return np.mean(np.abs(y_true - y_pred))
+    
+    @staticmethod
+    def calculate_rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """
+        Calculate Root Mean Squared Error
+        
+        Args:
+            y_true: True values
+            y_pred: Predicted values
+            
+        Returns:
+            RMSE value
+        """
+        return np.sqrt(np.mean(np.square(y_true - y_pred)))
+    
+    @staticmethod
+    def calculate_mape(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """
+        Calculate Mean Absolute Percentage Error
+        
+        Args:
+            y_true: True values
+            y_pred: Predicted values
+            
+        Returns:
+            MAPE value
+        """
+        # Avoid division by zero
+        y_true_safe = np.where(y_true == 0, 1e-10, y_true)
+        return np.mean(np.abs((y_true - y_pred) / y_true_safe)) * 100
+
+
+class LearningRateScheduler(callbacks.Callback):
+    """
+    Custom learning rate scheduler
+    """
+    
+    def __init__(self, schedule_type: str = "cosine", **kwargs):
+        """
+        Initialize learning rate scheduler
+        
+        Args:
+            schedule_type: Type of schedule ("cosine", "step", "exponential")
+            **kwargs: Additional parameters for the schedule
+        """
+        super(LearningRateScheduler, self).__init__()
+        self.schedule_type = schedule_type
+        self.kwargs = kwargs
+        self.initial_lr = None
+        
+    def on_train_begin(self, logs=None):
+        """Initialize learning rate at start of training"""
+        self.initial_lr = self.model.optimizer.lr.numpy()
+    
+    def on_epoch_end(self, epoch, logs=None):
+        """Update learning rate at end of epoch"""
+        if self.schedule_type == "cosine":
+            new_lr = self._cosine_schedule(epoch)
+        elif self.schedule_type == "step":
+            new_lr = self._step_schedule(epoch)
+        elif self.schedule_type == "exponential":
+            new_lr = self._exponential_schedule(epoch)
+        else:
+            return
+        
+        self.model.optimizer.lr.assign(new_lr)
+        logging.info(f"Epoch {epoch + 1}: Learning rate set to {new_lr:.6f}")
+    
+    def _cosine_schedule(self, epoch: int) -> float:
+        """Cosine annealing schedule"""
+        total_epochs = self.kwargs.get("total_epochs", 100)
+        min_lr = self.kwargs.get("min_lr", 1e-6)
+        
+        progress = epoch / total_epochs
+        return min_lr + (self.initial_lr - min_lr) * 0.5 * (1 + np.cos(np.pi * progress))
+    
+    def _step_schedule(self, epoch: int) -> float:
+        """Step decay schedule"""
+        decay_steps = self.kwargs.get("decay_steps", 30)
+        decay_rate = self.kwargs.get("decay_rate", 0.5)
+        
+        return self.initial_lr * (decay_rate ** (epoch // decay_steps))
+    
+    def _exponential_schedule(self, epoch: int) -> float:
+        """Exponential decay schedule"""
+        decay_rate = self.kwargs.get("decay_rate", 0.95)
+        
+        return self.initial_lr * (decay_rate ** epoch)
+
+
+class ModelCheckpoint(callbacks.Callback):
+    """
+    Custom model checkpoint callback
+    """
+    
+    def __init__(self, checkpoint_dir: str = "checkpoints", save_best_only: bool = True):
+        """
+        Initialize model checkpoint
+        
+        Args:
+            checkpoint_dir: Directory to save checkpoints
+            save_best_only: Whether to save only the best model
+        """
+        super(ModelCheckpoint, self).__init__()
+        self.checkpoint_dir = checkpoint_dir
+        self.save_best_only = save_best_only
+        self.best_loss = float('inf')
+        
+        import os
+        os.makedirs(checkpoint_dir, exist_ok=True)
+    
+    def on_epoch_end(self, epoch, logs=None):
+        """Save model checkpoint at end of epoch"""
+        current_loss = logs.get('val_loss')
+        if current_loss is None:
+            return
+        
+        if self.save_best_only:
+            if current_loss < self.best_loss:
+                self.best_loss = current_loss
+                checkpoint_path = f"{self.checkpoint_dir}/best_model.h5"
+                self.model.save(checkpoint_path)
+                logging.info(f"Saved best model checkpoint at epoch {epoch + 1}")
+        else:
+            checkpoint_path = f"{self.checkpoint_dir}/model_epoch_{epoch + 1}.h5"
+            self.model.save(checkpoint_path)
+            logging.info(f"Saved model checkpoint at epoch {epoch + 1}")
+
+
+class GradientClipping:
+    """
+    Gradient clipping utilities
+    """
+    
+    @staticmethod
+    def clip_gradients(optimizer: keras.optimizers.Optimizer, clip_norm: float = 1.0):
+        """
+        Clip gradients by norm
+        
+        Args:
+            optimizer: Keras optimizer
+            clip_norm: Maximum norm for gradient clipping
+        """
+        # Get gradients and variables
+        grads_and_vars = optimizer.get_gradients()
+        
+        # Clip gradients
+        clipped_grads = []
+        for grad, var in grads_and_vars:
+            if grad is not None:
+                clipped_grad = tf.clip_by_norm(grad, clip_norm)
+                clipped_grads.append((clipped_grad, var))
+            else:
+                clipped_grads.append((grad, var))
+        
+        # Apply clipped gradients
+        optimizer.apply_gradients(clipped_grads)
+
+
+class DataAugmentation:
+    """
+    Data augmentation utilities
+    """
+    
+    @staticmethod
+    def add_noise(data: np.ndarray, noise_factor: float = 0.1) -> np.ndarray:
+        """
+        Add Gaussian noise to data
+        
+        Args:
+            data: Input data
+            noise_factor: Noise factor
+            
+        Returns:
+            Noisy data
+        """
+        noise = np.random.normal(0, noise_factor, data.shape)
+        return data + noise
+    
+    @staticmethod
+    def random_masking(data: np.ndarray, mask_prob: float = 0.1) -> np.ndarray:
+        """
+        Apply random masking to data
+        
+        Args:
+            data: Input data
+            mask_prob: Probability of masking each element
+            
+        Returns:
+            Masked data
+        """
+        mask = np.random.random(data.shape) > mask_prob
+        return data * mask.astype(np.float32)
+    
+    @staticmethod
+    def time_shift(data: np.ndarray, shift_range: int = 5) -> np.ndarray:
+        """
+        Apply time shifting to time series data
+        
+        Args:
+            data: Input time series data
+            shift_range: Maximum shift amount
+            
+        Returns:
+            Time-shifted data
+        """
+        shift = np.random.randint(-shift_range, shift_range + 1)
+        return np.roll(data, shift, axis=1)
+
+
+class ModelProfiler:
+    """
+    Model profiling utilities
+    """
+    
+    @staticmethod
+    def count_parameters(model: keras.Model) -> Tuple[int, int]:
+        """
+        Count model parameters
+        
+        Args:
+            model: Keras model
+            
+        Returns:
+            Tuple of (total_parameters, trainable_parameters)
+        """
+        total_params = model.count_params()
+        trainable_params = sum([tf.keras.backend.count_params(w) for w in model.trainable_weights])
+        return total_params, trainable_params
+    
+    @staticmethod
+    def get_model_size(model: keras.Model) -> float:
+        """
+        Get model size in MB
+        
+        Args:
+            model: Keras model
+            
+        Returns:
+            Model size in MB
+        """
+        # Save model temporarily to get size
+        import tempfile
+        import os
+        
+        with tempfile.NamedTemporaryFile(suffix='.h5', delete=False) as tmp_file:
+            model.save(tmp_file.name)
+            size_bytes = os.path.getsize(tmp_file.name)
+            os.unlink(tmp_file.name)
+        
+        size_mb = size_bytes / 1024 / 1024
+        return size_mb
+    
+    @staticmethod
+    def profile_model(model: keras.Model, input_shape: Tuple[int, ...]) -> Dict[str, Any]:
+        """
+        Profile model performance
+        
+        Args:
+            model: Keras model
+            input_shape: Input tensor shape
+            
+        Returns:
+            Dictionary with profiling information
+        """
+        # Create dummy input
+        dummy_input = tf.random.normal(input_shape)
+        
+        # Measure inference time
+        import time
+        start_time = time.time()
+        
+        # Warm up
+        for _ in range(10):
+            _ = model(dummy_input, training=False)
+        
+        # Measure
+        start_time = time.time()
+        for _ in range(100):
+            _ = model(dummy_input, training=False)
+        end_time = time.time()
+        
+        avg_inference_time = (end_time - start_time) / 100 * 1000  # Convert to ms
+        
+        # Get model info
+        total_params, trainable_params = ModelProfiler.count_parameters(model)
+        model_size = ModelProfiler.get_model_size(model)
+        
+        # Get output shape
+        output_shape = model(dummy_input).shape
+        
+        return {
+            "total_parameters": total_params,
+            "trainable_parameters": trainable_params,
+            "model_size_mb": model_size,
+            "avg_inference_time_ms": avg_inference_time,
+            "output_shape": output_shape.as_list()
+        }
+
+
+class CustomLosses:
+    """
+    Custom loss functions
+    """
+    
+    @staticmethod
+    def huber_loss(delta: float = 1.0):
+        """
+        Huber loss function
+        
+        Args:
+            delta: Threshold for quadratic vs linear loss
+            
+        Returns:
+            Huber loss function
+        """
+        def loss(y_true, y_pred):
+            error = y_true - y_pred
+            abs_error = tf.abs(error)
+            quadratic = tf.minimum(abs_error, delta)
+            linear = (abs_error - quadratic)
+            return 0.5 * tf.square(quadratic) + delta * linear
+        
+        return loss
+    
+    @staticmethod
+    def focal_loss(gamma: float = 2.0, alpha: float = 0.25):
+        """
+        Focal loss for classification
+        
+        Args:
+            gamma: Focusing parameter
+            alpha: Weighting factor
+            
+        Returns:
+            Focal loss function
+        """
+        def loss(y_true, y_pred):
+            y_pred = tf.clip_by_value(y_pred, 1e-7, 1 - 1e-7)
+            cross_entropy = -y_true * tf.math.log(y_pred)
+            weight = alpha * tf.pow(1 - y_pred, gamma)
+            return tf.reduce_sum(weight * cross_entropy, axis=-1)
+        
+        return loss
+    
+    @staticmethod
+    def quantile_loss(quantile: float = 0.5):
+        """
+        Quantile loss function
+        
+        Args:
+            quantile: Quantile to predict
+            
+        Returns:
+            Quantile loss function
+        """
+        def loss(y_true, y_pred):
+            error = y_true - y_pred
+            return tf.reduce_mean(tf.maximum(quantile * error, (quantile - 1) * error))
+        
+        return loss

@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2026-05-26
+
+### Added
+- **NLP templates** (`templates/nlp/`) — Hugging Face fine-tune config and `Trainer` entrypoint
+- **Shared model import snippet** (`templates/common/snippets/model_import.py.j2`) — fixes `TimeSeriesModel` naming
+- **Improved common templates** — `.env.example`, smoke tests, Makefile/README Jinja updates
+- **Renderer** — loads NLP template dir when `task_type` is `nlp`; skips `snippets/` from standalone output
+- **Context** — `author_slug`, Python 3.11 default in generated projects
+
+### Changed
+- **Unified `timeseries`** task naming (replaced mixed `time-series` in templates)
+- **requirements.txt.j2** — deduplicated deps, fixed Docker deploy condition, NLP/CV packages
+- **config.yaml.j2** — NLP/CV/timeseries blocks, `author_slug` for W&B entity
+- **Train/inference templates** — use `TaskModel` via shared snippet (PyTorch, TensorFlow, sklearn)
+- **sklearn `model.py.j2`** — removed invalid inline Jinja expression for default model type
+- **sklearn `data_loader.py.j2`** — sample data for NLP and computer-vision tasks
+
+### Fixed
+- **Version consistency** — CLI, `__init__.py`, and `project_config.json` use `2.1.0`
+
+### PyPI
+- Install: `pip install mlops-project-generator==2.1.0`
+
+---
+
 ## [2.0.1] - 2026-04-04
 
 ### 🔧 **BUG FIXES**

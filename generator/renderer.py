@@ -28,9 +28,11 @@ class ProjectRenderer:
         self.choices = choices
         self.project_name = choices["project_name"]
         self.framework = choices["framework"]
-        # Get the template directory relative to the package location
-        package_dir = Path(__file__).parent.parent
-        self.template_dir = package_dir / "templates"
+        # Templates ship inside the generator package (see scripts/prepare_package.py before build)
+        self.template_dir = Path(__file__).parent / "templates"
+        if not self.template_dir.exists():
+            # Editable install from repo root
+            self.template_dir = Path(__file__).parent.parent / "templates"
         self.output_dir = Path.cwd() / self.project_name
         
         # Initialize additional components
@@ -232,7 +234,7 @@ class ProjectRenderer:
         config_with_metadata.update({
             "generated_at": str(Path().cwd()),
             "project_path": str(self.output_dir),
-            "generator_version": "1.0.7"
+            "generator_version": "2.1.0"
         })
         
         with open(config_file, "w", encoding="utf-8") as f:

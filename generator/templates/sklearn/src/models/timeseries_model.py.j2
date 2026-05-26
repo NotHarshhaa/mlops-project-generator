@@ -1,0 +1,212 @@
+"""
+Time series model implementation
+"""
+
+import logging
+from typing import Dict, Any, Optional, Tuple
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+
+
+class TimeSeriesModel:
+    """
+    Time series model wrapper for Scikit-learn
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize time series model
+        
+        Args:
+            config: Configuration dictionary
+        """
+        self.config = config
+        self.model_config = config.get("model", {})
+        self.training_config = config.get("training", {})
+        
+        self.model = self._create_model()
+        self.is_trained = False
+        self.sequence_length = self.model_config.get("sequence_length", 10)
+        
+        logging.info(f"Initialized {self.model_config.get('type', 'LinearRegression')} time series model")
+    
+    def _create_model(self) -> Any:
+        """Create model based on configuration"""
+        model_type = self.model_config.get("type", "LinearRegression")
+        
+        if model_type == "LinearRegression":
+            return LinearRegression()
+        elif model_type == "RandomForestRegressor":
+            return RandomForestRegressor(
+                n_estimators=self.model_config.get("n_estimators", 100),
+                max_depth=self.model_config.get("max_depth", 10),
+                random_state=self.config.get("data", {}).get("random_state", 42)
+            )
+        else:
+            raise ValueError(f"Unsupported model type: {model_type}")
+    
+    def create_sequences(self, data: np.ndarray, sequence_length: int) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Create sequences for time series modeling
+        
+        Args:
+            data: Time series data
+            sequence_length: Length of input sequences
+            
+        Returns:
+            Tuple of (X, y) where X contains sequences and y contains next values
+        """
+        X, y = [], []
+        
+        for i in range(len(data) - sequence_length):
+            X.append(data[i:i + sequence_length])
+            y.append(data[i + sequence_length])
+        
+        return np.array(X), np.array(y)
+    
+    def train(self, data: np.ndarray) -> None:
+        """
+        Train the time series model
+        
+        Args:
+            data: Time series data
+        """
+        logging.info(f"Training {type(self.model).__name__} on {len(data)} time steps")
+        
+        # Create sequences
+        X, y = self.create_sequences(data, self.sequence_length)
+        
+        logging.info(f"Created {X.shape[0]} sequences of length {self.sequence_length}")
+        
+        # Train model
+        self.model.fit(X, y)
+        self.is_trained = True
+        
+        # Calculate training metrics
+        train_pred = self.model.predict(X)
+        train_mse = mean_squared_error(y, train_pred)
+        train_mae = mean_absolute_error(y, train_pred)
+        
+        logging.info(f"Training MSE: {train_mse:.6f}, MAE: {train_mae:.6f}")
+        logging.info("Model training completed")
+    
+    def predict(self, data: np.ndarray, steps: int = 1) -> np.ndarray:
+        """
+        Make future predictions
+        
+        Args:
+            data: Historical data
+            steps: Number of steps to predict
+            
+        Returns:
+            Predicted values
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before making predictions")
+        
+        if len(data) < self.sequence_length:
+            raise ValueError(f"Need at least {self.sequence_length} data points for prediction")
+        
+        predictions = []
+        current_data = data[-self.sequence_length:].copy()
+        
+        for _ in range(steps):
+            # Make prediction for next step
+            X_pred = current_data.reshape(1, -1)
+            next_pred = self.model.predict(X_pred)[0]
+            predictions.append(next_pred)
+            
+            # Update current data for next prediction
+            current_data = np.roll(current_data, -1)
+            current_data[-1] = next_pred
+        
+        return np.array(predictions)
+    
+    def evaluate(self, data: np.ndarray, test_size: int = 0.2) -> Dict[str, float]:
+        """
+        Evaluate model performance
+        
+        Args:
+            data: Time series data
+            test_size: Size of test set (either int for number of samples or float for proportion)
+            
+        Returns:
+            Dictionary containing evaluation metrics
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before evaluation")
+        
+        # Split data
+        if isinstance(test_size, float):
+            split_idx = int(len(data) * (1 - test_size))
+        else:
+            split_idx = len(data) - test_size
+        
+        train_data = data[:split_idx]
+        test_data = data[split_idx:]
+        
+        # Create test sequences
+        X_test, y_test = self.create_sequences(test_data, self.sequence_length)
+        
+        if len(X_test) == 0:
+            raise ValueError("Not enough data for evaluation")
+        
+        # Make predictions
+        y_pred = self.model.predict(X_test)
+        
+        # Calculate metrics
+        mse = mean_squared_error(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
+        rmse = np.sqrt(mse)
+        
+        # Calculate MAPE (Mean Absolute Percentage Error)
+        mape = np.mean(np.abs((y_test - y_pred) / np.where(y_test != 0, y_test, 1))) * 100
+        
+        return {
+            "mse": mse,
+            "rmse": rmse,
+            "mae": mae,
+            "mape": mape
+        }
+    
+    def get_feature_importance(self) -> Optional[np.ndarray]:
+        """
+        Get feature importance if available
+        
+        Returns:
+            Feature importance array or None if not available
+        """
+        if not self.is_trained:
+            raise ValueError("Model must be trained before getting feature importance")
+        
+        if hasattr(self.model, 'feature_importances_'):
+            return self.model.feature_importances_
+        elif hasattr(self.model, 'coef_'):
+            # For linear models, use absolute coefficients
+            return np.abs(self.model.coef_).flatten()
+        else:
+            return None
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """
+        Get model information
+        
+        Returns:
+            Dictionary containing model information
+        """
+        info = {
+            "model_type": type(self.model).__name__,
+            "is_trained": self.is_trained,
+            "sequence_length": self.sequence_length,
+            "parameters": self.model.get_params()
+        }
+        
+        # Add feature importance if available
+        feature_importance = self.get_feature_importance()
+        if feature_importance is not None:
+            info["feature_importance"] = feature_importance.tolist()
+        
+        return info

@@ -1,0 +1,65 @@
+# {{ project_name }}
+
+{{ description }}
+
+## Quick start
+
+```bash
+pip install -r requirements.txt
+cp .env.example .env   # optional: tracking keys
+```
+
+{% if task_type == "nlp" %}
+### NLP (Hugging Face)
+
+```bash
+# Place train.csv under data/raw/ (columns: text, label)
+python src/nlp/finetune.py --config configs/nlp.yaml
+python src/nlp/inference.py --text "Sample review"
+```
+{% else %}
+```bash
+python src/train.py --config configs/config.yaml
+python src/inference.py
+{% if deployment == "docker" %}
+docker compose up --build
+{% endif %}
+{% endif %}
+
+## Stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | {{ framework_display }} |
+| Task | {{ task_display }} |
+| Tracking | {{ experiment_tracking }} |
+| Orchestration | {{ orchestration }} |
+| Deployment | {{ deployment }} |
+| Monitoring | {{ monitoring }} |
+
+## Project layout
+
+```
+{{ project_name }}/
+├── configs/
+├── src/
+├── data/
+├── models/
+├── tests/
+└── requirements.txt
+```
+
+## Development
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pytest tests/
+```
+
+## Author
+
+**{{ author_name }}**
+
+Generated with [MLOps Project Generator](https://github.com/NotHarshhaa/MLOps-Project-Generator)

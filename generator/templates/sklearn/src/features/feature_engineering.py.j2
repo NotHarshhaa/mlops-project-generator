@@ -1,0 +1,243 @@
+"""
+Feature engineering utilities
+"""
+
+import os
+import logging
+from typing import Dict, Any, Optional, List
+import numpy as np
+import pandas as pd
+import joblib
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+from sklearn.feature_selection import SelectKBest, f_classif, f_regression
+from sklearn.decomposition import PCA
+import yaml
+
+
+class FeatureEngineer:
+    """
+    Feature engineering utilities for {{ framework_display }} {{ task_type }}
+    """
+    
+    def __init__(self, config: Dict[str, Any]):
+        """
+        Initialize feature engineer
+        
+        Args:
+            config: Configuration dictionary
+        """
+        self.config = config
+        self.scaler = None
+        self.feature_selector = None
+        self.pca = None
+        self.feature_names = None
+        self.selected_features = None
+        
+        logging.info("Initialized FeatureEngineer")
+    
+    def fit_transform(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> np.ndarray:
+        """
+        Fit transformers and transform features
+        
+        Args:
+            X: Input features
+            y: Target values (optional, needed for feature selection)
+            
+        Returns:
+            Transformed features
+        """
+        X_transformed = X.copy()
+        
+        # Feature scaling
+        X_transformed = self._fit_scaler(X_transformed)
+        
+        # Feature selection (if target is provided)
+        if y is not None:
+            X_transformed = self._fit_feature_selector(X_transformed, y)
+        
+        # Dimensionality reduction (optional)
+        X_transformed = self._fit_pca(X_transformed)
+        
+        logging.info(f"Feature engineering completed: {X.shape} -> {X_transformed.shape}")
+        
+        return X_transformed
+    
+    def transform(self, X: np.ndarray) -> np.ndarray:
+        """
+        Transform features using fitted transformers
+        
+        Args:
+            X: Input features
+            
+        Returns:
+            Transformed features
+        """
+        X_transformed = X.copy()
+        
+        # Apply scaling
+        if self.scaler is not None:
+            X_transformed = self.scaler.transform(X_transformed)
+        
+        # Apply feature selection
+        if self.feature_selector is not None:
+            X_transformed = self.feature_selector.transform(X_transformed)
+        
+        # Apply PCA
+        if self.pca is not None:
+            X_transformed = self.pca.transform(X_transformed)
+        
+        return X_transformed
+    
+    def transform_array(self, X: np.ndarray) -> np.ndarray:
+        """
+        Transform numpy array (alias for transform)
+        
+        Args:
+            X: Input features
+            
+        Returns:
+            Transformed features
+        """
+        return self.transform(X)
+    
+    def _fit_scaler(self, X: np.ndarray) -> np.ndarray:
+        """Fit and apply scaling"""
+        scaler_type = self.config.get("feature_engineering", {}).get("scaler", "standard")
+        
+        if scaler_type == "standard":
+            self.scaler = StandardScaler()
+        elif scaler_type == "minmax":
+            self.scaler = MinMaxScaler()
+        elif scaler_type == "robust":
+            self.scaler = RobustScaler()
+        elif scaler_type == "none":
+            return X
+        else:
+            logging.warning(f"Unknown scaler type: {scaler_type}. Using StandardScaler.")
+            self.scaler = StandardScaler()
+        
+        return self.scaler.fit_transform(X)
+    
+    def _fit_feature_selector(self, X: np.ndarray, y: np.ndarray) -> np.ndarray:
+        """Fit and apply feature selection"""
+        task_type = self.config.get("model", {}).get("type", "").lower()
+        
+        # Determine scoring function based on task type
+        if "classifier" in task_type or task_type == "classification":
+            score_func = f_classif
+        elif "regressor" in task_type or task_type == "regression":
+            score_func = f_regression
+        else:
+            logging.warning("Cannot determine task type for feature selection. Skipping.")
+            return X
+        
+        # Get number of features to select
+        n_features = self.config.get("feature_engineering", {}).get("n_features", "all")
+        
+        if n_features == "all":
+            return X
+        elif isinstance(n_features, int) and n_features < X.shape[1]:
+            self.feature_selector = SelectKBest(score_func=score_func, k=n_features)
+            X_selected = self.feature_selector.fit_transform(X, y)
+            
+            # Store selected feature indices
+            self.selected_features = self.feature_selector.get_support(indices=True)
+            
+            logging.info(f"Selected {n_features} best features from {X.shape[1]}")
+            return X_selected
+        else:
+            return X
+    
+    def _fit_pca(self, X: np.ndarray) -> np.ndarray:
+        """Fit and apply PCA"""
+        pca_config = self.config.get("feature_engineering", {}).get("pca", {})
+        
+        if not pca_config.get("enabled", False):
+            return X
+        
+        n_components = pca_config.get("n_components", 0.95)  # Keep 95% variance by default
+        
+        if isinstance(n_components, float) and 0 < n_components < 1:
+            # Variance threshold
+            self.pca = PCA(n_components=n_components)
+        elif isinstance(n_components, int) and n_components < X.shape[1]:
+            # Fixed number of components
+            self.pca = PCA(n_components=n_components)
+        else:
+            logging.warning("Invalid PCA configuration. Skipping PCA.")
+            return X
+        
+        X_pca = self.pca.fit_transform(X)
+        
+        logging.info(f"PCA: {X.shape[1]} -> {X_pca.shape[1]} components (explained variance: {self.pca.explained_variance_ratio_.sum():.3f})")
+        
+        return X_pca
+    
+    def save_fitted_transformers(self, save_dir: str = "models/production") -> None:
+        """Save fitted transformers"""
+        os.makedirs(save_dir, exist_ok=True)
+        
+        if self.scaler is not None:
+            joblib.dump(self.scaler, os.path.join(save_dir, "scaler.joblib"))
+        
+        if self.feature_selector is not None:
+            joblib.dump(self.feature_selector, os.path.join(save_dir, "feature_selector.joblib"))
+        
+        if self.pca is not None:
+            joblib.dump(self.pca, os.path.join(save_dir, "pca.joblib"))
+        
+        # Save feature engineering metadata
+        metadata = {
+            "selected_features": self.selected_features.tolist() if self.selected_features is not None else None,
+            "feature_names": self.feature_names
+        }
+        
+        with open(os.path.join(save_dir, "feature_metadata.yaml"), 'w') as f:
+            yaml.dump(metadata, f)
+        
+        logging.info(f"Saved fitted transformers to {save_dir}")
+    
+    def load_fitted_transformers(self, save_dir: str = "models/production") -> None:
+        """Load fitted transformers"""
+        scaler_path = os.path.join(save_dir, "scaler.joblib")
+        selector_path = os.path.join(save_dir, "feature_selector.joblib")
+        pca_path = os.path.join(save_dir, "pca.joblib")
+        metadata_path = os.path.join(save_dir, "feature_metadata.yaml")
+        
+        if os.path.exists(scaler_path):
+            self.scaler = joblib.load(scaler_path)
+        
+        if os.path.exists(selector_path):
+            self.feature_selector = joblib.load(selector_path)
+        
+        if os.path.exists(pca_path):
+            self.pca = joblib.load(pca_path)
+        
+        if os.path.exists(metadata_path):
+            with open(metadata_path, 'r') as f:
+                metadata = yaml.safe_load(f)
+            self.selected_features = np.array(metadata.get("selected_features"))
+            self.feature_names = metadata.get("feature_names")
+        
+        logging.info(f"Loaded fitted transformers from {save_dir}")
+    
+    def get_feature_importance(self) -> Optional[np.ndarray]:
+        """Get feature importance from feature selector"""
+        if self.feature_selector is not None and hasattr(self.feature_selector, 'scores_'):
+            return self.feature_selector.scores_
+        return None
+    
+    def get_feature_info(self) -> Dict[str, Any]:
+        """Get feature engineering information"""
+        info = {
+            "scaler": type(self.scaler).__name__ if self.scaler is not None else None,
+            "feature_selector": type(self.feature_selector).__name__ if self.feature_selector is not None else None,
+            "pca": {
+                "enabled": self.pca is not None,
+                "n_components": self.pca.n_components_ if self.pca is not None else None,
+                "explained_variance": self.pca.explained_variance_ratio_.tolist() if self.pca is not None else None
+            },
+            "selected_features": self.selected_features.tolist() if self.selected_features is not None else None
+        }
+        
+        return info
