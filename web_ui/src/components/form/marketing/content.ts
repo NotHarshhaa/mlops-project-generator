@@ -36,8 +36,14 @@ export const FEATURES: FeatureItem[] = [
   {
     icon: Cpu,
     title: "Multi-framework support",
-    description: "Scikit-learn, PyTorch, and TensorFlow scaffolds with training, inference, and config templates.",
+    description: "Scikit-learn, PyTorch, and TensorFlow — powered by legacy Jinja templates plus modern TS generators.",
     tag: "ML core",
+  },
+  {
+    icon: Beaker,
+    title: "Hugging Face NLP",
+    description: "Fine-tune transformers with Trainer, configs/nlp.yaml, and FastAPI inference for text tasks.",
+    tag: "NLP",
   },
   {
     icon: LineChart,

@@ -6,5 +6,8 @@
 # next.js
 /.next/
 
+# synced from repo root templates/ (see scripts/sync-templates.mjs)
+/templates/
+
 # typescript
 next-env.d.ts

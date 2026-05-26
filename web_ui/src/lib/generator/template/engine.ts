@@ -129,6 +129,9 @@ function evalCondition(cond: string, ctx: TemplateContext): boolean {
   if (inMatch) {
     const val = String(ctx[inMatch[1]] ?? "")
     const list = inMatch[2].split(",").map(s => s.trim().replace(/^['"]|['"]$/g, ""))
+    if (list.includes("time-series") && (val === "timeseries" || val === "time-series")) {
+      return true
+    }
     return list.includes(val)
   }
 
@@ -140,7 +143,14 @@ function evalCondition(cond: string, ctx: TemplateContext): boolean {
   }
 
   const eqMatch = cond.match(/^(\w+)\s*==\s*['"]([^'"]+)['"]$/)
-  if (eqMatch) return String(ctx[eqMatch[1]] ?? "") === eqMatch[2]
+  if (eqMatch) {
+    const actual = String(ctx[eqMatch[1]] ?? "")
+    const expected = eqMatch[2]
+    if (expected === "time-series") {
+      return actual === "timeseries" || actual === "time-series"
+    }
+    return actual === expected
+  }
 
   const neMatch = cond.match(/^(\w+)\s*!=\s*['"]([^'"]+)['"]$/)
   if (neMatch) return String(ctx[neMatch[1]] ?? "") !== neMatch[2]

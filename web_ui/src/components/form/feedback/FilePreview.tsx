@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Eye, FileCode, Loader2 } from "lucide-react"
 import axios from "axios"
 import type { FormValues } from "../schema"
-import { formatMissingFieldsMessage, getMissingFields } from "../lib/validation"
+import { getMissingFields } from "../lib/validation"
 
 interface FilePreviewProps {
   values: FormValues
@@ -14,6 +14,22 @@ interface PreviewResponse {
   file_count: number
   files: string[]
   project_name: string
+  partial?: boolean
+  legacy_templates?: boolean
+}
+
+function toPreviewParams(values: FormValues): Record<string, string> {
+  const params: Record<string, string> = {}
+  for (const [key, val] of Object.entries(values)) {
+    if (val === undefined || val === null) continue
+    if (typeof val === "boolean") {
+      params[key] = val ? "true" : "false"
+      continue
+    }
+    const s = String(val).trim()
+    if (s) params[key] = s
+  }
+  return params
 }
 
 export function FilePreview({ values }: FilePreviewProps) {
@@ -22,17 +38,15 @@ export function FilePreview({ values }: FilePreviewProps) {
   const [error, setError] = useState<string | null>(null)
 
   const missing = getMissingFields(values)
-  const canPreview = missing.length === 0
+  const isComplete = missing.length === 0
 
   const loadPreview = async () => {
-    if (!canPreview) {
-      setError(formatMissingFieldsMessage(missing))
-      return
-    }
     setLoading(true)
     setError(null)
     try {
-      const { data } = await axios.post<PreviewResponse>("/api/preview", values)
+      const { data } = isComplete
+        ? await axios.post<PreviewResponse>("/api/preview?strict=true", values)
+        : await axios.get<PreviewResponse>("/api/preview", { params: toPreviewParams(values) })
       setPreview(data)
     } catch (err) {
       const msg = axios.isAxiosError(err)
@@ -58,14 +72,16 @@ export function FilePreview({ values }: FilePreviewProps) {
               Archive file tree
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              See which files will be included before you generate
+              {isComplete
+                ? "Full preview of your configured archive"
+                : "Quick preview with defaults for empty fields (GET)"}
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={loadPreview}
-          disabled={loading || !canPreview}
+          disabled={loading}
           className="btn-ghost-panel inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-foreground disabled:opacity-50 self-start sm:self-center"
         >
           {loading ? (
@@ -86,6 +102,12 @@ export function FilePreview({ values }: FilePreviewProps) {
           <p className="text-xs text-muted-foreground mb-2">
             <span className="font-semibold text-foreground">{preview.file_count}</span> files in{" "}
             <span className="font-mono">{preview.project_name}/</span>
+            {preview.partial && (
+              <span className="ml-2 text-primary">· partial preview</span>
+            )}
+            {preview.legacy_templates && (
+              <span className="ml-2 text-accent">· legacy Jinja templates</span>
+            )}
           </p>
           <ul className="max-h-40 sm:max-h-52 overflow-y-auto rounded-lg border border-border/60 bg-background/50 p-2 sm:p-3 font-mono text-[10px] sm:text-xs text-muted-foreground space-y-0.5 columns-1 sm:columns-2 gap-x-4">
             {preview.files.map(path => (

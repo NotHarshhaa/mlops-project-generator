@@ -118,9 +118,7 @@ export default function MLOpsForm() {
                     <ProjectSummary values={formValues as FormValues} />
                   )}
 
-                  {summaryVisible && (
-                    <FilePreview values={formValues as FormValues} />
-                  )}
+                  <FilePreview values={formValues as FormValues} />
 
                   {validationError && (
                     <ValidationErrorBanner

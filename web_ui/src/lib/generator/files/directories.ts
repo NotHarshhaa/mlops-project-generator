@@ -8,7 +8,9 @@ export function generatePlaceholderDirs(cfg: GeneratorConfig): VirtualFile[] {
     "notebooks", "scripts", "configs", "tests", "logs",
   ]
 
-  if (cfg.framework === "pytorch" || cfg.framework === "tensorflow") {
+  if (cfg.task_type === "nlp") {
+    dirs.push("src/nlp")
+  } else if (cfg.framework === "pytorch" || cfg.framework === "tensorflow") {
     dirs.push("src/data", "src/models", "src/training", "src/utils")
   } else {
     dirs.push("src/data", "src/models", "src/features", "src/utils")

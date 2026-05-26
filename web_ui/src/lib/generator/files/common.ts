@@ -269,7 +269,15 @@ function generateRequirements(ctx: TemplateContext): string {
     lines.push("tensorflow>=2.13.0", "pandas>=2.0.0", "numpy>=1.24.0")
   }
 
-  if (task_type === "nlp") lines.push("transformers>=4.30.0", "tokenizers>=0.13.0")
+  if (task_type === "nlp") {
+    lines.push(
+      "transformers>=4.30.0",
+      "datasets>=2.14.0",
+      "accelerate>=0.24.0",
+      "tokenizers>=0.13.0",
+      "evaluate>=0.4.0",
+    )
+  }
   if (task_type === "computer-vision") lines.push("pillow>=10.0.0", "opencv-python>=4.8.0")
   if (task_type === "timeseries") lines.push("statsmodels>=0.14.0")
 
