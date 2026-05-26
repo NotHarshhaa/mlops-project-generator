@@ -24,27 +24,27 @@ export function GenerationProgress({ progress }: GenerationProgressProps) {
   const { message } = getPhase(progress)
 
   return (
-    <div className="panel p-5 border-primary/30 animate-slide-in-up">
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div className="flex items-center gap-3">
-          <div className="relative w-10 h-10 rounded-lg gradient-primary flex items-center justify-center">
-            <Loader2 className="w-5 h-5 text-primary-foreground animate-spin" />
+    <div className="panel p-3 sm:p-5 border-primary/30 animate-slide-in-up">
+      <div className="flex items-center justify-between gap-2 sm:gap-4 mb-2.5 sm:mb-4">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-lg gradient-primary flex items-center justify-center flex-shrink-0">
+            <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground animate-spin" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="font-mono-label text-primary">Generating</p>
-            <p className="text-sm font-medium text-foreground">{message}</p>
+            <p className="text-xs sm:text-sm font-medium text-foreground truncate">{message}</p>
           </div>
         </div>
-        <span className="font-display text-3xl font-bold text-gradient tabular-nums">{progress}%</span>
+        <span className="font-display text-xl sm:text-3xl font-bold text-gradient tabular-nums flex-shrink-0">{progress}%</span>
       </div>
 
-      <div className="progress-track h-2 mb-4">
+      <div className="progress-track h-1.5 sm:h-2 mb-2.5 sm:mb-4">
         <div className="progress-fill relative overflow-hidden" style={{ width: `${progress}%` }}>
           <div className="absolute inset-0 bg-white/20 animate-shimmer" />
         </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid grid-cols-4 gap-1 sm:gap-2">
         <ProgressStep label="Init" active={progress >= 0} />
         <ProgressStep label="Build" active={progress >= 25} />
         <ProgressStep label="Config" active={progress >= 50} />

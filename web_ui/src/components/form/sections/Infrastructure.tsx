@@ -7,7 +7,7 @@ import type { Options } from "../types"
 
 export function Infrastructure({ options }: { options: Options }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <SectionHeader
         icon={GitBranch}
         title="Infrastructure"
@@ -15,7 +15,7 @@ export function Infrastructure({ options }: { options: Options }) {
         iconClass="icon-chip-cyan"
         step="Ops layer"
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <CustomSelectField
           name="orchestration"
           label="Orchestration"

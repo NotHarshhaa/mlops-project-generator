@@ -19,7 +19,7 @@ export function CloudDeployment() {
   const serviceOptions = CLOUD_SERVICES[selectedProvider ?? ""] ?? []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <SectionHeader
         icon={Cloud}
         title="Cloud Deployment"
@@ -27,7 +27,7 @@ export function CloudDeployment() {
         iconClass="icon-chip-emerald"
         step="Optional"
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <CustomSelectField
           name="cloud_provider"
           label="Cloud Provider"

@@ -17,32 +17,32 @@ export function SuccessDialog({ open, onOpenChange, onDownload, onReset }: Succe
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-w-[95vw] panel border-0 p-0 gap-0 overflow-hidden">
-        <div className="p-6 sm:p-8">
-          <DialogHeader className="text-left space-y-4 pb-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/25">
-                <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
+        <div className="p-4 sm:p-8">
+          <DialogHeader className="text-left space-y-3 sm:space-y-4 pb-4 sm:pb-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/25 flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5 sm:w-7 sm:h-7 text-primary-foreground" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="font-mono-label text-primary">Complete</p>
-                <DialogTitle className="font-display text-xl font-bold">Project generated</DialogTitle>
-                <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+                <DialogTitle className="font-display text-lg sm:text-xl font-bold">Project generated</DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                   Your MLOps scaffold is packaged and ready to download.
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="rounded-lg border border-border/70 bg-muted/20 p-4 mb-6">
-            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+          <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:p-4 mb-4 sm:mb-6">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-2 sm:mb-3">
               The archive includes training scripts, configs, deployment templates, and tooling
               aligned with your selected stack.
             </p>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1 sm:gap-1.5">
               {TAGS.map(tag => (
                 <span
                   key={tag}
-                  className="px-2 py-0.5 rounded text-[10px] font-mono-label border border-primary/25 bg-primary/8 text-primary"
+                  className="px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-mono-label border border-primary/25 bg-primary/8 text-primary"
                 >
                   {tag}
                 </span>
@@ -50,10 +50,10 @@ export function SuccessDialog({ open, onOpenChange, onDownload, onReset }: Succe
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button
               onClick={onDownload}
-              className="flex-1 h-11 rounded-lg gradient-primary btn-shine border-0 text-primary-foreground font-semibold"
+              className="flex-1 h-10 sm:h-11 rounded-lg gradient-primary btn-shine border-0 text-primary-foreground font-semibold text-sm sm:text-base"
               size="lg"
             >
               <Download className="h-4 w-4 mr-2" />
@@ -62,7 +62,7 @@ export function SuccessDialog({ open, onOpenChange, onDownload, onReset }: Succe
             <Button
               onClick={onReset}
               variant="outline"
-              className="flex-1 h-11 rounded-lg btn-ghost-panel font-semibold"
+              className="flex-1 h-10 sm:h-11 rounded-lg btn-ghost-panel font-semibold text-sm sm:text-base"
               size="lg"
             >
               <Plus className="h-4 w-4 mr-2" />

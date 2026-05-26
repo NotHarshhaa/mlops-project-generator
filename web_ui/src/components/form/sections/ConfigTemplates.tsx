@@ -19,7 +19,7 @@ const TEMPLATE_OPTIONS = [
 
 export function ConfigTemplates() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <SectionHeader
         icon={Database}
         title="Templates"
@@ -27,7 +27,7 @@ export function ConfigTemplates() {
         iconClass="icon-chip-amber"
         step="Optional"
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <CustomSelectField
           name="preset_config"
           label="Configuration Preset"

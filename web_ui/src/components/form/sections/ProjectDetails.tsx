@@ -12,7 +12,7 @@ export function ProjectDetails() {
   const form = useFormContext<FormValues>()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <SectionHeader
         icon={FileText}
         title="Project Details"
@@ -21,13 +21,13 @@ export function ProjectDetails() {
         step="Metadata"
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <FormField
           control={form.control}
           name="project_name"
           render={({ field }) => (
             <FormItem data-field="project_name">
-              <FormLabel className="flex items-center gap-2 text-sm font-semibold">
+              <FormLabel className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold">
                 <div className="icon-chip icon-chip-violet w-5 h-5 rounded-md">
                   <Info className="w-2.5 h-2.5" />
                 </div>
@@ -42,7 +42,7 @@ export function ProjectDetails() {
               <FormControl>
                 <Input
                   placeholder="my-ml-project"
-                  className="font-mono text-sm h-11 rounded-lg border-border/70 bg-muted/20 focus:border-primary/50 focus:ring-primary/20"
+                  className="font-mono text-xs sm:text-sm h-9 sm:h-11 rounded-lg border-border/70 bg-muted/20 focus:border-primary/50 focus:ring-primary/20"
                   {...field}
                 />
               </FormControl>
@@ -57,7 +57,7 @@ export function ProjectDetails() {
           name="author_name"
           render={({ field }) => (
             <FormItem data-field="author_name">
-              <FormLabel className="flex items-center gap-2 text-sm font-semibold">
+              <FormLabel className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold">
                 <div className="icon-chip icon-chip-cyan w-5 h-5 rounded-md">
                   <User className="w-2.5 h-2.5" />
                 </div>
@@ -66,7 +66,7 @@ export function ProjectDetails() {
               <FormControl>
                 <Input
                   placeholder="Your Name"
-                  className="font-medium text-sm h-11 rounded-lg border-border/70 bg-muted/20 focus:border-primary/50 focus:ring-primary/20"
+                  className="font-medium text-xs sm:text-sm h-9 sm:h-11 rounded-lg border-border/70 bg-muted/20 focus:border-primary/50 focus:ring-primary/20"
                   {...field}
                 />
               </FormControl>
@@ -82,7 +82,7 @@ export function ProjectDetails() {
         name="description"
         render={({ field }) => (
           <FormItem data-field="description">
-            <FormLabel className="flex items-center gap-2 text-sm font-semibold">
+            <FormLabel className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold">
               <div className="icon-chip icon-chip-emerald w-5 h-5 rounded-md">
                 <FileText className="w-2.5 h-2.5" />
               </div>
@@ -91,7 +91,7 @@ export function ProjectDetails() {
             <FormControl>
               <Textarea
                 placeholder="A production-ready ML project for sentiment analysis using transformer models…"
-                className="min-h-[110px] resize-none text-sm rounded-lg border-border/70 bg-muted/20 focus:border-primary/50 focus:ring-primary/20"
+                className="min-h-[80px] sm:min-h-[110px] resize-none text-xs sm:text-sm rounded-lg border-border/70 bg-muted/20 focus:border-primary/50 focus:ring-primary/20"
                 {...field}
               />
             </FormControl>

@@ -7,7 +7,7 @@ import type { Options } from "../types"
 
 export function CoreMLStack({ options }: { options: Options }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <SectionHeader
         icon={Brain}
         title="Core ML Stack"
@@ -15,7 +15,7 @@ export function CoreMLStack({ options }: { options: Options }) {
         iconClass="icon-chip-violet"
         step="ML core"
       />
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <CustomSelectField
           name="framework"
           label="ML Framework"

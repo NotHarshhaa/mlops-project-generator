@@ -23,7 +23,7 @@ export function AnalyticsToggle() {
         name="enable_analytics"
         render={({ field }) => (
           <FormItem>
-            <div className="flex items-center justify-between rounded-lg border border-border/70 bg-muted/20 p-4 gap-4">
+            <div className="flex items-center justify-between rounded-lg border border-border/70 bg-muted/20 p-3 sm:p-4 gap-3 sm:gap-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-sm font-semibold text-foreground cursor-pointer">Enable Analytics</FormLabel>
                 <FormDescription className="text-xs">

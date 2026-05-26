@@ -47,20 +47,20 @@ export function CustomSelectField({ name, label, description, options, placehold
       control={form.control}
       name={name}
       render={() => (
-        <FormItem data-field={name} className="space-y-2">
+        <FormItem data-field={name} className="space-y-1.5 sm:space-y-2">
           <FormLabel className="font-mono-label text-foreground/90">{label}</FormLabel>
           <div className="relative" ref={dropdownRef}>
             <FormControl>
               <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`w-full min-h-11 px-4 py-2.5 rounded-lg cursor-pointer transition-all duration-200 flex items-center justify-between gap-2 border text-left ${
+                className={`w-full min-h-9 sm:min-h-11 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg cursor-pointer transition-all duration-200 flex items-center justify-between gap-2 border text-left ${
                   fieldValue
                     ? "bg-card border-primary/50 shadow-[0_0_0_1px] shadow-primary/10"
                     : "bg-muted/30 border-border hover:border-primary/35"
                 }`}
               >
-                <span className={`text-sm font-medium truncate ${!fieldValue ? "text-muted-foreground" : "text-foreground"}`}>
+                <span className={`text-xs sm:text-sm font-medium truncate ${!fieldValue ? "text-muted-foreground" : "text-foreground"}`}>
                   {selectedOption ? selectedOption.label : placeholder}
                 </span>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -75,14 +75,14 @@ export function CustomSelectField({ name, label, description, options, placehold
             </FormControl>
 
             {isOpen && (
-              <div className="absolute top-full left-0 right-0 z-50 mt-1.5 rounded-lg overflow-hidden animate-slide-in-up border border-border bg-popover shadow-2xl shadow-black/30">
-                <div className="max-h-56 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 z-50 mt-1 sm:mt-1.5 rounded-lg overflow-hidden animate-slide-in-up border border-border bg-popover shadow-2xl shadow-black/30">
+                <div className="max-h-48 sm:max-h-56 overflow-y-auto">
                   {options.map((option) => (
                     <button
                       key={option.value}
                       type="button"
                       onClick={() => handleSelect(option.value)}
-                      className={`w-full text-left px-4 py-3 transition-colors border-b border-border/40 last:border-0 ${
+                      className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 transition-colors border-b border-border/40 last:border-0 ${
                         fieldValue === option.value
                           ? "bg-primary/10"
                           : "hover:bg-muted/60"

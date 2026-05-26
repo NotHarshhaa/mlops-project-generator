@@ -69,14 +69,14 @@ export default function MLOpsForm() {
       <AmbientBackground />
       <FormNav />
 
-      <main className="relative z-10 flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <main className="relative z-10 flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 py-5 sm:py-12">
         <LandingHero />
         <MissionSection />
         <FeaturesSection />
         <HowItWorksSection />
         <GeneratorCTA />
 
-        <section id="generator" className="scroll-mt-24">
+        <section id="generator" className="scroll-mt-16 sm:scroll-mt-24">
           <StackPresets
             activePreset={activePreset}
             onApply={applyPreset}
@@ -90,24 +90,24 @@ export default function MLOpsForm() {
           <div className="panel">
             <FormCardHeader presetLabel={presetLabel} onClearAll={clearAll} />
 
-            <div className="p-5 sm:p-8">
+            <div className="p-3 sm:p-8">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 sm:space-y-10">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 sm:space-y-10">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-8 xl:gap-10">
                     <CoreMLStack options={options} />
                     <Infrastructure options={options} />
                   </div>
 
                   <SectionDivider />
 
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-8 xl:gap-10">
                     <CloudDeployment />
                     <ConfigTemplates />
                   </div>
 
                   <SectionDivider />
 
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-8 xl:gap-10">
                     <AnalyticsToggle />
                     <ProjectDetails />
                   </div>

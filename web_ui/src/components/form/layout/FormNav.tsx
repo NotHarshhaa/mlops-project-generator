@@ -11,12 +11,12 @@ const NAV_LINKS = [
 export function FormNav() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/80 bg-background/85 backdrop-blur-md">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
-        <a href="#" className="flex items-center gap-3 min-w-0 hover:opacity-90 transition-opacity">
-          <div className="relative flex-shrink-0 w-9 h-9 rounded-lg gradient-primary flex items-center justify-center shadow-lg shadow-primary/20">
-            <Boxes className="w-5 h-5 text-primary-foreground" strokeWidth={2.2} />
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 h-11 sm:h-14 flex items-center justify-between gap-2 sm:gap-4">
+        <a href="#" className="flex items-center gap-2 sm:gap-3 min-w-0 hover:opacity-90 transition-opacity">
+          <div className="relative flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-lg gradient-primary flex items-center justify-center shadow-lg shadow-primary/20">
+            <Boxes className="w-4 h-4 sm:w-5 sm:h-5 text-primary-foreground" strokeWidth={2.2} />
           </div>
-          <div className="min-w-0 hidden xs:block sm:block">
+          <div className="min-w-0 sm:block">
             <p className="font-display font-bold text-sm sm:text-base leading-tight truncate">
               MLOps <span className="text-gradient">Generator</span>
             </p>
@@ -35,7 +35,7 @@ export function FormNav() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <span className="status-live hidden lg:inline-flex">Ready</span>
           <ThemeToggle />
         </div>
