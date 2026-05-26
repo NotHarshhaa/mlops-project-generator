@@ -15,6 +15,9 @@ export interface StackPreset {
   badgeColor: string
   fields: Record<RequiredStackField, string>
   tags: string[]
+  /** Drives optional file bundles in the generator */
+  preset_config?: string
+  custom_template?: string
 }
 
 export const STACK_PRESETS: StackPreset[] = [
@@ -28,6 +31,8 @@ export const STACK_PRESETS: StackPreset[] = [
     badgeColor: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/50",
     fields: { framework: "sklearn", task_type: "classification", experiment_tracking: "none", orchestration: "none", deployment: "fastapi", monitoring: "none" },
     tags: ["Scikit-learn", "FastAPI", "No tracking"],
+    preset_config: "quick-start",
+    custom_template: "minimal",
   },
   {
     id: "data-science",
@@ -39,6 +44,7 @@ export const STACK_PRESETS: StackPreset[] = [
     badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50",
     fields: { framework: "sklearn", task_type: "regression", experiment_tracking: "mlflow", orchestration: "none", deployment: "fastapi", monitoring: "custom" },
     tags: ["Scikit-learn", "MLflow", "FastAPI"],
+    preset_config: "research",
   },
   {
     id: "deep-learning",
@@ -50,6 +56,7 @@ export const STACK_PRESETS: StackPreset[] = [
     badgeColor: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800/50",
     fields: { framework: "pytorch", task_type: "classification", experiment_tracking: "wandb", orchestration: "none", deployment: "docker", monitoring: "none" },
     tags: ["PyTorch", "W&B", "Docker"],
+    custom_template: "comprehensive",
   },
   {
     id: "production-mlops",
@@ -61,6 +68,8 @@ export const STACK_PRESETS: StackPreset[] = [
     badgeColor: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/50",
     fields: { framework: "pytorch", task_type: "classification", experiment_tracking: "mlflow", orchestration: "airflow", deployment: "docker", monitoring: "evidently" },
     tags: ["PyTorch", "MLflow", "Airflow", "Evidently"],
+    preset_config: "production-ready",
+    custom_template: "comprehensive",
   },
   {
     id: "enterprise",
@@ -72,6 +81,8 @@ export const STACK_PRESETS: StackPreset[] = [
     badgeColor: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/50",
     fields: { framework: "tensorflow", task_type: "classification", experiment_tracking: "mlflow", orchestration: "kubeflow", deployment: "kubernetes", monitoring: "evidently" },
     tags: ["TensorFlow", "Kubeflow", "Kubernetes", "Evidently"],
+    preset_config: "enterprise",
+    custom_template: "comprehensive",
   },
   {
     id: "research",
@@ -83,5 +94,7 @@ export const STACK_PRESETS: StackPreset[] = [
     badgeColor: "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800/50",
     fields: { framework: "pytorch", task_type: "regression", experiment_tracking: "wandb", orchestration: "none", deployment: "fastapi", monitoring: "none" },
     tags: ["PyTorch", "W&B", "FastAPI"],
+    preset_config: "research",
+    custom_template: "microservice",
   },
 ]

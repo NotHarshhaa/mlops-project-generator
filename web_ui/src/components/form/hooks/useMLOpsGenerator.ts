@@ -56,6 +56,8 @@ export function useMLOpsGenerator() {
     Object.entries(preset.fields).forEach(([key, val]) => {
       form.setValue(key as keyof FormValues, val)
     })
+    if (preset.preset_config) form.setValue("preset_config", preset.preset_config)
+    if (preset.custom_template) form.setValue("custom_template", preset.custom_template)
     setActivePreset(preset.id)
     toast.success(`"${preset.label}" stack applied — customize as needed`)
     setTimeout(() => {

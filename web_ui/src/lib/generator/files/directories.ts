@@ -18,6 +18,10 @@ export function generatePlaceholderDirs(cfg: GeneratorConfig): VirtualFile[] {
   if (cfg.experiment_tracking === "wandb") dirs.push("wandb")
   if (cfg.orchestration === "airflow") dirs.push("dags")
   if (cfg.orchestration === "kubeflow") dirs.push("pipelines")
+  if (cfg.deployment === "kubernetes") dirs.push("k8s")
+  if (cfg.monitoring === "evidently" || cfg.monitoring === "custom") {
+    dirs.push("reports", "scripts/monitoring")
+  }
 
   return dirs.map(dir => ({ path: `${dir}/.gitkeep`, content: "" }))
 }

@@ -15,7 +15,7 @@ import {
 
 export const HERO_STATS = [
   { value: "6", label: "Stack presets" },
-  { value: "3", label: "ML frameworks" },
+  { value: "40+", label: "Files per project" },
   { value: "<30s", label: "To generate" },
 ] as const
 
@@ -48,19 +48,19 @@ export const FEATURES: FeatureItem[] = [
   {
     icon: Workflow,
     title: "Pipeline orchestration",
-    description: "Optional Airflow or Kubeflow layouts for teams running scheduled or Kubernetes-native pipelines.",
+    description: "Airflow DAGs and Kubeflow pipeline stubs that call your training scripts — not just empty folders.",
     tag: "Orchestration",
   },
   {
     icon: Rocket,
     title: "Deployment-ready",
-    description: "FastAPI, Docker, and Kubernetes project structures with inference entrypoints out of the box.",
+    description: "Root Dockerfiles, docker-compose, and Kubernetes manifests when you pick Docker or K8s deployment.",
     tag: "Deploy",
   },
   {
     icon: Shield,
     title: "Production monitoring",
-    description: "Evidently or custom monitoring hooks so you can observe models after they ship.",
+    description: "Evidently drift reports and custom metrics collectors generated under scripts/monitoring/.",
     tag: "Monitoring",
   },
   {
@@ -72,7 +72,7 @@ export const FEATURES: FeatureItem[] = [
   {
     icon: Download,
     title: "Instant ZIP download",
-    description: "One click delivers a complete repo layout — README, requirements, Makefile, tests, and configs.",
+    description: "Preview the full file tree before generating, then download a complete repo with CI, notebooks, and insights.",
     tag: "Output",
   },
 ]

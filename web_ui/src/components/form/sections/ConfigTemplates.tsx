@@ -31,14 +31,14 @@ export function ConfigTemplates() {
         <CustomSelectField
           name="preset_config"
           label="Configuration Preset"
-          description="Use a predefined configuration preset (optional)"
+          description="Adds CI, tests, and profile-specific extras to your archive"
           options={PRESET_OPTIONS}
           placeholder="Select preset (optional)…"
         />
         <CustomSelectField
           name="custom_template"
           label="Custom Template"
-          description="Choose a custom template variant (optional)"
+          description="Minimal, comprehensive, or microservice file bundles"
           options={TEMPLATE_OPTIONS}
           placeholder="Select template (optional)…"
         />

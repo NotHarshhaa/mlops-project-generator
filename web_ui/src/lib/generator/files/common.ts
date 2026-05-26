@@ -1,10 +1,14 @@
+import type { GenerationProfile } from "@/lib/generator/profiles"
 import { toTitle } from "@/lib/generator/template/helpers"
 import type { TemplateContext, VirtualFile } from "@/lib/generator/types"
 
-export function generateCommonFiles(ctx: TemplateContext): VirtualFile[] {
-  const { project_name, framework, task_type, experiment_tracking, orchestration, deployment, monitoring, author_name, description, python_version } = ctx
+export function generateCommonFiles(ctx: TemplateContext, profile: GenerationProfile): VirtualFile[] {
+  const {
+    project_name, framework, task_type, experiment_tracking, orchestration,
+    deployment, monitoring, author_name, description, preset_config, custom_template,
+  } = ctx
 
-  return [
+  const files: VirtualFile[] = [
     {
       path: ".gitignore",
       content: `# Python
@@ -67,10 +71,14 @@ pip install -r requirements.txt
 
 \`\`\`bash
 # Train the model
-python src/train.py
+python src/train.py --config configs/config.yaml
 
 # Run inference
 python src/inference.py
+${deployment === "docker" ? "\n# Or with Docker\ndocker compose up --build" : ""}
+${deployment === "kubernetes" ? "\n# Deploy to Kubernetes\nbash scripts/deploy_k8s.sh" : ""}
+${orchestration === "airflow" ? "\n# Test Airflow DAG\nairflow dags test $(basename dags/*_training.py .py) $(date +%Y-%m-%d)" : ""}
+${monitoring === "evidently" ? "\n# Drift report\npython scripts/monitoring/drift_report.py" : ""}
 \`\`\`
 
 ## 📊 Project Structure
@@ -110,6 +118,10 @@ ${experiment_tracking && experiment_tracking !== "none" ? `\n## 🔬 Experiment 
 ${orchestration && orchestration !== "none" ? `\n## 🔄 Orchestration: ${toTitle(orchestration)}` : ""}
 ${deployment ? `\n## 🚀 Deployment: ${toTitle(deployment)}` : ""}
 ${monitoring && monitoring !== "none" ? `\n## 📊 Monitoring: ${toTitle(monitoring)}` : ""}
+${preset_config ? `\n## ⚙️ Config preset: ${toTitle(String(preset_config).replace(/-/g, " "))}` : ""}
+${custom_template ? `\n## 📦 Template: ${toTitle(String(custom_template))}` : ""}
+${deployment === "docker" ? `\n## 🐳 Docker\n- \`Dockerfile\` — container image\n- \`docker-compose.yml\` — local stack` : ""}
+${deployment === "kubernetes" ? `\n## ☸️ Kubernetes\nManifests under \`k8s/\` — deployment, service, configmap` : ""}
 
 ## 📝 License
 
@@ -129,10 +141,53 @@ Generated with [MLOps Project Generator](https://github.com/NotHarshhaa/MLOps-Pr
       content: generateRequirements(ctx),
     },
     {
-      path: "Makefile",
-      content: `# MLOps Project Makefile
+      path: "configs/config.yaml",
+      content: generateConfigYaml(ctx),
+    },
+    {
+      path: "tests/__init__.py",
+      content: "",
+    },
+    {
+      path: "tests/test_model.py",
+      content: profile.enhancedTests
+        ? generateEnhancedTests(String(project_name), String(framework))
+        : `"""Basic tests for ${project_name}"""
+import pytest
+from pathlib import Path
 
-.PHONY: install train inference test lint format clean
+
+def test_config_exists():
+    assert Path("configs/config.yaml").exists()
+
+
+def test_train_script_exists():
+    assert Path("src/train.py").exists()
+`,
+    },
+    {
+      path: ".env.example",
+      content: `# Copy to .env and fill in your values
+${experiment_tracking === "mlflow" ? "MLFLOW_TRACKING_URI=http://localhost:5000\n" : ""}${experiment_tracking === "wandb" ? "WANDB_API_KEY=your_api_key_here\n" : ""}PROJECT_NAME=${project_name}
+`,
+    },
+  ]
+
+  if (profile.includeMakefile) {
+    files.push({
+      path: "Makefile",
+      content: generateMakefile(ctx),
+    })
+  }
+
+  return files
+}
+
+function generateMakefile(ctx: TemplateContext): string {
+  const { deployment, orchestration, monitoring } = ctx
+  return `# MLOps Project Makefile
+
+.PHONY: install train inference test lint format clean docker monitor
 
 install:
 \tpip install -r requirements.txt
@@ -157,34 +212,49 @@ format:
 clean:
 \trm -rf __pycache__ .pytest_cache .mypy_cache
 \tfind . -name "*.pyc" -delete
-`,
-    },
-    {
-      path: "configs/config.yaml",
-      content: generateConfigYaml(ctx),
-    },
-    {
-      path: "tests/__init__.py",
-      content: "",
-    },
-    {
-      path: "tests/test_model.py",
-      content: `"""Basic tests for ${project_name}"""
+${deployment === "docker" ? `
+docker:
+\tdocker compose up --build
+` : ""}${monitoring === "evidently" ? `
+monitor:
+\tpython scripts/monitoring/drift_report.py
+` : ""}${orchestration === "airflow" ? `
+dag-test:
+\tairflow dags list
+` : ""}
+`
+}
+
+function generateEnhancedTests(projectName: string, framework: string): string {
+  const pkgHint = framework === "sklearn" ? "scikit-learn" : framework
+  return `"""Tests for ${projectName}"""
 import pytest
+from pathlib import Path
+import yaml
 
 
-def test_placeholder():
-    """Placeholder test — replace with real tests"""
-    assert True
-`,
-    },
-    {
-      path: ".env.example",
-      content: `# Copy to .env and fill in your values
-${experiment_tracking === "mlflow" ? "MLFLOW_TRACKING_URI=http://localhost:5000\n" : ""}${experiment_tracking === "wandb" ? "WANDB_API_KEY=your_api_key_here\n" : ""}PROJECT_NAME=${project_name}
-`,
-    },
-  ]
+@pytest.fixture
+def config():
+    with open("configs/config.yaml") as f:
+        return yaml.safe_load(f)
+
+
+def test_config_structure(config):
+    assert "project" in config
+    assert config["project"]["name"]
+    assert "model" in config
+    assert "training" in config
+
+
+def test_requirements_contains_framework():
+    req = Path("requirements.txt").read_text().lower()
+    assert "${pkgHint}" in req or "${framework}" in req
+
+
+def test_source_layout():
+    assert Path("src/train.py").exists()
+    assert Path("src/inference.py").exists()
+`
 }
 
 function generateRequirements(ctx: TemplateContext): string {

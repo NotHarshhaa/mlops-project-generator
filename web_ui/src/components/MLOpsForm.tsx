@@ -27,7 +27,7 @@ import {
   ProjectDetails,
   StackPresets,
 } from "./form/sections"
-import { GenerationProgress, ProjectSummary, SuccessDialog } from "./form/feedback"
+import { FilePreview, GenerationProgress, ProjectSummary, SuccessDialog } from "./form/feedback"
 import { CreatorCard, RecentProjects } from "./form/chrome"
 import type { FormValues } from "./form/schema"
 
@@ -116,6 +116,10 @@ export default function MLOpsForm() {
 
                   {summaryVisible && (
                     <ProjectSummary values={formValues as FormValues} />
+                  )}
+
+                  {summaryVisible && (
+                    <FilePreview values={formValues as FormValues} />
                   )}
 
                   {validationError && (

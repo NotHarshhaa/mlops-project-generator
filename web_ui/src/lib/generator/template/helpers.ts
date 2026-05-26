@@ -1,3 +1,4 @@
+import type { GenerationProfile } from "../profiles"
 import type { GeneratorConfig } from "../types"
 import type { TemplateContext } from "../types"
 
@@ -5,7 +6,7 @@ export function toTitle(s: unknown): string {
   return String(s ?? "").replace(/\b\w/g, c => c.toUpperCase())
 }
 
-export function buildContext(cfg: GeneratorConfig): TemplateContext {
+export function buildContext(cfg: GeneratorConfig, profile: GenerationProfile): TemplateContext {
   const projectSlug = cfg.project_name.toLowerCase().replace(/\s+/g, "-").replace(/_/g, "-")
   return {
     ...cfg,
@@ -20,5 +21,10 @@ export function buildContext(cfg: GeneratorConfig): TemplateContext {
     orchestration: cfg.orchestration,
     deployment: cfg.deployment,
     monitoring: cfg.monitoring,
+    preset_config: cfg.preset_config,
+    custom_template: cfg.custom_template,
+    include_makefile: profile.includeMakefile,
+    enhanced_tests: profile.enhancedTests,
+    microservice_mode: profile.microserviceMode,
   }
 }
