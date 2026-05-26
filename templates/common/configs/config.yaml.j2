@@ -1,13 +1,11 @@
 # Configuration file for {{ project_name }}
 
-# Project settings
 project:
   name: "{{ project_name }}"
   author: "{{ author_name }}"
   version: "0.1.0"
   description: "{{ framework_display }} {{ task_display }} project"
 
-# Data settings
 data:
   raw_data_path: "data/raw"
   processed_data_path: "data/processed"
@@ -16,10 +14,16 @@ data:
   random_state: 42
   {% if framework == "sklearn" %}
   target_column: "target"
-  feature_columns: []
+  {% endif %}
+  {% if task_type == "timeseries" %}
+  window_size: 24
+  forecast_horizon: 1
+  {% endif %}
+  {% if task_type == "nlp" %}
+  text_column: "text"
+  label_column: "label"
   {% endif %}
 
-# Model settings
 model:
   {% if framework == "sklearn" %}
   {% if task_type == "classification" %}
@@ -59,19 +63,17 @@ model:
   hidden_layers: [128, 64, 32]
   dropout: 0.2
   {% endif %}
+  {% if task_type == "nlp" %}
+  pretrained: "distilbert-base-uncased"
+  max_length: 256
+  {% endif %}
 
-# Training settings
 training:
   {% if framework in ["pytorch", "tensorflow"] %}
   batch_size: 32
   learning_rate: 0.001
   epochs: 100
-  {% if framework == "pytorch" %}
   optimizer: "adam"
-  scheduler: "step"
-  {% elif framework == "tensorflow" %}
-  optimizer: "adam"
-  {% endif %}
   {% else %}
   cross_validation: 5
   {% endif %}
@@ -79,30 +81,30 @@ training:
   patience: 10
   verbose: true
 
-# Evaluation settings
 evaluation:
   metrics:
     {% if task_type == "classification" %}
-    - "accuracy"
-    - "precision"
-    - "recall"
-    - "f1_score"
-    - "roc_auc"
+    - accuracy
+    - precision
+    - recall
+    - f1_score
     {% elif task_type == "regression" %}
-    - "mse"
-    - "rmse"
-    - "mae"
-    - "r2_score"
+    - mse
+    - rmse
+    - mae
+    - r2_score
     {% elif task_type == "timeseries" %}
-    - "mse"
-    - "rmse"
-    - "mae"
-    - "mape"
+    - mse
+    - rmse
+    - mae
+    - mape
+    {% elif task_type == "nlp" %}
+    - accuracy
+    - f1_score
     {% endif %}
   save_predictions: true
   plot_results: true
 
-# Experiment tracking
 experiment_tracking:
   tool: "{{ experiment_tracking }}"
   {% if experiment_tracking == "mlflow" %}
@@ -110,10 +112,9 @@ experiment_tracking:
   experiment_name: "{{ project_name }}"
   {% elif experiment_tracking == "wandb" %}
   project: "{{ project_name }}"
-  entity: "{{ author_name.lower().replace(' ', '_') }}"
+  entity: "{{ author_slug }}"
   {% endif %}
 
-# Deployment settings
 deployment:
   method: "{{ deployment }}"
   {% if deployment == "fastapi" %}
@@ -124,10 +125,9 @@ deployment:
   base_image: "python:{{ python_version }}-slim"
   {% elif deployment == "kubernetes" %}
   namespace: "default"
-  replicas: 3
+  replicas: 2
   {% endif %}
 
-# Monitoring settings
 monitoring:
   tool: "{{ monitoring }}"
   {% if monitoring == "evidently" %}
@@ -138,14 +138,12 @@ monitoring:
   check_frequency: "hourly"
   {% endif %}
 
-# Logging settings
 logging:
   level: "INFO"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
   file: "logs/{{ project_name }}.log"
   console: true
 
-# Paths
 paths:
   data_dir: "data"
   models_dir: "models"

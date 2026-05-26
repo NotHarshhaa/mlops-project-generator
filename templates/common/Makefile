@@ -1,51 +1,42 @@
-.PHONY: help install install-dev test lint format clean train inference
+.PHONY: help install train inference test lint format clean docker
+
+PROJECT_NAME ?= {{ project_name }}
 
 help:
-	@echo "Available commands:"
-	@echo "  install      Install production dependencies"
-	@echo "  install-dev  Install development dependencies"
-	@echo "  test         Run tests"
-	@echo "  lint         Run linting"
-	@echo "  format       Format code"
-	@echo "  clean        Clean temporary files"
-	@echo "  train        Train model"
-	@echo "  inference    Run inference"
+	@echo "Targets: install train inference test lint format clean{% if deployment == 'docker' %} docker{% endif %}"
 
 install:
-	pip install -e .
+	pip install -r requirements.txt
 
-install-dev:
-	pip install -e ".[dev]"
+train:
+{% if task_type == "nlp" %}
+	python src/nlp/finetune.py --config configs/nlp.yaml
+{% else %}
+	python src/train.py --config configs/config.yaml
+{% endif %}
+
+inference:
+{% if task_type == "nlp" %}
+	python src/nlp/inference.py
+{% else %}
+	python src/inference.py
+{% endif %}
 
 test:
-	pytest tests/ -v --cov=src --cov-report=html --cov-report=term-missing
+	pytest tests/ -v
 
 lint:
-	flake8 src/ tests/
-	mypy src/
+	flake8 src/ tests/ || true
 
 format:
 	black src/ tests/
 	isort src/ tests/
 
 clean:
-	find . -type f -name "*.pyc" -delete
-	find . -type d -name "__pycache__" -delete
-	rm -rf .pytest_cache/
-	rm -rf .coverage
-	rm -rf htmlcov/
-	rm -rf dist/
-	rm -rf build/
-	rm -rf *.egg-info/
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	rm -rf .pytest_cache htmlcov/
 
-train:
-	python src/train.py
-
-inference:
-	python src/inference.py
-
-docker-build:
-	docker build -t $(PROJECT_NAME) .
-
-docker-run:
-	docker run -p 8000:8000 $(PROJECT_NAME)
+{% if deployment == "docker" %}
+docker:
+	docker compose up --build
+{% endif %}

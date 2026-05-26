@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+"""Fine-tune Hugging Face model for {{ project_name }}"""
+import argparse
+import logging
+from pathlib import Path
+
+import pandas as pd
+import yaml
+from datasets import Dataset
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    DataCollatorWithPadding,
+    Trainer,
+    TrainingArguments,
+)
+
+{% if experiment_tracking == "mlflow" %}
+import mlflow
+{% elif experiment_tracking == "wandb" %}
+import wandb
+{% endif %}
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", default="configs/nlp.yaml")
+    args = parser.parse_args()
+
+    with open(args.config) as f:
+        config = yaml.safe_load(f)
+
+    model_name = config["model"]["pretrained"]
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(
+        model_name, num_labels=config["model"]["num_labels"]
+    )
+
+    train_path = Path(config["data"]["train_path"])
+    if train_path.exists():
+        df = pd.read_csv(train_path)
+    else:
+        logger.warning("No CSV at %s — using demo rows", train_path)
+        df = pd.DataFrame({
+            "text": ["great", "terrible", "okay"] * 50,
+            "label": [1, 0, 1] * 50,
+        })
+
+    text_col = config["data"]["text_column"]
+    label_col = config["data"]["label_column"]
+    train_ds = Dataset.from_pandas(df[[text_col, label_col]])
+
+    def tokenize(batch):
+        return tokenizer(batch[text_col], truncation=True, max_length=config["model"]["max_length"])
+
+    train_ds = train_ds.map(tokenize, batched=True)
+    collator = DataCollatorWithPadding(tokenizer=tokenizer)
+    out_dir = Path("models/production/hf-nlp")
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    tcfg = config["training"]
+    args_hf = TrainingArguments(
+        output_dir=str(out_dir / "checkpoints"),
+        num_train_epochs=tcfg["epochs"],
+        per_device_train_batch_size=tcfg["batch_size"],
+        learning_rate=tcfg["learning_rate"],
+        save_strategy="epoch",
+    )
+
+    {% if experiment_tracking == "mlflow" %}
+    mlflow.set_experiment("{{ project_name }}")
+    mlflow.start_run()
+    {% elif experiment_tracking == "wandb" %}
+    wandb.init(project="{{ project_name }}")
+    {% endif %}
+
+    trainer = Trainer(
+        model=model,
+        args=args_hf,
+        train_dataset=train_ds,
+        tokenizer=tokenizer,
+        data_collator=collator,
+    )
+    trainer.train()
+    trainer.save_model(str(out_dir))
+    tokenizer.save_pretrained(str(out_dir))
+    logger.info("Saved model to %s", out_dir)
+
+
+if __name__ == "__main__":
+    main()

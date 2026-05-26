@@ -8,9 +8,12 @@ export function toTitle(s: unknown): string {
 
 export function buildContext(cfg: GeneratorConfig, profile: GenerationProfile): TemplateContext {
   const projectSlug = cfg.project_name.toLowerCase().replace(/\s+/g, "-").replace(/_/g, "-")
+  const authorSlug = (cfg.author_name ?? "author").toLowerCase().replace(/\s+/g, "_")
+
   return {
     ...cfg,
     project_slug: projectSlug,
+    author_slug: authorSlug,
     python_version: "3.11",
     year: new Date().getFullYear().toString(),
     framework_display: toTitle(cfg.framework),

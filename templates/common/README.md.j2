@@ -2,86 +2,64 @@
 
 {{ description }}
 
-## 🚀 Quick Start
-
-### Installation
+## Quick start
 
 ```bash
 pip install -r requirements.txt
+cp .env.example .env   # optional: tracking keys
 ```
 
-### Usage
+{% if task_type == "nlp" %}
+### NLP (Hugging Face)
 
 ```bash
-# Train the model
-python src/train.py
-
-# Run inference
-python src/inference.py
+# Place train.csv under data/raw/ (columns: text, label)
+python src/nlp/finetune.py --config configs/nlp.yaml
+python src/nlp/inference.py --text "Sample review"
 ```
+{% else %}
+```bash
+python src/train.py --config configs/config.yaml
+python src/inference.py
+{% if deployment == "docker" %}
+docker compose up --build
+{% endif %}
+{% endif %}
 
-## 📊 Project Structure
+## Stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | {{ framework_display }} |
+| Task | {{ task_display }} |
+| Tracking | {{ experiment_tracking }} |
+| Orchestration | {{ orchestration }} |
+| Deployment | {{ deployment }} |
+| Monitoring | {{ monitoring }} |
+
+## Project layout
 
 ```
 {{ project_name }}/
-├── src/
-│   ├── data/
-│   ├── features/
-│   ├── models/
-│   ├── train.py
-│   └── inference.py
 ├── configs/
-│   └── config.yaml
+├── src/
+├── data/
+├── models/
 ├── tests/
-├── requirements.txt
-└── README.md
+└── requirements.txt
 ```
 
-## 🛠️ Development
-
-### Setup
+## Development
 
 ```bash
-# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate
 pip install -r requirements.txt
-```
-
-### Running Tests
-
-```bash
 pytest tests/
 ```
 
-## 📈 Framework: {{ framework|title }}
-
-{% if experiment_tracking %}
-## 🔬 Experiment Tracking: {{ experiment_tracking|title }}
-{% endif %}
-
-{% if orchestration %}
-## 🔄 Orchestration: {{ orchestration|title }}
-{% endif %}
-
-{% if deployment %}
-## 🚀 Deployment: {{ deployment|title }}
-{% endif %}
-
-{% if monitoring %}
-## 📊 Monitoring: {{ monitoring|title }}
-{% endif %}
-
-## 📝 License
-
-This project is licensed under the MIT License.
-
-## 👥 Author
+## Author
 
 **{{ author_name }}**
-
----
 
 Generated with [MLOps Project Generator](https://github.com/NotHarshhaa/MLOps-Project-Generator)

@@ -44,9 +44,7 @@ export function generateProject(cfg: GeneratorConfig): VirtualFile[] {
   const ctx = buildContext(cfg, profile)
   const isNlp = cfg.task_type === "nlp"
 
-  const { files: legacyFiles, overridePaths } = isNlp
-    ? { files: [], overridePaths: new Set<string>() }
-    : generateLegacyTemplateFiles(cfg, ctx)
+  const { files: legacyFiles, overridePaths } = generateLegacyTemplateFiles(cfg, ctx)
 
   const modernCore = withoutPaths(generateCommonFiles(ctx, profile), overridePaths)
 
@@ -54,7 +52,9 @@ export function generateProject(cfg: GeneratorConfig): VirtualFile[] {
     ? []
     : withoutPaths(generateFrameworkFiles(cfg.framework, ctx), overridePaths)
 
-  const nlpFiles = isNlp ? generateNlpHuggingfaceFiles(ctx) : []
+  const nlpFiles = isNlp
+    ? withoutPaths(generateNlpHuggingfaceFiles(ctx), overridePaths)
+    : []
 
   const taskExtensions = isNlp
     ? generateTaskExtensionFiles(ctx).filter(

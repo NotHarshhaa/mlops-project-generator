@@ -131,6 +131,10 @@ class ProjectRenderer:
             str(self.template_dir / "common"),
             str(self.template_dir / self.framework),
         ]
+        if self.choices.get("task_type") == "nlp":
+            nlp_dir = self.template_dir / "nlp"
+            if nlp_dir.exists():
+                template_dirs.append(str(nlp_dir))
         env = Environment(
             loader=FileSystemLoader(template_dirs),
             autoescape=select_autoescape(["html", "xml"]),
@@ -146,6 +150,8 @@ class ProjectRenderer:
     def _render_templates_in_dir(self, env: Environment, template_dir: Path) -> None:
         """Render templates in a specific directory"""
         for template_file in template_dir.rglob("*.j2"):
+            if "snippets" in template_file.parts:
+                continue
             relative_path = template_file.relative_to(template_dir)
             output_file = self.output_dir / relative_path.with_suffix("")
 
@@ -238,13 +244,17 @@ class ProjectRenderer:
 
         # Add computed values
         project_slug = self.project_name.lower().replace(" ", "-").replace("_", "-")
+        author = self.choices.get("author_name", "author")
+        author_slug = author.lower().replace(" ", "_")
+        task_type = self.choices["task_type"]
         context.update(
             {
                 "project_slug": project_slug,
-                "python_version": "3.10",
-                "year": "2026",
-                "framework_display": self.framework.title(),
-                "task_display": self.choices["task_type"].title(),
+                "author_slug": author_slug,
+                "python_version": "3.11",
+                "year": str(__import__("datetime").datetime.now().year),
+                "framework_display": self.framework.replace("_", " ").title(),
+                "task_display": task_type.replace("-", " ").title(),
             }
         )
 

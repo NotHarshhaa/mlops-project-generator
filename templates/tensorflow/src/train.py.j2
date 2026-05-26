@@ -27,7 +27,7 @@ import wandb
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.models.{{ task_type }}_model import {{ task_type.title() }}Model
+{% include 'snippets/model_import.py.j2' %}
 from src.data.data_loader import DataLoader
 from src.utils.training_utils import EarlyStopping, MetricsCalculator
 
@@ -299,7 +299,7 @@ def main() -> None:
         # Initialize model
         model_config = config["model"]
         model_config["input_dim"] = X_train.shape[1]
-        model = {{ task_type.title() }}Model(model_config)
+        model = TaskModel(model_config)
         
         # Override epochs if provided
         if args.epochs:

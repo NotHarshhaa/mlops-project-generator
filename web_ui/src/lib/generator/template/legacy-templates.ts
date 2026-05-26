@@ -4,18 +4,14 @@ import { renderTemplate } from "./engine"
 import type { GeneratorConfig } from "../types"
 import type { TemplateContext, VirtualFile } from "../types"
 
-const LEGACY_TASK_TYPES = new Set(["classification", "regression", "timeseries"])
-
-const COMMON_TEMPLATES = [
-  "configs/config.yaml.j2",
-  "requirements.txt.j2",
-  "README.md.j2",
-] as const
+const LEGACY_ML_TASK_TYPES = new Set(["classification", "regression", "timeseries"])
 
 const BASE_OVERRIDE_PATHS = [
   "configs/config.yaml",
   "requirements.txt",
   "README.md",
+  "Makefile",
+  ".env.example",
   "src/train.py",
   "src/inference.py",
 ]
@@ -30,6 +26,10 @@ function resolveTemplatesRoot(): string | null {
     if (fs.existsSync(path.join(dir, "common"))) return dir
   }
   return null
+}
+
+function shouldSkipPath(fullPath: string): boolean {
+  return fullPath.includes(`${path.sep}snippets${path.sep}`)
 }
 
 function preprocessTemplateSource(source: string): string {
@@ -52,20 +52,19 @@ function buildLegacyContext(ctx: TemplateContext): TemplateContext {
   return {
     ...ctx,
     default_model_type: isClassificationOrRegression ? "random_forest" : "arima",
-    author_slug: String(ctx.author_name ?? "author")
+    author_slug: String(ctx.author_slug ?? ctx.author_name ?? "author")
       .toLowerCase()
       .replace(/\s+/g, "_"),
   }
 }
 
 function renderJ2(content: string, ctx: TemplateContext): string {
-  const legacyCtx = buildLegacyContext(ctx)
-  return renderTemplate(preprocessTemplateSource(content), legacyCtx)
+  return renderTemplate(preprocessTemplateSource(content), buildLegacyContext(ctx))
 }
 
 function postRenderFixes(content: string, ctx: TemplateContext): string {
   if (String(ctx.task_type) === "timeseries") {
-    content = content.replace(/TimeseriesModel/g, "TimeSeriesModel")
+    return content.replace(/TimeseriesModel/g, "TimeSeriesModel")
   }
   return content
 }
@@ -73,26 +72,23 @@ function postRenderFixes(content: string, ctx: TemplateContext): string {
 function readAndRender(filePath: string, outputPath: string, ctx: TemplateContext): VirtualFile | null {
   try {
     const raw = fs.readFileSync(filePath, "utf-8")
-    const content = postRenderFixes(renderJ2(raw, ctx), ctx)
-    return { path: outputPath, content }
+    return { path: outputPath, content: postRenderFixes(renderJ2(raw, ctx), ctx) }
   } catch (err) {
     console.warn(`[legacy-templates] skip ${filePath}:`, err)
     return null
   }
 }
 
-function walkFrameworkTemplates(
-  frameworkDir: string,
+function walkJ2Tree(
+  baseDir: string,
   ctx: TemplateContext,
   overridePaths: Set<string>,
+  options?: { modelTaskFilter?: string },
 ): VirtualFile[] {
   const files: VirtualFile[] = []
-  const taskType = String(ctx.task_type ?? "")
+  if (!fs.existsSync(baseDir)) return files
 
-  if (!LEGACY_TASK_TYPES.has(taskType)) return files
-  if (!fs.existsSync(frameworkDir)) return files
-
-  const stack: string[] = [frameworkDir]
+  const stack = [baseDir]
   while (stack.length > 0) {
     const dir = stack.pop()!
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -103,8 +99,9 @@ function walkFrameworkTemplates(
       }
 
       if (entry.name.endsWith(".j2")) {
-        const rel = path.relative(frameworkDir, full).replace(/\\/g, "/")
-        if (rel.includes("models/") && !rel.includes(`${taskType}_model`)) {
+        if (shouldSkipPath(full)) continue
+        const rel = path.relative(baseDir, full).replace(/\\/g, "/")
+        if (options?.modelTaskFilter && rel.includes("models/") && !rel.includes(`${options.modelTaskFilter}_model`)) {
           continue
         }
         const outPath = rel.replace(/\.j2$/, "")
@@ -112,7 +109,7 @@ function walkFrameworkTemplates(
         const rendered = readAndRender(full, outPath, ctx)
         if (rendered) files.push(rendered)
       } else if (entry.name.endsWith(".py") && !entry.name.includes(".j2")) {
-        const rel = path.relative(frameworkDir, full).replace(/\\/g, "/")
+        const rel = path.relative(baseDir, full).replace(/\\/g, "/")
         files.push({ path: rel, content: fs.readFileSync(full, "utf-8") })
       }
     }
@@ -122,7 +119,7 @@ function walkFrameworkTemplates(
 }
 
 export function canUseLegacyTemplates(cfg: GeneratorConfig): boolean {
-  return LEGACY_TASK_TYPES.has(cfg.task_type)
+  return LEGACY_ML_TASK_TYPES.has(cfg.task_type) || cfg.task_type === "nlp"
 }
 
 export function generateLegacyTemplateFiles(
@@ -136,25 +133,30 @@ export function generateLegacyTemplateFiles(
     return { files: [], overridePaths }
   }
 
-  const files: VirtualFile[] = []
   const legacyCtx = buildLegacyContext(ctx)
-
+  const files: VirtualFile[] = []
   const commonDir = path.join(root, "common")
-  for (const rel of COMMON_TEMPLATES) {
-    const filePath = path.join(commonDir, rel)
-    if (!fs.existsSync(filePath)) continue
-    const outPath = rel.replace(/\.j2$/, "")
-    overridePaths.add(outPath)
-    const rendered = readAndRender(filePath, outPath, legacyCtx)
-    if (rendered) files.push(rendered)
+
+  files.push(...walkJ2Tree(commonDir, legacyCtx, overridePaths))
+
+  if (cfg.task_type === "nlp") {
+    const nlpDir = path.join(root, "nlp")
+    files.push(...walkJ2Tree(nlpDir, legacyCtx, overridePaths))
+    overridePaths.add("configs/nlp.yaml")
+    overridePaths.add("src/nlp/finetune.py")
+    return { files, overridePaths }
   }
 
   const frameworkDir = path.join(root, cfg.framework)
-  files.push(...walkFrameworkTemplates(frameworkDir, legacyCtx, overridePaths))
+  files.push(
+    ...walkJ2Tree(frameworkDir, legacyCtx, overridePaths, {
+      modelTaskFilter: cfg.task_type,
+    }),
+  )
 
   return { files, overridePaths }
 }
 
 export function isLegacyTaskType(taskType: string): boolean {
-  return LEGACY_TASK_TYPES.has(taskType)
+  return LEGACY_ML_TASK_TYPES.has(taskType) || taskType === "nlp"
 }

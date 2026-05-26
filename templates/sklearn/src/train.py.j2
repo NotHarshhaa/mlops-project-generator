@@ -32,7 +32,7 @@ import wandb
 # Add src to path
 sys.path.append(str(Path(__file__).parent.parent))
 
-from src.models.{{ task_type }}_model import {{ task_type.title() }}Model
+{% include 'snippets/model_import.py.j2' %}
 from src.data.data_loader import DataLoader
 from src.features.feature_engineering import FeatureEngineer
 
@@ -172,7 +172,7 @@ def main() -> None:
         logging.info(f"Test set shape: {X_test.shape}")
         
         # Initialize and train model
-        model = {{ task_type.title() }}Model(config)
+        model = TaskModel(config)
         model.train(X_train, y_train)
         
         logging.info("Model training completed")
