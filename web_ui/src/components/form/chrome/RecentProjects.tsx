@@ -23,11 +23,11 @@ function getRelativeTime(timestamp: number) {
 
 function RecentProjectsEmpty() {
   return (
-    <div className="p-4 sm:p-8 text-center">
-      <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-3 sm:mb-4">
-        <FolderOpen className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground" />
+    <div className="p-8 sm:p-10 text-center">
+      <div className="icon-chip icon-chip-cyan w-14 h-14 rounded-xl mx-auto mb-4">
+        <FolderOpen className="w-7 h-7" />
       </div>
-      <h4 className="text-base sm:text-lg font-semibold text-foreground mb-1 sm:mb-2">No Recent Projects Yet</h4>
+      <h4 className="font-display text-lg font-bold text-foreground mb-2">No archives yet</h4>
       <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto mb-3 sm:mb-6">
         Generate your first MLOps project and it will appear here for quick access and download.
       </p>
@@ -46,7 +46,7 @@ function RecentProjectRow({
   onRemove: (id: string) => void
 }) {
   return (
-    <div className="group relative p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-border/50 bg-card/50 hover:bg-card transition-all duration-200 hover:shadow-md hover:border-primary/30">
+    <div className="group relative p-4 rounded-lg border border-border/60 bg-muted/15 hover:bg-muted/30 transition-all duration-200 hover:border-primary/35">
       <div className="flex items-start justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 sm:mb-2">
@@ -106,15 +106,16 @@ export function RecentProjects() {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <div className="mt-12 glass-card rounded-3xl overflow-hidden">
-      <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border/50 bg-gradient-to-r from-primary/5 via-transparent to-primary/3 dark:from-primary/8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl icon-gradient-emerald flex items-center justify-center shadow-md">
-              <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+    <section className="mt-12 panel overflow-hidden">
+      <div className="px-5 sm:px-8 py-5 border-b border-border/80">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="icon-chip icon-chip-emerald">
+              <Clock className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-lg sm:text-xl font-bold text-foreground leading-tight">Recently Generated Projects</h3>
+              <p className="font-mono-label text-muted-foreground mb-0.5">History</p>
+              <h3 className="font-display text-xl font-bold text-foreground">Recent archives</h3>
               <p className="text-xs sm:text-sm text-muted-foreground">
                 {projects.length === 0
                   ? "Your recently generated projects will appear here for quick download"
@@ -127,7 +128,7 @@ export function RecentProjects() {
               <button
                 type="button"
                 onClick={clearAll}
-                className="px-2 sm:px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-destructive/5"
+                className="font-mono-label text-muted-foreground hover:text-destructive transition-colors px-2 py-1 rounded hover:bg-destructive/5"
               >
                 <span className="hidden sm:inline">Clear All</span>
                 <span className="sm:hidden">Clear</span>
@@ -135,7 +136,7 @@ export function RecentProjects() {
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="px-2 sm:px-3 py-1.5 text-xs font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition-colors"
+                className="font-mono-label text-primary border border-primary/30 rounded-lg px-2 py-1 hover:bg-primary/8 transition-colors"
               >
                 {isExpanded ? "Show Less" : "Show All"}
               </button>
@@ -147,7 +148,7 @@ export function RecentProjects() {
       {projects.length === 0 ? (
         <RecentProjectsEmpty />
       ) : (
-        <div className="p-4 sm:p-6 sm:p-8">
+        <div className="p-5 sm:p-8">
           <div className="space-y-3 sm:space-y-4">
             {projects.slice(0, isExpanded ? projects.length : 3).map((project) => (
               <RecentProjectRow key={project.id} project={project} onRemove={removeProject} />
@@ -171,6 +172,6 @@ export function RecentProjects() {
           )}
         </div>
       )}
-    </div>
+    </section>
   )
 }

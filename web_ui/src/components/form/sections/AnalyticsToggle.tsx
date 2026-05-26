@@ -13,16 +13,17 @@ export function AnalyticsToggle() {
     <div className="space-y-4">
       <SectionHeader
         icon={TrendingUp}
-        title="Analytics & Insights"
-        subtitle="Enable project analytics and usage tracking"
-        iconClass="icon-gradient-rose"
+        title="Analytics"
+        subtitle="Usage tracking and generation insights"
+        iconClass="icon-chip-rose"
+        step="Optional"
       />
       <FormField
         control={form.control}
         name="enable_analytics"
         render={({ field }) => (
           <FormItem>
-            <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-card/60 p-4 gap-4">
+            <div className="flex items-center justify-between rounded-lg border border-border/70 bg-muted/20 p-4 gap-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-sm font-semibold text-foreground cursor-pointer">Enable Analytics</FormLabel>
                 <FormDescription className="text-xs">
@@ -36,7 +37,7 @@ export function AnalyticsToggle() {
                   aria-checked={!!field.value}
                   onClick={() => field.onChange(!field.value)}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    field.value ? "gradient-primary" : "bg-muted"
+                    field.value ? "gradient-primary shadow-sm shadow-primary/30" : "bg-muted"
                   }`}
                 >
                   <span className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg transition-transform duration-300 ${

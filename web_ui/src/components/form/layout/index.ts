@@ -1,4 +1,5 @@
 export { AmbientBackground } from "./AmbientBackground"
+export { FormNav } from "./FormNav"
 export { FormHero } from "./FormHero"
 export { FormLoadingSkeleton } from "./FormLoadingSkeleton"
 export { ConfigProgressBar } from "./ConfigProgressBar"

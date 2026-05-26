@@ -22,9 +22,10 @@ export function ConfigTemplates() {
     <div className="space-y-6">
       <SectionHeader
         icon={Database}
-        title="Configuration & Templates"
-        subtitle="Advanced configuration presets and template options"
-        iconClass="icon-gradient-amber"
+        title="Templates"
+        subtitle="Configuration presets and template variants"
+        iconClass="icon-chip-amber"
+        step="Optional"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CustomSelectField

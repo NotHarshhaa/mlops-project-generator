@@ -10,9 +10,10 @@ export function Infrastructure({ options }: { options: Options }) {
     <div className="space-y-6">
       <SectionHeader
         icon={GitBranch}
-        title="Infrastructure & Deployment"
-        subtitle="Orchestration, deployment, and monitoring setup"
-        iconClass="icon-gradient-cyan"
+        title="Infrastructure"
+        subtitle="Orchestration, deployment, and monitoring"
+        iconClass="icon-chip-cyan"
+        step="Ops layer"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CustomSelectField

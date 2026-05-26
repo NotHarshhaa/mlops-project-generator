@@ -11,8 +11,9 @@ export function CoreMLStack({ options }: { options: Options }) {
       <SectionHeader
         icon={Brain}
         title="Core ML Stack"
-        subtitle="Configure your fundamental machine learning components"
-        iconClass="icon-gradient-violet"
+        subtitle="Framework, task type, and experiment tracking"
+        iconClass="icon-chip-violet"
+        step="ML core"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CustomSelectField

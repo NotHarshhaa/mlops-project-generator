@@ -1,5 +1,4 @@
-import { Settings, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { RotateCcw, SlidersHorizontal } from "lucide-react"
 
 interface FormCardHeaderProps {
   presetLabel?: string
@@ -10,31 +9,32 @@ export function FormCardHeader({ presetLabel, onClearAll }: FormCardHeaderProps)
   return (
     <div
       id="project-config-card"
-      className="px-4 sm:px-6 lg:px-8 py-4 sm:py-5 lg:py-6 border-b border-border/50 flex items-center justify-between bg-gradient-to-r from-primary/5 via-transparent to-primary/3 dark:from-primary/8"
+      className="px-5 sm:px-8 py-5 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
     >
-      <div className="flex items-center gap-2 sm:gap-3">
-        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl icon-gradient-violet flex items-center justify-center shadow-md">
-          <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      <div className="flex items-start gap-3">
+        <div className="icon-chip icon-chip-violet mt-0.5">
+          <SlidersHorizontal className="w-4 h-4" />
         </div>
         <div>
-          <h2 className="text-lg sm:text-xl font-bold text-foreground leading-tight">Project Configuration</h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="font-mono-label text-primary mb-1">Step 02</p>
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-foreground">
+            Configure stack
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
             {presetLabel
-              ? `Using "${presetLabel}" preset — tweak any field below`
-              : "Choose your ML stack and deployment preferences"}
+              ? `Preset "${presetLabel}" applied — adjust any field below`
+              : "Select frameworks, deployment targets, and project metadata"}
           </p>
         </div>
       </div>
-      <Button
+      <button
         type="button"
-        variant="outline"
-        size="sm"
         onClick={onClearAll}
-        className="rounded-lg sm:rounded-xl border-border/70 gap-1.5 text-muted-foreground hover:text-foreground px-2 sm:px-3"
+        className="btn-ghost-panel self-start sm:self-center inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground"
       >
-        <X className="h-3.5 w-3.5" />
-        <span className="hidden sm:inline text-xs font-medium">Clear All</span>
-      </Button>
+        <RotateCcw className="h-3.5 w-3.5" />
+        Reset form
+      </button>
     </div>
   )
 }

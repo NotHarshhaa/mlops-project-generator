@@ -23,8 +23,9 @@ export function CloudDeployment() {
       <SectionHeader
         icon={Cloud}
         title="Cloud Deployment"
-        subtitle="Optional — generate cloud-specific deployment templates"
-        iconClass="icon-gradient-emerald"
+        subtitle="Optional cloud-specific deployment templates"
+        iconClass="icon-chip-emerald"
+        step="Optional"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <CustomSelectField

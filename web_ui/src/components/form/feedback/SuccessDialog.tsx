@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckCircle, Download, Rocket, Settings } from "lucide-react"
+import { CheckCircle2, Download, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
@@ -11,65 +11,62 @@ interface SuccessDialogProps {
   onReset: () => void
 }
 
+const TAGS = ["Production ready", "Best practices", "Scalable", "Cloud native", "CI/CD ready"]
+
 export function SuccessDialog({ open, onOpenChange, onDownload, onReset }: SuccessDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-w-[95vw] glass-card border-0 rounded-3xl overflow-hidden p-0">
-        <div className="h-1.5 w-full bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500" />
-
+      <DialogContent className="sm:max-w-md max-w-[95vw] panel border-0 p-0 gap-0 overflow-hidden">
         <div className="p-6 sm:p-8">
-          <DialogHeader className="pb-6">
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-xl shadow-primary/30 animate-glow-pulse">
-                <CheckCircle className="w-7 h-7 text-white" />
+          <DialogHeader className="text-left space-y-4 pb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/25">
+                <CheckCircle2 className="w-7 h-7 text-primary-foreground" />
               </div>
               <div>
-                <DialogTitle className="text-xl font-bold text-foreground">Project Generated! 🎉</DialogTitle>
+                <p className="font-mono-label text-primary">Complete</p>
+                <DialogTitle className="font-display text-xl font-bold">Project generated</DialogTitle>
                 <DialogDescription className="text-sm text-muted-foreground mt-0.5">
-                  Your production-ready MLOps project is ready
+                  Your MLOps scaffold is packaged and ready to download.
                 </DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
-          <div className="glass-card rounded-2xl p-5 mb-6">
-            <div className="flex flex-col sm:flex-row items-center gap-5">
-              <div className="w-20 h-20 rounded-2xl gradient-primary flex items-center justify-center shadow-xl shadow-primary/25 flex-shrink-0 animate-float">
-                <Rocket className="w-10 h-10 text-white" />
-              </div>
-              <div className="text-center sm:text-left">
-                <h3 className="text-xl font-bold text-foreground mb-2">Congratulations!</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                  Your MLOps project has been generated with best practices, optimized for production deployment and scalability.
-                </p>
-                <div className="flex flex-wrap justify-center sm:justify-start gap-2">
-                  {["Production Ready", "Best Practices", "Scalable", "Cloud Native", "CI/CD Ready"].map(tag => (
-                    <span key={tag} className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-semibold">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
+          <div className="rounded-lg border border-border/70 bg-muted/20 p-4 mb-6">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              The archive includes training scripts, configs, deployment templates, and tooling
+              aligned with your selected stack.
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {TAGS.map(tag => (
+                <span
+                  key={tag}
+                  className="px-2 py-0.5 rounded text-[10px] font-mono-label border border-primary/25 bg-primary/8 text-primary"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Button
               onClick={onDownload}
-              className="flex-1 h-12 rounded-2xl gradient-primary btn-shine shadow-lg shadow-primary/25 border-0 text-white font-semibold"
+              className="flex-1 h-11 rounded-lg gradient-primary btn-shine border-0 text-primary-foreground font-semibold"
               size="lg"
             >
-              <Download className="h-5 w-5 mr-2" />
-              Download Project
+              <Download className="h-4 w-4 mr-2" />
+              Download ZIP
             </Button>
             <Button
               onClick={onReset}
               variant="outline"
-              className="flex-1 h-12 rounded-2xl border-border/70 font-semibold hover:bg-muted/60"
+              className="flex-1 h-11 rounded-lg btn-ghost-panel font-semibold"
               size="lg"
             >
-              <Settings className="h-5 w-5 mr-2" />
-              Generate Another
+              <Plus className="h-4 w-4 mr-2" />
+              New project
             </Button>
           </div>
         </div>

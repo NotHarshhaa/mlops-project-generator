@@ -1,16 +1,23 @@
 interface ProgressStepProps {
   label: string
-  colorClass: string
   active: boolean
 }
 
-export function ProgressStep({ label, colorClass, active }: ProgressStepProps) {
+export function ProgressStep({ label, active }: ProgressStepProps) {
   return (
-    <div className={`text-center p-2.5 rounded-xl border transition-all duration-500 ${
-      active ? `${colorClass} shadow-sm scale-105` : "bg-white/50 dark:bg-white/5 border-border"
-    }`}>
-      <div className={`w-2 h-2 rounded-full mx-auto mb-1.5 ${active ? "animate-pulse" : "bg-muted-foreground/30"}`} />
-      <p className={`text-xs font-semibold ${active ? "" : "text-muted-foreground"}`}>{label}</p>
+    <div
+      className={`text-center py-2 px-1 rounded-lg border transition-all duration-300 ${
+        active
+          ? "border-primary/40 bg-primary/8 text-primary"
+          : "border-border/50 bg-transparent text-muted-foreground"
+      }`}
+    >
+      <div
+        className={`w-1.5 h-1.5 rounded-full mx-auto mb-1.5 ${
+          active ? "bg-primary animate-glow-pulse" : "bg-muted-foreground/30"
+        }`}
+      />
+      <p className="text-[10px] font-mono-label">{label}</p>
     </div>
   )
 }

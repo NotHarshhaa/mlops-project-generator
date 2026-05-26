@@ -1,6 +1,6 @@
 "use client"
 
-import { X, Check, Layers } from "lucide-react"
+import { Check, Layers, X } from "lucide-react"
 import { STACK_PRESETS, type StackPreset } from "../presets"
 
 interface StackPresetsProps {
@@ -11,29 +11,31 @@ interface StackPresetsProps {
 
 export function StackPresets({ activePreset, onApply, onClear }: StackPresetsProps) {
   return (
-    <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
+    <section className="mb-8">
+      <div className="flex items-end justify-between gap-4 mb-5">
         <div>
-          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <Layers className="w-4 h-4 text-primary" />
-            Stack Presets
+          <p className="font-mono-label text-primary mb-1">Step 01</p>
+          <h2 className="font-display text-xl sm:text-2xl font-bold flex items-center gap-2">
+            <Layers className="w-5 h-5 text-primary" />
+            Stack presets
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Pick a ready-made stack — all fields pre-filled, fully editable
+          <p className="text-sm text-muted-foreground mt-1 max-w-lg">
+            Start from a curated MLOps stack — every field stays editable after you apply.
           </p>
         </div>
         {activePreset && (
           <button
             type="button"
             onClick={onClear}
-            className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground border border-border/60 rounded-lg px-2.5 py-1.5 transition-colors hover:bg-muted/50"
+            className="btn-ghost-panel inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground flex-shrink-0"
           >
-            <X className="w-3 h-3" /> Clear preset
+            <X className="w-3.5 h-3.5" />
+            Clear
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory scrollbar-thin sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:pb-0">
         {STACK_PRESETS.map((preset) => {
           const Icon = preset.icon
           const isActive = activePreset === preset.id
@@ -42,39 +44,42 @@ export function StackPresets({ activePreset, onApply, onClear }: StackPresetsPro
               key={preset.id}
               type="button"
               onClick={() => isActive ? onClear() : onApply(preset)}
-              className={`relative group text-left rounded-2xl border p-4 transition-all duration-200 cursor-pointer ${
-                isActive
-                  ? "border-transparent ring-2 ring-primary/40 bg-primary/8 dark:bg-primary/12 shadow-xl shadow-primary/20 dark:shadow-primary/30 transform scale-[1.02] backdrop-blur-sm"
-                  : "border-border/60 bg-card/50 dark:bg-card/80 hover:border-primary/30 hover:shadow-md hover:-translate-y-0.5 hover:bg-card dark:hover:bg-card/90"
-              }`}
+              className={`preset-card snap-start min-w-[200px] sm:min-w-0 ${isActive ? "preset-card-active" : ""}`}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className={`w-9 h-9 rounded-xl ${preset.iconBg} flex items-center justify-center shadow-md flex-shrink-0`}>
-                  <Icon className="w-[18px] h-[18px] text-white" />
+              <div
+                className={`absolute left-0 top-3 bottom-3 w-1 rounded-full ${preset.iconBg} opacity-80`}
+                aria-hidden
+              />
+              <div className="pl-3">
+                <div className="flex items-start justify-between mb-3">
+                  <div className={`w-9 h-9 rounded-lg ${preset.iconBg} flex items-center justify-center shadow-md`}>
+                    <Icon className="w-[18px] h-[18px] text-white" />
+                  </div>
+                  {isActive && (
+                    <span className="flex items-center justify-center w-6 h-6 rounded-md bg-primary/20 text-primary border border-primary/30">
+                      <Check className="w-3.5 h-3.5" />
+                    </span>
+                  )}
                 </div>
-                {isActive && (
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/30 dark:bg-primary/40 shadow-lg shadow-primary/30 dark:shadow-primary/50 flex-shrink-0 ring-2 ring-primary/50 dark:ring-primary/60">
-                    <Check className="w-3.5 h-3.5 text-primary font-semibold" />
-                  </span>
-                )}
-              </div>
-
-              <p className={`text-sm font-bold mb-0.5 leading-tight ${isActive ? "text-primary" : "text-foreground"}`}>
-                {preset.label}
-              </p>
-              <p className="text-[11px] text-muted-foreground leading-snug mb-3">{preset.tagline}</p>
-
-              <div className="flex flex-wrap gap-1">
-                {preset.tags.map(tag => (
-                  <span key={tag} className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md border ${preset.badgeColor}`}>
-                    {tag}
-                  </span>
-                ))}
+                <p className={`text-sm font-bold mb-0.5 ${isActive ? "text-primary" : "text-foreground"}`}>
+                  {preset.label}
+                </p>
+                <p className="text-[11px] text-muted-foreground leading-snug mb-3">{preset.tagline}</p>
+                <div className="flex flex-wrap gap-1">
+                  {preset.tags.map(tag => (
+                    <span
+                      key={tag}
+                      className="text-[10px] font-medium px-1.5 py-0.5 rounded border border-border/80 bg-muted/40 text-muted-foreground"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
             </button>
           )
         })}
       </div>
-    </div>
+    </section>
   )
 }

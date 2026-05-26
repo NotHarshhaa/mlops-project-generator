@@ -9,14 +9,14 @@ interface SummaryCardProps {
 
 export function SummaryCard({ icon: Icon, label, value, iconClass }: SummaryCardProps) {
   return (
-    <div className="glass-card rounded-2xl p-4 group hover:scale-[1.02] transition-all duration-300">
-      <div className="flex items-center space-x-2 mb-2">
-        <div className={`w-7 h-7 rounded-xl ${iconClass} flex items-center justify-center flex-shrink-0`}>
-          <Icon className="w-3.5 h-3.5 text-white" />
+    <div className="rounded-lg border border-border/70 bg-muted/20 p-3 hover:border-primary/25 transition-colors group">
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`icon-chip ${iconClass}`}>
+          <Icon className="w-3.5 h-3.5" />
         </div>
-        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{label}</h4>
+        <span className="font-mono-label text-muted-foreground">{label}</span>
       </div>
-      <p className="text-sm font-semibold text-foreground capitalize truncate">{value}</p>
+      <p className="text-sm font-semibold text-foreground capitalize truncate font-mono">{value}</p>
     </div>
   )
 }

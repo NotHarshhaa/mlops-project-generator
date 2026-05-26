@@ -8,6 +8,7 @@ import {
   FormCardHeader,
   FormHero,
   FormLoadingSkeleton,
+  FormNav,
   GenerateButton,
   ValidationErrorBanner,
 } from "./form/layout"
@@ -23,6 +24,10 @@ import {
 import { GenerationProgress, ProjectSummary, SuccessDialog } from "./form/feedback"
 import { CreatorCard, RecentProjects } from "./form/chrome"
 import type { FormValues } from "./form/schema"
+
+function SectionDivider() {
+  return <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+}
 
 export default function MLOpsForm() {
   const {
@@ -54,10 +59,11 @@ export default function MLOpsForm() {
   }
 
   return (
-    <div className="min-h-screen hero-gradient overflow-x-hidden">
+    <div className="min-h-screen observatory-bg flex flex-col">
       <AmbientBackground />
+      <FormNav />
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-4 sm:px-6 py-6 sm:py-8 sm:py-12">
+      <main className="relative z-10 flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         <FormHero />
 
         <StackPresets
@@ -70,25 +76,27 @@ export default function MLOpsForm() {
           <ConfigProgressBar completedCount={completedCount} completionPct={completionPct} />
         )}
 
-        <div className="glass-card rounded-2xl sm:rounded-3xl overflow-hidden">
+        <div className="panel">
           <FormCardHeader presetLabel={presetLabel} onClearAll={clearAll} />
 
-          <div className="p-4 sm:p-6 lg:p-8">
+          <div className="p-5 sm:p-8">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-8 lg:space-y-10">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 sm:space-y-10">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
                   <CoreMLStack options={options} />
                   <Infrastructure options={options} />
                 </div>
-                <div className="border-t border-border/50" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                <SectionDivider />
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
                   <CloudDeployment />
                   <ConfigTemplates />
                 </div>
-                <div className="border-t border-border/50" />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+                <SectionDivider />
+
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-10">
                   <AnalyticsToggle />
                   <ProjectDetails />
                 </div>
@@ -114,7 +122,7 @@ export default function MLOpsForm() {
 
         <RecentProjects />
         <CreatorCard />
-      </div>
+      </main>
 
       <SuccessDialog
         open={showSuccessDialog}
