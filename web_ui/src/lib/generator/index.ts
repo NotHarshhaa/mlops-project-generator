@@ -102,3 +102,10 @@ export function generateProject(cfg: GeneratorConfig): VirtualFile[] {
 export function listProjectFiles(cfg: GeneratorConfig): string[] {
   return generateProject(cfg).map(f => f.path).sort()
 }
+
+/** Get a single virtual file with content */
+export function getProjectFile(cfg: GeneratorConfig, filePath: string): VirtualFile | undefined {
+  const normalized = filePath.replace(/^\/+/, "")
+  return generateProject(cfg).find(f => f.path === normalized)
+}
+

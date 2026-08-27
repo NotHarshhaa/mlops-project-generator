@@ -1,4 +1,8 @@
-import { RotateCcw, SlidersHorizontal } from "lucide-react"
+"use client"
+
+import { useRef } from "react"
+import { RotateCcw, SlidersHorizontal, Upload } from "lucide-react"
+import { toast } from "sonner"
 
 interface FormCardHeaderProps {
   presetLabel?: string
@@ -6,6 +10,30 @@ interface FormCardHeaderProps {
 }
 
 export function FormCardHeader({ presetLabel, onClearAll }: FormCardHeaderProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = event => {
+      try {
+        const text = event.target?.result as string
+        const parsed = JSON.parse(text)
+        if (typeof parsed !== "object" || parsed === null) {
+          throw new Error("Invalid config JSON format")
+        }
+        window.dispatchEvent(new CustomEvent("loadMLOpsConfig", { detail: parsed }))
+      } catch (err) {
+        toast.error("Failed to parse config file. Please ensure valid JSON.")
+      } finally {
+        if (fileInputRef.current) fileInputRef.current.value = ""
+      }
+    }
+    reader.readAsText(file)
+  }
+
   return (
     <div
       id="project-config-card"
@@ -27,14 +55,37 @@ export function FormCardHeader({ presetLabel, onClearAll }: FormCardHeaderProps)
           </p>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onClearAll}
-        className="btn-ghost-panel self-start sm:self-center inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground flex-shrink-0"
-      >
-        <RotateCcw className="h-3.5 w-3.5" />
-        Reset form
-      </button>
+
+      <div className="flex items-center gap-2 self-start sm:self-center flex-shrink-0">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,application/json"
+          onChange={handleFileChange}
+          className="hidden"
+          id="config-file-import"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          className="btn-ghost-panel inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+          title="Import configuration JSON"
+        >
+          <Upload className="h-3.5 w-3.5" />
+          <span>Import Config</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onClearAll}
+          className="btn-ghost-panel inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+          title="Reset all form fields"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
+          <span>Reset form</span>
+        </button>
+      </div>
     </div>
   )
 }
+

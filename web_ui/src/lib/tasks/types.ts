@@ -6,4 +6,6 @@ export interface Task {
   message: string
   download_url?: string
   project_name?: string
+  created_at?: number
 }
+

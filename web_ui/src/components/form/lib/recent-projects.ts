@@ -1,4 +1,5 @@
 import { RECENT_PROJECTS_MAX, RECENT_PROJECTS_STORAGE_KEY } from "../constants"
+import type { FormValues } from "../schema"
 
 export interface RecentProject {
   id: string
@@ -9,6 +10,7 @@ export interface RecentProject {
   downloadUrl: string
   generatedAt: string
   timestamp: number
+  formValues?: FormValues
 }
 
 export interface RecentProjectInput {
@@ -17,7 +19,9 @@ export interface RecentProjectInput {
   taskType: string
   deployment: string
   downloadUrl: string
+  formValues?: FormValues
 }
+
 
 export function loadRecentProjects(): RecentProject[] {
   try {
@@ -50,6 +54,7 @@ export function addRecentProject(input: RecentProjectInput): RecentProject[] {
     downloadUrl: input.downloadUrl,
     generatedAt: new Date().toLocaleString(),
     timestamp: Date.now(),
+    formValues: input.formValues,
   }
   const updated = [newProject, ...loadRecentProjects()].slice(0, RECENT_PROJECTS_MAX)
   saveRecentProjects(updated)

@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react"
 import {
-  Zap, Beaker, Brain, Activity, Building2, FlaskConical,
+  Zap, Beaker, Brain, Activity, Building2, FlaskConical, Sparkles, Radio
 } from "lucide-react"
 import type { RequiredStackField } from "./constants"
 
@@ -35,16 +35,17 @@ export const STACK_PRESETS: StackPreset[] = [
     custom_template: "minimal",
   },
   {
-    id: "data-science",
-    label: "Data Science",
-    tagline: "Ideal for exploratory analysis and Jupyter workflows",
-    icon: Beaker,
-    accentFrom: "from-emerald-500", accentTo: "to-teal-500",
-    iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500",
-    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50",
-    fields: { framework: "sklearn", task_type: "regression", experiment_tracking: "mlflow", orchestration: "none", deployment: "fastapi", monitoring: "custom" },
-    tags: ["Scikit-learn", "MLflow", "FastAPI"],
+    id: "genai-nlp",
+    label: "GenAI & LLM Fine-Tuning",
+    tagline: "HuggingFace Transformers, NLP pipelines & W&B experiment tracking",
+    icon: Sparkles,
+    accentFrom: "from-fuchsia-500", accentTo: "to-purple-600",
+    iconBg: "bg-gradient-to-br from-fuchsia-500 to-purple-600",
+    badgeColor: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200 dark:bg-fuchsia-950/60 dark:text-fuchsia-300 dark:border-fuchsia-800/50",
+    fields: { framework: "pytorch", task_type: "nlp", experiment_tracking: "wandb", orchestration: "none", deployment: "fastapi", monitoring: "none" },
+    tags: ["PyTorch", "HuggingFace NLP", "W&B", "FastAPI"],
     preset_config: "research",
+    custom_template: "microservice",
   },
   {
     id: "deep-learning",
@@ -72,6 +73,19 @@ export const STACK_PRESETS: StackPreset[] = [
     custom_template: "comprehensive",
   },
   {
+    id: "streaming-ml",
+    label: "Real-Time / Time-Series",
+    tagline: "High-frequency time-series forecasting with continuous monitoring",
+    icon: Radio,
+    accentFrom: "from-teal-500", accentTo: "to-emerald-600",
+    iconBg: "bg-gradient-to-br from-teal-500 to-emerald-600",
+    badgeColor: "bg-teal-50 text-teal-700 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800/50",
+    fields: { framework: "pytorch", task_type: "timeseries", experiment_tracking: "mlflow", orchestration: "airflow", deployment: "fastapi", monitoring: "evidently" },
+    tags: ["PyTorch", "Time Series", "Airflow", "Evidently"],
+    preset_config: "production-ready",
+    custom_template: "comprehensive",
+  },
+  {
     id: "enterprise",
     label: "Enterprise",
     tagline: "Maximum scale — Kubernetes & full MLOps suite",
@@ -85,8 +99,20 @@ export const STACK_PRESETS: StackPreset[] = [
     custom_template: "comprehensive",
   },
   {
+    id: "data-science",
+    label: "Data Science",
+    tagline: "Ideal for exploratory analysis and Jupyter workflows",
+    icon: Beaker,
+    accentFrom: "from-emerald-500", accentTo: "to-teal-500",
+    iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500",
+    badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50",
+    fields: { framework: "sklearn", task_type: "regression", experiment_tracking: "mlflow", orchestration: "none", deployment: "fastapi", monitoring: "custom" },
+    tags: ["Scikit-learn", "MLflow", "FastAPI"],
+    preset_config: "research",
+  },
+  {
     id: "research",
-    label: "Research",
+    label: "Research Lab",
     tagline: "Flexible setup optimised for experimentation",
     icon: FlaskConical,
     accentFrom: "from-indigo-500", accentTo: "to-sky-500",
@@ -98,3 +124,4 @@ export const STACK_PRESETS: StackPreset[] = [
     custom_template: "microservice",
   },
 ]
+

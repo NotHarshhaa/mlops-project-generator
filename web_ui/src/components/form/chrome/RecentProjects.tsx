@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Download, Clock, FileText, Trash2, ExternalLink, FolderOpen } from "lucide-react"
+import { Download, Clock, FileText, Trash2, ExternalLink, FolderOpen, ArrowUpRight } from "lucide-react"
 import { useRecentProjects } from "../hooks/useRecentProjects"
 import type { RecentProject } from "../lib/recent-projects"
 
@@ -45,6 +45,16 @@ function RecentProjectRow({
   project: RecentProject
   onRemove: (id: string) => void
 }) {
+  const handleLoadStack = () => {
+    const configToLoad = project.formValues ?? {
+      project_name: project.projectName,
+      framework: project.framework,
+      task_type: project.taskType,
+      deployment: project.deployment,
+    }
+    window.dispatchEvent(new CustomEvent("loadMLOpsConfig", { detail: configToLoad }))
+  }
+
   return (
     <div className="group relative p-3 sm:p-4 rounded-lg border border-border/60 bg-muted/15 hover:bg-muted/30 transition-all duration-200 hover:border-primary/35">
       <div className="flex items-start justify-between gap-2 sm:gap-4">
@@ -81,16 +91,26 @@ function RecentProjectRow({
         <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <button
             type="button"
+            onClick={handleLoadStack}
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border/70 text-xs font-semibold transition-all hover:border-primary/40 cursor-pointer"
+            title="Load this stack into generator"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5 text-primary" />
+            <span className="hidden sm:inline">Re-use Stack</span>
+            <span className="sm:hidden">Load</span>
+          </button>
+          <button
+            type="button"
             onClick={() => window.open(project.downloadUrl, "_blank")}
-            className="p-1.5 sm:p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors group-hover:scale-105"
-            title="Download Project"
+            className="p-1.5 sm:p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors group-hover:scale-105 cursor-pointer"
+            title="Download Project Archive"
           >
             <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
           <button
             type="button"
             onClick={() => onRemove(project.id)}
-            className="p-1.5 sm:p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
+            className="p-1.5 sm:p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors sm:opacity-0 sm:group-hover:opacity-100 cursor-pointer"
             title="Remove from Recent"
           >
             <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

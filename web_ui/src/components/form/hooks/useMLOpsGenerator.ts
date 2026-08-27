@@ -77,6 +77,30 @@ export function useMLOpsGenerator() {
     toast.success("All selections cleared")
   }, [form])
 
+  const loadConfig = useCallback((config: Partial<FormValues>) => {
+    Object.entries(config).forEach(([key, val]) => {
+      if (val !== undefined && val !== null) {
+        form.setValue(key as keyof FormValues, val as any)
+      }
+    })
+    setActivePreset(null)
+    toast.success("Stack configuration loaded into form!")
+    setTimeout(() => {
+      document.getElementById("project-config-card")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 150)
+  }, [form])
+
+  useEffect(() => {
+    const handleLoadEvent = (e: Event) => {
+      const customEvent = e as CustomEvent<Partial<FormValues>>
+      if (customEvent.detail) {
+        loadConfig(customEvent.detail)
+      }
+    }
+    window.addEventListener("loadMLOpsConfig", handleLoadEvent)
+    return () => window.removeEventListener("loadMLOpsConfig", handleLoadEvent)
+  }, [loadConfig])
+
   const pollTaskStatus = useCallback(async (taskId: string, values: FormValues) => {
     try {
       const task = await fetchTaskStatus(taskId)
@@ -101,6 +125,7 @@ export function useMLOpsGenerator() {
             taskType: values.task_type ?? "",
             deployment: values.deployment ?? "",
             downloadUrl: task.download_url,
+            formValues: values,
           })
           window.dispatchEvent(new CustomEvent("recentProjectsUpdated"))
         }
@@ -196,6 +221,7 @@ export function useMLOpsGenerator() {
     applyPreset,
     clearPreset,
     clearAll,
+    loadConfig,
     onSubmit,
     handleDownload,
     resetAfterSuccess,

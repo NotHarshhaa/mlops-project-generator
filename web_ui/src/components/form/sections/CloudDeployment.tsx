@@ -40,6 +40,7 @@ export function CloudDeployment() {
           label="Cloud Service"
           description="Choose the specific cloud service"
           options={serviceOptions}
+          disabled={!selectedProvider}
           placeholder={selectedProvider ? "Select cloud service…" : "Select cloud provider first"}
         />
       </div>
