@@ -1,6 +1,6 @@
 "use client"
 
-import { CheckCircle2, Download, Plus } from "lucide-react"
+import { Check, Download, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 
@@ -11,38 +11,47 @@ interface SuccessDialogProps {
   onReset: () => void
 }
 
-const TAGS = ["Production ready", "Best practices", "Scalable", "Cloud native", "CI/CD ready"]
+const SPEC_TAGS = [
+  "PRODUCTION READY",
+  "DETERMINISTIC BLUEPRINT",
+  "DOCKERIZED TOPS",
+  "CI/CD PIPELINES",
+  "OBSERVABILITY HOOKS",
+]
 
 export function SuccessDialog({ open, onOpenChange, onDownload, onReset }: SuccessDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-w-[95vw] panel border-0 p-0 gap-0 overflow-hidden">
-        <div className="p-4 sm:p-8">
-          <DialogHeader className="text-left space-y-3 sm:space-y-4 pb-4 sm:pb-6">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-lg sm:rounded-xl gradient-primary flex items-center justify-center shadow-lg shadow-primary/25 flex-shrink-0">
-                <CheckCircle2 className="w-5 h-5 sm:w-7 sm:h-7 text-primary-foreground" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-mono-label text-primary">Complete</p>
-                <DialogTitle className="font-display text-lg sm:text-xl font-bold">Project generated</DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  Your MLOps scaffold is packaged and ready to download.
-                </DialogDescription>
-              </div>
+      <DialogContent className="sm:max-w-lg max-w-[95vw] bg-[#ffffff] border border-black/30 p-6 sm:p-8 rounded-none shadow-none">
+        <DialogHeader className="pb-4 border-b border-black/15">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-[#1925aa] text-white flex items-center justify-center shrink-0">
+              <Check className="w-5 h-5" />
             </div>
-          </DialogHeader>
+            <div>
+              <p className="font-mono text-[10px] text-[#1925aa] uppercase tracking-wider font-bold">
+                [ COMPILATION SUCCESSFUL ]
+              </p>
+              <DialogTitle className="font-display text-2xl font-normal text-black uppercase mt-0.5">
+                Repository Package Compiled
+              </DialogTitle>
+              <DialogDescription className="font-mono text-xs text-black/60 mt-1">
+                Your standalone MLOps project scaffold is packaged and ready for deployment.
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
 
-          <div className="rounded-lg border border-border/70 bg-muted/20 p-3 sm:p-4 mb-4 sm:mb-6">
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-2 sm:mb-3">
-              The archive includes training scripts, configs, deployment templates, and tooling
-              aligned with your selected stack.
+        <div className="py-4 space-y-4">
+          <div className="p-4 bg-[#e8e6e0]/50 border border-black/10">
+            <p className="font-mono text-xs text-black/80 leading-relaxed mb-3">
+              The archive contains training pipelines, serving endpoints, experiment logging configurations, and testing suites structured according to production MLOps engineering standards.
             </p>
-            <div className="flex flex-wrap gap-1 sm:gap-1.5">
-              {TAGS.map(tag => (
+            <div className="flex flex-wrap gap-1">
+              {SPEC_TAGS.map((tag) => (
                 <span
                   key={tag}
-                  className="px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-mono-label border border-primary/25 bg-primary/8 text-primary"
+                  className="px-2 py-0.5 border border-black/15 bg-white font-mono text-[9px] uppercase tracking-tight text-black"
                 >
                   {tag}
                 </span>
@@ -50,23 +59,23 @@ export function SuccessDialog({ open, onOpenChange, onDownload, onReset }: Succe
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Button
               onClick={onDownload}
-              className="flex-1 h-10 sm:h-11 rounded-lg gradient-primary btn-shine border-0 text-primary-foreground font-semibold text-sm sm:text-base"
+              className="flex-1 h-12 bg-[#000000] text-[#e8e6e0] hover:bg-[#1925aa] hover:text-white rounded-none font-mono text-xs uppercase tracking-wider"
               size="lg"
             >
               <Download className="h-4 w-4 mr-2" />
-              Download ZIP
+              Download ZIP Archive
             </Button>
             <Button
               onClick={onReset}
               variant="outline"
-              className="flex-1 h-10 sm:h-11 rounded-lg btn-ghost-panel font-semibold text-sm sm:text-base"
+              className="flex-1 h-12 rounded-none font-mono text-xs uppercase tracking-wider border-black/30 hover:border-[#1925aa]"
               size="lg"
             >
               <Plus className="h-4 w-4 mr-2" />
-              New project
+              New Configuration
             </Button>
           </div>
         </div>

@@ -38,7 +38,7 @@ export function CustomSelectField({
   const labelId = useId()
 
   const fieldValue = form.watch(name)
-  const selectedOption = options.find(opt => opt.value === fieldValue)
+  const selectedOption = options.find((opt) => opt.value === fieldValue)
   const isDisabled = disabled || options.length === 0
 
   useEffect(() => {
@@ -52,12 +52,15 @@ export function CustomSelectField({
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [isOpen])
 
-  const handleSelect = useCallback((value: string) => {
-    form.setValue(name, value)
-    setIsOpen(false)
-    setFocusedIndex(-1)
-    buttonRef.current?.focus()
-  }, [form, name])
+  const handleSelect = useCallback(
+    (value: string) => {
+      form.setValue(name, value)
+      setIsOpen(false)
+      setFocusedIndex(-1)
+      buttonRef.current?.focus()
+    },
+    [form, name]
+  )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (isDisabled) return
@@ -66,7 +69,7 @@ export function CustomSelectField({
       if (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter" || e.key === " ") {
         e.preventDefault()
         setIsOpen(true)
-        const currentIndex = options.findIndex(o => o.value === fieldValue)
+        const currentIndex = options.findIndex((o) => o.value === fieldValue)
         setFocusedIndex(currentIndex >= 0 ? currentIndex : 0)
       }
       return
@@ -80,10 +83,10 @@ export function CustomSelectField({
 
     if (e.key === "ArrowDown") {
       e.preventDefault()
-      setFocusedIndex(prev => (prev < options.length - 1 ? prev + 1 : 0))
+      setFocusedIndex((prev) => (prev < options.length - 1 ? prev + 1 : 0))
     } else if (e.key === "ArrowUp") {
       e.preventDefault()
-      setFocusedIndex(prev => (prev > 0 ? prev - 1 : options.length - 1))
+      setFocusedIndex((prev) => (prev > 0 ? prev - 1 : options.length - 1))
     } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault()
       if (focusedIndex >= 0 && focusedIndex < options.length) {
@@ -97,8 +100,14 @@ export function CustomSelectField({
       control={form.control}
       name={name}
       render={() => (
-        <FormItem data-field={name} className="space-y-1.5 sm:space-y-2">
-          <FormLabel id={labelId} className="font-mono-label text-foreground/90">{label}</FormLabel>
+        <FormItem data-field={name} className="space-y-1.5">
+          <FormLabel id={labelId} className="font-mono text-[10px] tracking-tight uppercase text-black font-semibold flex items-center justify-between">
+            <span>{label}</span>
+            {fieldValue && (
+              <span className="font-mono text-[9px] text-[#1925aa] font-bold">[ SPECIFIED ]</span>
+            )}
+          </FormLabel>
+
           <div className="relative" ref={dropdownRef} onKeyDown={handleKeyDown}>
             <FormControl>
               <button
@@ -114,29 +123,38 @@ export function CustomSelectField({
                   if (!isDisabled) {
                     setIsOpen(!isOpen)
                     if (!isOpen) {
-                      const idx = options.findIndex(o => o.value === fieldValue)
+                      const idx = options.findIndex((o) => o.value === fieldValue)
                       setFocusedIndex(idx >= 0 ? idx : 0)
                     }
                   }
                 }}
-                className={`w-full min-h-9 sm:min-h-11 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition-all duration-200 flex items-center justify-between gap-2 border text-left ${
+                className={`w-full min-h-10 px-3 py-2 text-left flex items-center justify-between gap-2 border transition-colors cursor-pointer select-none ${
                   isDisabled
-                    ? "opacity-50 cursor-not-allowed bg-muted/20 border-border"
+                    ? "opacity-40 cursor-not-allowed bg-black/5 border-black/10"
                     : fieldValue
-                    ? "bg-card border-primary/50 shadow-[0_0_0_1px] shadow-primary/10 cursor-pointer"
-                    : "bg-muted/30 border-border hover:border-primary/35 cursor-pointer"
+                    ? "bg-white border-[#1925aa] text-black"
+                    : "bg-white border-black/20 hover:border-black/40 text-black"
                 }`}
               >
-                <span className={`text-xs sm:text-sm font-medium truncate ${!fieldValue ? "text-muted-foreground" : "text-foreground"}`}>
+                <span
+                  className={`text-xs font-mono truncate ${
+                    !fieldValue ? "text-black/40" : "text-black font-medium"
+                  }`}
+                >
                   {selectedOption ? selectedOption.label : placeholder}
                 </span>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+
+                <div className="flex items-center gap-2 shrink-0">
                   {fieldValue && (
-                    <span className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15 text-primary">
-                      <Check className="w-3 h-3" />
+                    <span className="w-4 h-4 flex items-center justify-center bg-[#1925aa] text-white">
+                      <Check className="w-2.5 h-2.5" />
                     </span>
                   )}
-                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-black/60 transition-transform ${
+                      isOpen ? "rotate-180" : ""
+                    }`}
+                  />
                 </div>
               </button>
             </FormControl>
@@ -146,9 +164,9 @@ export function CustomSelectField({
                 id={listboxId}
                 role="listbox"
                 aria-labelledby={labelId}
-                className="absolute top-full left-0 right-0 z-50 mt-1 sm:mt-1.5 rounded-lg overflow-hidden animate-slide-in-up border border-border bg-popover shadow-2xl shadow-black/30"
+                className="absolute top-full left-0 right-0 z-50 mt-1 bg-white border border-black/30 shadow-none animate-monograph-in"
               >
-                <div className="max-h-48 sm:max-h-56 overflow-y-auto">
+                <div className="max-h-60 overflow-y-auto">
                   {options.map((option, idx) => {
                     const isSelected = fieldValue === option.value
                     const isFocused = focusedIndex === idx
@@ -160,24 +178,34 @@ export function CustomSelectField({
                         aria-selected={isSelected}
                         onMouseEnter={() => setFocusedIndex(idx)}
                         onClick={() => handleSelect(option.value)}
-                        className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 transition-colors border-b border-border/40 last:border-0 ${
+                        className={`w-full text-left px-3 py-2.5 border-b border-black/10 last:border-b-0 transition-colors cursor-pointer ${
                           isSelected
-                            ? "bg-primary/15"
+                            ? "bg-[#1925aa]/10 text-black"
                             : isFocused
-                            ? "bg-muted/80"
-                            : "hover:bg-muted/60"
+                            ? "bg-black/5 text-black"
+                            : "hover:bg-black/5 text-black"
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="min-w-0">
-                            <span className={`text-sm font-semibold block ${isSelected ? "text-primary font-bold" : "text-foreground"}`}>
+                            <span
+                              className={`text-xs font-mono block ${
+                                isSelected ? "text-[#1925aa] font-bold" : "text-black"
+                              }`}
+                            >
                               {option.label}
                             </span>
                             {option.description && (
-                              <span className="text-xs text-muted-foreground mt-0.5 block truncate">{option.description}</span>
+                              <span className="text-[10px] font-mono text-black/55 mt-0.5 block truncate">
+                                {option.description}
+                              </span>
                             )}
                           </div>
-                          {isSelected && <Check className="w-4 h-4 text-primary flex-shrink-0" />}
+                          {isSelected && (
+                            <span className="w-3.5 h-3.5 flex items-center justify-center bg-[#1925aa] text-white shrink-0">
+                              <Check className="w-2.5 h-2.5" />
+                            </span>
+                          )}
                         </div>
                       </button>
                     )
@@ -186,11 +214,13 @@ export function CustomSelectField({
               </div>
             )}
           </div>
-          <FormDescription className="text-xs text-muted-foreground">{description}</FormDescription>
-          <FormMessage />
+
+          <FormDescription className="font-mono text-[10px] text-black/60 leading-tight">
+            {description}
+          </FormDescription>
+          <FormMessage className="font-mono text-[10px] text-red-600" />
         </FormItem>
       )}
     />
   )
 }
-

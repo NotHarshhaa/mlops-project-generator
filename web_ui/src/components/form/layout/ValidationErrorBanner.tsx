@@ -7,19 +7,26 @@ interface ValidationErrorBannerProps {
 
 export function ValidationErrorBanner({ message, onDismiss }: ValidationErrorBannerProps) {
   return (
-    <div className="rounded-lg sm:rounded-xl border border-destructive/40 bg-destructive/5 p-3 sm:p-4 animate-slide-in-up">
-      <div className="flex items-start gap-2 sm:gap-3">
-        <div className="icon-chip icon-chip-rose flex-shrink-0 mt-0.5">
-          <AlertTriangle className="w-4 h-4" />
+    <div className="border border-red-700 bg-white p-4 animate-monograph-in">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="w-5 h-5 flex items-center justify-center bg-red-700 text-white shrink-0 mt-0.5">
+            <AlertTriangle className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <p className="font-mono text-[10px] text-red-700 uppercase tracking-wider font-bold mb-1">
+              [ SPECIFICATION INCOMPLETE // COMPILATION HALTED ]
+            </p>
+            <p className="font-mono text-xs text-black/85 leading-relaxed whitespace-pre-line">
+              {message}
+            </p>
+          </div>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-mono-label text-destructive mb-0.5 sm:mb-1">Validation error</p>
-          <p className="text-xs sm:text-sm text-destructive/90 whitespace-pre-line leading-relaxed">{message}</p>
-        </div>
+
         <button
           type="button"
           onClick={onDismiss}
-          className="p-1 sm:p-1.5 rounded-lg hover:bg-destructive/10 text-destructive/70 hover:text-destructive transition-colors flex-shrink-0"
+          className="p-1 hover:bg-black/5 text-black/60 hover:text-black cursor-pointer"
           aria-label="Dismiss error"
         >
           <X className="w-4 h-4" />

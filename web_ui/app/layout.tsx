@@ -1,30 +1,24 @@
 import type { Metadata } from "next"
-import { Syne, DM_Sans, JetBrains_Mono } from "next/font/google"
+import { Inter, JetBrains_Mono } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
-import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
-const syne = Syne({
-  variable: "--font-syne",
-  subsets: ["latin"],
-  display: "swap",
-})
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const inter = Inter({
+  variable: "--font-pp-neue-montreal",
   subsets: ["latin"],
   display: "swap",
 })
 
 const jetbrains = JetBrains_Mono({
-  variable: "--font-jetbrains",
+  variable: "--font-gt-america-mono",
   subsets: ["latin"],
   display: "swap",
 })
 
 export const metadata: Metadata = {
-  title: "MLOps Project Generator",
-  description: "Generate production-ready MLOps project templates",
+  title: "MLOps Project Generator — Architectural Broadsheet & Systems Monograph",
+  description:
+    "Production-grade MLOps project synthesis engine. Monograph aesthetic on bone paper with automated scaffold generation.",
 }
 
 export default function RootLayout({
@@ -33,20 +27,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="light" style={{ colorScheme: "light" }} suppressHydrationWarning>
       <body
-        className={`${syne.variable} ${dmSans.variable} ${jetbrains.variable} font-sans antialiased`}
+        className={`${inter.variable} ${jetbrains.variable} font-sans antialiased bg-[#e8e6e0] text-[#000000]`}
         suppressHydrationWarning
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster richColors position="bottom-right" />
-        </ThemeProvider>
+        {children}
+        <Toaster position="bottom-right" />
       </body>
     </html>
   )

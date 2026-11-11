@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef } from "react"
-import { RotateCcw, SlidersHorizontal, Upload } from "lucide-react"
+import { RotateCcw, Upload } from "lucide-react"
 import { toast } from "sonner"
 
 interface FormCardHeaderProps {
@@ -25,6 +25,7 @@ export function FormCardHeader({ presetLabel, onClearAll }: FormCardHeaderProps)
           throw new Error("Invalid config JSON format")
         }
         window.dispatchEvent(new CustomEvent("loadMLOpsConfig", { detail: parsed }))
+        toast.success("Stack specification imported successfully.")
       } catch (err) {
         toast.error("Failed to parse config file. Please ensure valid JSON.")
       } finally {
@@ -37,26 +38,23 @@ export function FormCardHeader({ presetLabel, onClearAll }: FormCardHeaderProps)
   return (
     <div
       id="project-config-card"
-      className="px-3 sm:px-8 py-3.5 sm:py-5 border-b border-border/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
+      className="pb-6 mb-8 border-b border-black/15 flex flex-col sm:flex-row sm:items-end justify-between gap-4"
     >
-      <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
-        <div className="icon-chip icon-chip-violet mt-0.5 flex-shrink-0">
-          <SlidersHorizontal className="w-4 h-4" />
-        </div>
-        <div className="min-w-0">
-          <p className="font-mono-label text-primary mb-0.5 sm:mb-1">Step 02</p>
-          <h2 className="font-display text-lg sm:text-2xl font-bold text-foreground leading-tight">
-            Configure stack
-          </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 leading-snug">
-            {presetLabel
-              ? `Preset "${presetLabel}" applied — adjust any field below`
-              : "Select frameworks, deployment targets, and project metadata"}
-          </p>
-        </div>
+      <div>
+        <p className="font-mono text-[10px] uppercase tracking-wider text-[#1925aa] font-bold mb-1">
+          [ STEP 02 // CONFIGURATION MATRIX ]
+        </p>
+        <h2 className="font-display text-2xl sm:text-4xl text-[#000000] uppercase tracking-tight">
+          Stack Architecture & Metadata
+        </h2>
+        <p className="font-mono text-xs text-black/60 mt-1">
+          {presetLabel
+            ? `Preset "${presetLabel}" active. Adjust specific fields to tune requirements.`
+            : "Specify ML framework, experiment logger, orchestrator, deployment format, and project descriptors."}
+        </p>
       </div>
 
-      <div className="flex items-center gap-2 self-start sm:self-center flex-shrink-0">
+      <div className="flex items-center gap-2 flex-wrap">
         <input
           ref={fileInputRef}
           type="file"
@@ -68,24 +66,23 @@ export function FormCardHeader({ presetLabel, onClearAll }: FormCardHeaderProps)
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="btn-ghost-panel inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+          className="btn-monograph-outline text-[10px] py-2 px-3"
           title="Import configuration JSON"
         >
-          <Upload className="h-3.5 w-3.5" />
-          <span>Import Config</span>
+          <Upload className="h-3 w-3" />
+          <span>Import Config JSON</span>
         </button>
 
         <button
           type="button"
           onClick={onClearAll}
-          className="btn-ghost-panel inline-flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer"
+          className="btn-monograph-outline text-[10px] py-2 px-3"
           title="Reset all form fields"
         >
-          <RotateCcw className="h-3.5 w-3.5" />
-          <span>Reset form</span>
+          <RotateCcw className="h-3 w-3" />
+          <span>Reset Form</span>
         </button>
       </div>
     </div>
   )
 }
-

@@ -1,24 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import {
-  Brain,
-  BarChart,
-  Microscope,
-  GitBranch,
-  Rocket,
-  Shield,
-  Cloud,
-  Database,
-  Palette,
-  ListChecks,
-  Download,
-  Terminal,
-  Check,
-  Copy,
-} from "lucide-react"
+import { Download, Terminal, Check } from "lucide-react"
 import { toast } from "sonner"
-import { SummaryCard } from "../ui"
 import type { FormValues } from "../schema"
 
 interface ProjectSummaryProps {
@@ -61,77 +45,92 @@ export function ProjectSummary({ values }: ProjectSummaryProps) {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-    toast.success("Stack configuration exported as JSON!")
+    toast.success("Stack specification exported as JSON.")
   }
 
   const handleCopyCli = () => {
     const cmd = generateCliCommand(values)
     navigator.clipboard.writeText(cmd)
     setCopiedCli(true)
-    toast.success("CLI command copied to clipboard!")
+    toast.success("CLI command copied to clipboard.")
     setTimeout(() => setCopiedCli(false), 2000)
   }
 
+  const summaryItems = [
+    { label: "Framework", value: values.framework },
+    { label: "Task Objective", value: values.task_type },
+    { label: "Experiment Tracking", value: values.experiment_tracking },
+    { label: "Pipeline Orchestration", value: values.orchestration },
+    { label: "Serving Topology", value: values.deployment },
+    { label: "Production Monitoring", value: values.monitoring },
+    { label: "Cloud Provider", value: values.cloud_provider },
+    { label: "Cloud Service", value: values.cloud_service },
+    { label: "Config Preset", value: values.preset_config },
+    { label: "Template Density", value: values.custom_template },
+  ].filter((item) => Boolean(item.value))
+
   return (
-    <div className="rounded-lg sm:rounded-xl border border-border/70 bg-muted/15 p-3 sm:p-5 animate-slide-in-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-border/50">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="icon-chip icon-chip-cyan flex-shrink-0">
-            <ListChecks className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-mono-label text-muted-foreground">Review</p>
-            <h3 className="font-display text-sm sm:text-base font-bold text-foreground">Configuration summary</h3>
-          </div>
+    <div className="bg-white border border-black/20 p-5 sm:p-6 animate-monograph-in">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-4 border-b border-black/15">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#1925aa] font-bold">
+            [ REVIEW SPECIFICATION ]
+          </p>
+          <h3 className="font-editorial text-lg text-[#000000] uppercase font-semibold">
+            Architectural Bill of Materials
+          </h3>
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
             type="button"
             onClick={handleCopyCli}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-muted hover:bg-muted/80 text-foreground border border-border text-xs font-semibold transition-colors cursor-pointer"
+            className="btn-monograph-outline text-[10px] py-1.5 px-3"
             title="Copy equivalent CLI command"
           >
-            {copiedCli ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Terminal className="w-3.5 h-3.5 text-primary" />}
-            <span>{copiedCli ? "Copied Command" : "Copy CLI Cmd"}</span>
+            {copiedCli ? <Check className="w-3 h-3 text-[#1925aa]" /> : <Terminal className="w-3 h-3" />}
+            <span>{copiedCli ? "CLI Copied" : "Copy CLI Command"}</span>
           </button>
           <button
             type="button"
             onClick={handleExportConfig}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 text-xs font-semibold transition-colors cursor-pointer"
+            className="btn-monograph text-[10px] py-1.5 px-3"
             title="Export configuration JSON"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Export JSON</span>
+            <Download className="w-3 h-3" />
+            <span>Export Config JSON</span>
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5">
-        {values.framework && <SummaryCard icon={Brain} label="Framework" value={values.framework} iconClass="icon-chip-violet" />}
-        {values.task_type && <SummaryCard icon={BarChart} label="Task" value={values.task_type} iconClass="icon-chip-cyan" />}
-        {values.experiment_tracking && <SummaryCard icon={Microscope} label="Tracking" value={values.experiment_tracking} iconClass="icon-chip-emerald" />}
-        {values.orchestration && <SummaryCard icon={GitBranch} label="Orchestration" value={values.orchestration} iconClass="icon-chip-amber" />}
-        {values.deployment && <SummaryCard icon={Rocket} label="Deploy" value={values.deployment} iconClass="icon-chip-rose" />}
-        {values.monitoring && <SummaryCard icon={Shield} label="Monitoring" value={values.monitoring} iconClass="icon-chip-pink" />}
-        {values.cloud_provider && <SummaryCard icon={Cloud} label="Cloud" value={values.cloud_provider} iconClass="icon-chip-cyan" />}
-        {values.cloud_service && <SummaryCard icon={Cloud} label="Service" value={values.cloud_service} iconClass="icon-chip-emerald" />}
-        {values.preset_config && <SummaryCard icon={Database} label="Preset" value={values.preset_config} iconClass="icon-chip-violet" />}
-        {values.custom_template && <SummaryCard icon={Palette} label="Template" value={values.custom_template} iconClass="icon-chip-amber" />}
+      {/* Specification Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 border-b border-black/10 pb-4">
+        {summaryItems.map((item) => (
+          <div key={item.label} className="p-3 bg-[#e8e6e0]/50 border border-black/10">
+            <p className="font-mono text-[9px] uppercase tracking-wider text-black/50 mb-1">
+              {item.label}
+            </p>
+            <p className="font-mono text-xs font-bold text-black uppercase truncate">
+              {item.value}
+            </p>
+          </div>
+        ))}
       </div>
 
+      {/* Project & Author Identifiers */}
       {(values.project_name || values.author_name) && (
-        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 space-y-1.5 sm:space-y-2 font-mono text-xs sm:text-sm">
+        <div className="pt-3 flex flex-wrap gap-x-8 gap-y-2 font-mono text-xs">
           {values.project_name && (
-            <div className="flex gap-2 sm:gap-3">
-              <span className="text-muted-foreground w-14 sm:w-16 shrink-0 font-mono-label">Project</span>
-              <span className="font-semibold text-foreground truncate">{values.project_name}</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-black/50 text-[10px] uppercase">Package Name:</span>
+              <span className="font-bold text-black">{values.project_name}</span>
             </div>
           )}
           {values.author_name && (
-            <div className="flex gap-2 sm:gap-3">
-              <span className="text-muted-foreground w-14 sm:w-16 shrink-0 font-mono-label">Author</span>
-              <span className="text-foreground truncate">{values.author_name}</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-black/50 text-[10px] uppercase">Maintainer:</span>
+              <span className="text-black">{values.author_name}</span>
             </div>
           )}
         </div>
@@ -139,4 +138,3 @@ export function ProjectSummary({ values }: ProjectSummaryProps) {
     </div>
   )
 }
-

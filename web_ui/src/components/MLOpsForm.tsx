@@ -32,7 +32,7 @@ import { CreatorCard, RecentProjects } from "./form/chrome"
 import type { FormValues } from "./form/schema"
 
 function SectionDivider() {
-  return <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+  return <div className="h-px bg-black/15 my-6 sm:my-8" />
 }
 
 export default function MLOpsForm() {
@@ -65,18 +65,19 @@ export default function MLOpsForm() {
   }
 
   return (
-    <div className="min-h-screen observatory-bg flex flex-col scroll-smooth">
+    <div className="min-h-screen bg-[#e8e6e0] text-[#000000] flex flex-col font-sans selection:bg-[#1925aa] selection:text-white">
       <AmbientBackground />
       <FormNav />
 
-      <main className="relative z-10 flex-1 w-full max-w-6xl mx-auto px-3 sm:px-6 py-5 sm:py-12">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-8 py-6 sm:py-12">
         <LandingHero />
         <MissionSection />
         <FeaturesSection />
         <HowItWorksSection />
         <GeneratorCTA />
 
-        <section id="generator" className="scroll-mt-16 sm:scroll-mt-24">
+        {/* The Generator Architectural Matrix Section */}
+        <section id="generator" className="scroll-mt-14 sm:scroll-mt-20 pt-4">
           <StackPresets
             activePreset={activePreset}
             onApply={applyPreset}
@@ -87,50 +88,49 @@ export default function MLOpsForm() {
             <ConfigProgressBar completedCount={completedCount} completionPct={completionPct} />
           )}
 
-          <div className="panel">
+          {/* Form Broadsheet Plate */}
+          <div className="bg-white border border-black/20 p-5 sm:p-10 mb-8 sm:mb-12">
             <FormCardHeader presetLabel={presetLabel} onClearAll={clearAll} />
 
-            <div className="p-3 sm:p-8">
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 sm:space-y-10">
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-8 xl:gap-10">
-                    <CoreMLStack options={options} />
-                    <Infrastructure options={options} />
-                  </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
+                  <CoreMLStack options={options} />
+                  <Infrastructure options={options} />
+                </div>
 
-                  <SectionDivider />
+                <SectionDivider />
 
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-8 xl:gap-10">
-                    <CloudDeployment />
-                    <ConfigTemplates />
-                  </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
+                  <CloudDeployment />
+                  <ConfigTemplates />
+                </div>
 
-                  <SectionDivider />
+                <SectionDivider />
 
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 sm:gap-8 xl:gap-10">
-                    <AnalyticsToggle />
-                    <ProjectDetails />
-                  </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
+                  <AnalyticsToggle />
+                  <ProjectDetails />
+                </div>
 
-                  {isGenerating && <GenerationProgress progress={progress} />}
+                {isGenerating && <GenerationProgress progress={progress} />}
 
-                  {summaryVisible && (
-                    <ProjectSummary values={formValues as FormValues} />
-                  )}
+                {summaryVisible && (
+                  <ProjectSummary values={formValues as FormValues} />
+                )}
 
-                  <FilePreview values={formValues as FormValues} />
+                <FilePreview values={formValues as FormValues} />
 
-                  {validationError && (
-                    <ValidationErrorBanner
-                      message={validationError}
-                      onDismiss={dismissValidationError}
-                    />
-                  )}
+                {validationError && (
+                  <ValidationErrorBanner
+                    message={validationError}
+                    onDismiss={dismissValidationError}
+                  />
+                )}
 
-                  <GenerateButton isGenerating={isGenerating} />
-                </form>
-              </Form>
-            </div>
+                <GenerateButton isGenerating={isGenerating} />
+              </form>
+            </Form>
           </div>
         </section>
 

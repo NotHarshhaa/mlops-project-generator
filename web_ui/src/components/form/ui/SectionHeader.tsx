@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react"
 
 interface SectionHeaderProps {
-  icon: LucideIcon
+  icon?: LucideIcon
   title: string
   subtitle: string
   iconClass?: string
@@ -9,22 +9,22 @@ interface SectionHeaderProps {
 }
 
 export function SectionHeader({
-  icon: Icon,
   title,
   subtitle,
-  iconClass = "icon-chip-violet",
   step,
 }: SectionHeaderProps) {
   return (
-    <div className="flex items-start gap-2.5 sm:gap-3 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-border/50">
-      <div className={`icon-chip ${iconClass} flex-shrink-0`}>
-        <Icon className="w-4 h-4" strokeWidth={2} />
+    <div className="pb-3 mb-4 sm:mb-6 border-b border-black/15">
+      <div className="flex items-center gap-2 font-mono text-[10px] tracking-wider uppercase text-[#1925aa] font-bold mb-1">
+        <span className="w-1.5 h-1.5 bg-[#1925aa]" />
+        {step && <span>[ {step} ]</span>}
       </div>
-      <div className="min-w-0 flex-1">
-        {step && <p className="font-mono-label text-muted-foreground mb-0.5">{step}</p>}
-        <h3 className="font-display text-base sm:text-lg font-bold text-foreground leading-tight">{title}</h3>
-        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 leading-snug">{subtitle}</p>
-      </div>
+      <h3 className="font-editorial text-xl sm:text-2xl font-normal text-[#000000] tracking-tight uppercase">
+        {title}
+      </h3>
+      <p className="font-mono text-xs text-black/60 mt-0.5 leading-relaxed">
+        {subtitle}
+      </p>
     </div>
   )
 }

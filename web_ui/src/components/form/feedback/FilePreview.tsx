@@ -12,7 +12,6 @@ import {
   FileText,
   Terminal,
   Settings,
-  Boxes,
   Code2,
   X,
 } from "lucide-react"
@@ -97,19 +96,18 @@ function getFileCategory(path: string): FileCategory {
   return "code"
 }
 
-function getFileIcon(path: string) {
-  const cat = getFileCategory(path)
+function getCategoryBadge(cat: FileCategory) {
   switch (cat) {
     case "code":
-      return <Code2 className="w-3.5 h-3.5 text-blue-400" />
+      return <span className="font-mono text-[9px] px-1 bg-black text-white">PY</span>
     case "config":
-      return <Settings className="w-3.5 h-3.5 text-amber-400" />
+      return <span className="font-mono text-[9px] px-1 bg-black/15 text-black">CFG</span>
     case "devops":
-      return <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+      return <span className="font-mono text-[9px] px-1 bg-[#1925aa] text-white">OPS</span>
     case "docs":
-      return <FileText className="w-3.5 h-3.5 text-purple-400" />
+      return <span className="font-mono text-[9px] px-1 bg-black/10 text-black">DOC</span>
     default:
-      return <FileCode className="w-3.5 h-3.5 text-muted-foreground" />
+      return <span className="font-mono text-[9px] px-1 bg-black/10 text-black">FILE</span>
   }
 }
 
@@ -144,8 +142,8 @@ export function FilePreview({ values }: FilePreviewProps) {
       setPreview(data)
     } catch (err) {
       const msg = axios.isAxiosError(err)
-        ? (err.response?.data as { detail?: string })?.detail ?? "Preview failed"
-        : "Preview failed"
+        ? (err.response?.data as { detail?: string })?.detail ?? "Preview synthesis failed"
+        : "Preview synthesis failed"
       setError(msg)
       setPreview(null)
     } finally {
@@ -167,8 +165,8 @@ export function FilePreview({ values }: FilePreviewProps) {
       setFileContent(data)
     } catch (err) {
       const msg = axios.isAxiosError(err)
-        ? (err.response?.data as { detail?: string })?.detail ?? "Failed to load file content"
-        : "Failed to load file content"
+        ? (err.response?.data as { detail?: string })?.detail ?? "Failed to load file contents"
+        : "Failed to load file contents"
       toast.error(msg)
       setInspectingFile(null)
     } finally {
@@ -180,7 +178,7 @@ export function FilePreview({ values }: FilePreviewProps) {
     if (!fileContent?.content) return
     navigator.clipboard.writeText(fileContent.content)
     setCopied(true)
-    toast.success(`Copied ${fileContent.path} to clipboard!`)
+    toast.success(`Copied ${fileContent.path} to clipboard.`)
     setTimeout(() => setCopied(false), 2000)
   }
 
@@ -195,12 +193,12 @@ export function FilePreview({ values }: FilePreviewProps) {
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
-    toast.success(`Downloaded ${link.download}`)
+    toast.success(`Saved ${link.download}`)
   }
 
   const filteredFiles = useMemo(() => {
     if (!preview) return []
-    return preview.files.filter(path => {
+    return preview.files.filter((path) => {
       const matchesSearch = path.toLowerCase().includes(searchQuery.toLowerCase().trim())
       if (!matchesSearch) return false
       if (selectedCategory === "all") return true
@@ -214,7 +212,7 @@ export function FilePreview({ values }: FilePreviewProps) {
       config = 0,
       devops = 0,
       docs = 0
-    preview.files.forEach(f => {
+    preview.files.forEach((f) => {
       const cat = getFileCategory(f)
       if (cat === "code") code++
       else if (cat === "config") config++
@@ -225,75 +223,64 @@ export function FilePreview({ values }: FilePreviewProps) {
   }, [preview])
 
   return (
-    <div className="rounded-lg sm:rounded-xl border border-border/70 bg-muted/15 p-3 sm:p-5 animate-slide-in-up">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
-          <div className="icon-chip icon-chip-violet flex-shrink-0">
-            <FileCode className="w-4 h-4" />
-          </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <p className="font-mono-label text-muted-foreground">Preview & Code Explorer</p>
-              {stats && (
-                <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium bg-primary/10 text-primary border border-primary/20">
-                  {stats.total} files
-                </span>
-              )}
-            </div>
-            <h3 className="font-display text-sm sm:text-base font-bold text-foreground">
-              Archive file tree & Code Inspector
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {isComplete
-                ? "Full interactive preview with code inspector and file search"
-                : "Quick preview with defaults for empty fields (GET)"}
-            </p>
-          </div>
+    <div className="bg-white border border-black/20 p-5 sm:p-6 animate-monograph-in">
+      {/* Header Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/15">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-wider text-[#1925aa] font-bold">
+            [ ARCHIVE FILE TREE & CODE INSPECTION ]
+          </p>
+          <h3 className="font-editorial text-lg text-[#000000] uppercase font-semibold">
+            Generated Repository File Matrix
+          </h3>
+          <p className="font-mono text-xs text-black/60 mt-0.5">
+            {isComplete
+              ? "Synthesizes entire file list. Click any file to view compiled code syntax."
+              : "Generates preview with architectural defaults for unfilled fields."}
+          </p>
         </div>
+
         <button
           type="button"
           onClick={loadPreview}
           disabled={loading}
-          className="btn-ghost-panel inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-foreground disabled:opacity-50 self-start sm:self-center cursor-pointer"
+          className="btn-monograph self-start sm:self-auto text-[10px] py-2 px-4"
         >
           {loading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3.5 h-3.5" />
           )}
-          {loading ? "Loading…" : preview ? "Refresh Preview" : "Preview Files"}
+          <span>{loading ? "Synthesizing…" : preview ? "Refresh Matrix" : "Synthesize Preview"}</span>
         </button>
       </div>
 
-      {error && <p className="mt-3 text-xs text-destructive">{error}</p>}
+      {error && <p className="mt-3 font-mono text-xs text-red-600">{error}</p>}
 
       {preview && (
-        <div className="mt-4 sm:mt-5 space-y-3">
-          {/* Metadata Bar & Category Badges */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground border-b border-border/40 pb-2.5">
+        <div className="mt-5 space-y-4">
+          {/* Metadata Bar & Counts */}
+          <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-[11px] text-black/70 border-b border-black/10 pb-3">
             <div className="flex items-center gap-2 flex-wrap">
-              <span>
-                <span className="font-semibold text-foreground">{preview.file_count}</span> files in{" "}
-                <span className="font-mono text-primary font-medium">{preview.project_name}/</span>
-              </span>
+              <span className="font-bold text-black">{preview.file_count} Files</span>
+              <span>in</span>
+              <span className="font-bold text-[#1925aa]">{preview.project_name}/</span>
               {preview.partial && (
-                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium border border-primary/20">
-                  partial
-                </span>
-              )}
-              {preview.legacy_templates && (
-                <span className="px-1.5 py-0.5 rounded bg-accent/10 text-accent text-[10px] font-medium border border-accent/20">
-                  jinja templates
+                <span className="border border-[#1925aa] text-[#1925aa] px-1.5 py-0.2 text-[9px] uppercase">
+                  Partial Draft
                 </span>
               )}
             </div>
 
             {stats && (
-              <div className="flex items-center gap-1.5 text-[11px] font-mono">
-                <span className="text-blue-400 font-medium">{stats.code} py</span>·
-                <span className="text-emerald-400 font-medium">{stats.devops} devops</span>·
-                <span className="text-amber-400 font-medium">{stats.config} config</span>·
-                <span className="text-purple-400 font-medium">{stats.docs} docs</span>
+              <div className="flex items-center gap-2 text-[10px]">
+                <span className="text-black font-semibold">{stats.code} Code</span>
+                <span>·</span>
+                <span className="text-[#1925aa] font-semibold">{stats.devops} CI/CD & Docker</span>
+                <span>·</span>
+                <span className="text-black/70">{stats.config} Configs</span>
+                <span>·</span>
+                <span className="text-black/70">{stats.docs} Docs</span>
               </div>
             )}
           </div>
@@ -301,21 +288,21 @@ export function FilePreview({ values }: FilePreviewProps) {
           {/* Search Bar & Category Filters */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <div className="relative flex-1">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-black/40" />
               <input
                 type="text"
-                placeholder="Search file name or path (e.g. train.py, docker, pipeline)..."
+                placeholder="Search file path (e.g. train.py, Dockerfile, airflow_dag.py)..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-8 pr-7 py-1.5 text-xs bg-background/80 border border-border/70 rounded-md text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/40 font-mono transition-all"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-8 py-2 text-xs bg-white border border-black/20 text-black font-mono placeholder:text-black/40 outline-none focus:border-[#1925aa]"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black/50 hover:text-black"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
@@ -323,21 +310,21 @@ export function FilePreview({ values }: FilePreviewProps) {
             <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
               {(
                 [
-                  { id: "all", label: "All" },
-                  { id: "code", label: "Code" },
-                  { id: "devops", label: "CI/CD & Docker" },
-                  { id: "config", label: "Configs" },
-                  { id: "docs", label: "Docs" },
+                  { id: "all", label: "ALL" },
+                  { id: "code", label: "CODE" },
+                  { id: "devops", label: "DEVOPS" },
+                  { id: "config", label: "CONFIGS" },
+                  { id: "docs", label: "DOCS" },
                 ] as const
-              ).map(tab => (
+              ).map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => setSelectedCategory(tab.id)}
-                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                  className={`px-3 py-1.5 font-mono text-[10px] tracking-wider transition-colors cursor-pointer border ${
                     selectedCategory === tab.id
-                      ? "bg-primary text-primary-foreground font-semibold shadow-xs"
-                      : "bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground"
+                      ? "bg-[#1925aa] text-white border-[#1925aa] font-bold"
+                      : "bg-white hover:bg-black/5 text-black border-black/20"
                   }`}
                 >
                   {tab.label}
@@ -346,34 +333,34 @@ export function FilePreview({ values }: FilePreviewProps) {
             </div>
           </div>
 
-          {/* Interactive File Tree Grid */}
-          <div className="rounded-lg border border-border/60 bg-background/60 p-2 sm:p-3">
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1.5 px-1 font-mono">
-              <span>Matching files ({filteredFiles.length}):</span>
-              <span className="text-[10px] text-primary">💡 Click any file to inspect code</span>
+          {/* File Rows List */}
+          <div className="border border-black/15 bg-white">
+            <div className="flex items-center justify-between font-mono text-[10px] text-black/50 px-3 py-2 border-b border-black/10 bg-[#e8e6e0]/30">
+              <span>Matching Paths ({filteredFiles.length}):</span>
+              <span className="text-[#1925aa] font-medium">Click any row to view code</span>
             </div>
 
             {filteredFiles.length === 0 ? (
-              <div className="py-6 text-center text-xs text-muted-foreground">
-                No files match &quot;{searchQuery}&quot;
+              <div className="py-8 text-center font-mono text-xs text-black/50">
+                No matching paths for &quot;{searchQuery}&quot;
               </div>
             ) : (
-              <div className="max-h-48 sm:max-h-60 overflow-y-auto space-y-1 pr-1">
-                {filteredFiles.map(filePath => (
+              <div className="max-h-64 overflow-y-auto divide-y divide-black/10">
+                {filteredFiles.map((filePath) => (
                   <button
                     key={filePath}
                     type="button"
                     onClick={() => handleInspectFile(filePath)}
-                    className="w-full flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md hover:bg-primary/10 border border-transparent hover:border-primary/20 text-left transition-colors group cursor-pointer"
+                    className="w-full flex items-center justify-between gap-3 px-3 py-2 text-left hover:bg-[#1925aa]/5 transition-colors group cursor-pointer"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      {getFileIcon(filePath)}
-                      <span className="font-mono text-xs text-foreground/90 group-hover:text-primary transition-colors truncate">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {getCategoryBadge(getFileCategory(filePath))}
+                      <span className="font-mono text-xs text-black group-hover:text-[#1925aa] transition-colors truncate">
                         {filePath}
                       </span>
                     </div>
-                    <span className="text-[10px] font-mono text-muted-foreground group-hover:text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                      <Eye className="w-3 h-3" /> View Code
+                    <span className="font-mono text-[10px] text-[#1925aa] opacity-0 group-hover:opacity-100 transition-opacity shrink-0 flex items-center gap-1">
+                      <Eye className="w-3 h-3" /> Inspect Code →
                     </span>
                   </button>
                 ))}
@@ -383,70 +370,64 @@ export function FilePreview({ values }: FilePreviewProps) {
         </div>
       )}
 
-      {/* Code Inspector Dialog */}
-      <Dialog open={!!inspectingFile} onOpenChange={open => !open && setInspectingFile(null)}>
-        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden bg-card border-border shadow-2xl">
-          <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border/80 bg-muted/20">
-            <div className="flex items-center justify-between gap-3 pr-6">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="icon-chip icon-chip-violet flex-shrink-0">
-                  <Code2 className="w-4 h-4" />
-                </div>
-                <div className="min-w-0">
-                  <DialogTitle className="font-mono text-sm sm:text-base font-bold text-foreground truncate">
-                    {inspectingFile}
-                  </DialogTitle>
-                  <DialogDescription className="text-xs text-muted-foreground flex items-center gap-2 mt-0.5">
-                    {fileContent && (
-                      <>
-                        <span className="font-semibold text-foreground uppercase text-[10px] px-1.5 py-0.2 rounded bg-primary/10 text-primary border border-primary/20">
-                          {fileContent.language}
-                        </span>
-                        <span>{fileContent.lines} lines</span>
-                        <span>·</span>
-                        <span>{formatBytes(fileContent.size)}</span>
-                      </>
-                    )}
-                  </DialogDescription>
-                </div>
+      {/* Code Inspector Dialog (Monograph Broadsheet Window) */}
+      <Dialog open={!!inspectingFile} onOpenChange={(open) => !open && setInspectingFile(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-white border border-black/30 rounded-none shadow-none">
+          <DialogHeader className="px-5 py-4 border-b border-black/15 bg-[#e8e6e0]/40">
+            <div className="flex items-center justify-between gap-4 pr-8">
+              <div className="min-w-0">
+                <DialogTitle className="font-mono text-sm sm:text-base font-bold text-black truncate">
+                  {inspectingFile}
+                </DialogTitle>
+                <DialogDescription className="font-mono text-xs text-black/60 flex items-center gap-2 mt-1">
+                  {fileContent && (
+                    <>
+                      <span className="font-bold text-[#1925aa] uppercase">
+                        {fileContent.language}
+                      </span>
+                      <span>·</span>
+                      <span>{fileContent.lines} Lines</span>
+                      <span>·</span>
+                      <span>{formatBytes(fileContent.size)}</span>
+                    </>
+                  )}
+                </DialogDescription>
               </div>
 
               {fileContent && (
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
                     onClick={handleCopyCode}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-muted hover:bg-muted/80 text-foreground border border-border transition-colors cursor-pointer"
+                    className="btn-monograph-outline text-[10px] py-1.5 px-3"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copied ? "Copied!" : "Copy Code"}
+                    {copied ? <Check className="w-3 h-3 text-[#1925aa]" /> : <Copy className="w-3 h-3" />}
+                    <span>{copied ? "Copied" : "Copy"}</span>
                   </button>
                   <button
                     type="button"
                     onClick={handleDownloadSingleFile}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 transition-colors cursor-pointer"
-                    title="Download file"
+                    className="btn-monograph text-[10px] py-1.5 px-3"
+                    title="Download this single file"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Save</span>
+                    <Download className="w-3 h-3" />
+                    <span>Save</span>
                   </button>
                 </div>
               )}
             </div>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto p-3 sm:p-5 bg-background font-mono text-xs sm:text-sm">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-white font-mono text-xs">
             {fileContentLoading ? (
-              <div className="py-16 flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                <Loader2 className="w-7 h-7 animate-spin text-primary" />
-                <p className="text-xs font-mono">Generating syntax-highlighted code...</p>
+              <div className="py-20 flex flex-col items-center justify-center gap-3 text-black/50">
+                <Loader2 className="w-6 h-6 animate-spin text-[#1925aa]" />
+                <p className="font-mono text-xs">Compiling file buffer…</p>
               </div>
             ) : fileContent ? (
-              <div className="relative rounded-lg border border-border/60 bg-muted/15 overflow-hidden">
-                <pre className="p-3 sm:p-4 overflow-x-auto text-[11px] sm:text-xs leading-relaxed text-foreground/95">
-                  <code>{fileContent.content}</code>
-                </pre>
-              </div>
+              <pre className="p-4 bg-[#e8e6e0]/30 border border-black/15 overflow-x-auto text-xs leading-relaxed text-black">
+                <code>{fileContent.content}</code>
+              </pre>
             ) : null}
           </div>
         </DialogContent>
@@ -454,4 +435,3 @@ export function FilePreview({ values }: FilePreviewProps) {
     </div>
   )
 }
-

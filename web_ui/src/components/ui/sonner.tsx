@@ -1,37 +1,37 @@
 "use client"
 
 import {
-  CircleCheckIcon,
+  CheckIcon,
   InfoIcon,
   Loader2Icon,
-  OctagonXIcon,
-  TriangleAlertIcon,
+  XIcon,
+  AlertTriangleIcon,
 } from "lucide-react"
-import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
-      className="toaster group"
+      theme="light"
+      className="toaster group font-mono text-xs"
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
-        loading: <Loader2Icon className="size-4 animate-spin" />,
+        success: <CheckIcon className="size-3.5 text-[#1925aa]" />,
+        info: <InfoIcon className="size-3.5 text-[#1925aa]" />,
+        warning: <AlertTriangleIcon className="size-3.5 text-amber-700" />,
+        error: <XIcon className="size-3.5 text-red-600" />,
+        loading: <Loader2Icon className="size-3.5 animate-spin text-[#1925aa]" />,
       }}
-      style={
-        {
-          "--normal-bg": "var(--primary)",
-          "--normal-text": "var(--primary-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
-        } as React.CSSProperties
-      }
+      toastOptions={{
+        style: {
+          background: "#ffffff",
+          color: "#000000",
+          border: "1px solid rgba(0, 0, 0, 0.25)",
+          borderRadius: "0px",
+          fontFamily: "var(--font-gt-america-mono), monospace",
+          fontSize: "12px",
+          boxShadow: "none",
+        },
+      }}
       {...props}
     />
   )

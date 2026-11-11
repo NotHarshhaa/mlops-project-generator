@@ -1,83 +1,104 @@
-import { ArrowDown, Box } from "lucide-react"
-import { HERO_STATS } from "./content"
+import { ArrowDown, ArrowRight } from "lucide-react"
 
 export function LandingHero() {
   return (
-    <section className="relative mb-8 sm:mb-20 pt-2 sm:pt-8">
-      <div
-        className="absolute -top-20 right-0 w-48 sm:w-72 h-48 sm:h-72 rounded-full opacity-20 pointer-events-none"
-        style={{ background: "radial-gradient(circle, var(--glow-amber), transparent 70%)" }}
-        aria-hidden
-      />
+    <section className="relative pt-6 sm:pt-14 pb-12 sm:pb-20 hairline-b">
+      {/* Vertical Rotated Annotation in Right Margin */}
+      <div className="hidden xl:flex absolute -right-6 top-20 items-center gap-3 vertical-side-label select-none pointer-events-none text-black/40">
+        <span className="font-mono text-[10px] tracking-widest uppercase">
+          PLATE NO. 01 // ARCHITECTURAL SPECIFICATION
+        </span>
+        <span className="w-12 h-px bg-black/25" />
+      </div>
 
-      <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-5 sm:gap-10 lg:gap-14 items-center">
-        <div className="space-y-4 sm:space-y-6">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-full border border-primary/30 bg-primary/8">
-            <span className="status-live">Generator online</span>
+      <div className="max-w-7xl mx-auto">
+        {/* Micro-label Header */}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 sm:mb-10 font-mono text-[10px] uppercase tracking-wider text-black/60">
+          <div className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 bg-[#1925aa]" />
+            <span className="text-[#0d1355] font-bold">MLOPS SYSTEM ARCHITECTURE</span>
           </div>
-
-          <h1 className="font-display text-[1.65rem] leading-[1.1] sm:text-5xl lg:text-[3.25rem] xl:text-6xl sm:leading-[1.05] font-extrabold tracking-tight">
-            From idea to
-            <br />
-            <span className="text-gradient">production MLOps</span>
-            <br />
-            in minutes.
-          </h1>
-
-          <p className="text-sm sm:text-lg text-muted-foreground max-w-xl leading-snug sm:leading-relaxed">
-            MLOps Project Generator scaffolds complete machine learning repositories — training scripts,
-            experiment tracking, deployment targets, and cloud templates — configured by you, delivered as a ZIP.
-          </p>
-
-          <div className="flex flex-wrap gap-2 sm:gap-3 pt-0 sm:pt-1">
-            <a
-              href="#generator"
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-lg gradient-primary btn-shine text-xs sm:text-sm font-bold text-primary-foreground shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform"
-            >
-              Start configuring
-              <ArrowDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </a>
-            <a
-              href="#features"
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-4 py-2.5 sm:px-5 sm:py-3 rounded-lg btn-ghost-panel text-xs sm:text-sm font-semibold text-foreground"
-            >
-              Explore features
-            </a>
+          <div className="flex items-center gap-4">
+            <span>SPEC: RFC-2026</span>
+            <span>·</span>
+            <span>SYSTEM RUNTIME: IN-BROWSER WASM</span>
+            <span>·</span>
+            <span className="text-[#1925aa] font-semibold">STATUS: 100% OPERATIONAL</span>
           </div>
         </div>
 
-        <div className="panel p-4 sm:p-8 relative overflow-hidden">
-          <div className="absolute top-3 right-3 sm:top-4 sm:right-4 opacity-10" aria-hidden>
-            <Box className="w-16 h-16 sm:w-24 sm:h-24" strokeWidth={0.5} />
+        {/* Monumental Hero Headline from DESIGN.md (PP Neue Montreal 160px, line-height 0.94) */}
+        <div className="mb-8 sm:mb-14">
+          <h1 className="hero-headline uppercase select-none">
+            From Code
+            <br />
+            To Production
+            <br />
+            <span className="text-[#1925aa]">MLOps.</span>
+          </h1>
+        </div>
+
+        {/* Hairline Divider */}
+        <div className="h-px bg-black/15 my-6 sm:my-10" />
+
+        {/* Broadsheet 3-Column Editorial Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-10 pt-2 mb-10 sm:mb-14">
+          <div className="space-y-2">
+            <p className="font-mono text-[10px] text-[#1925aa] font-bold uppercase tracking-wider">
+              [ 01 // AUTONOMOUS REPOSITORIES ]
+            </p>
+            <h3 className="font-editorial text-lg text-black font-medium leading-snug">
+              Complete machine learning scaffolds generated in seconds.
+            </h3>
+            <p className="text-xs text-black/70 leading-relaxed">
+              Scaffolds training code, experiment logging, orchestration DAGs, container manifests, and cloud deployment configs with zero manual configuration.
+            </p>
           </div>
 
-          <p className="font-mono-label text-muted-foreground mb-3 sm:mb-5">At a glance</p>
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4 sm:mb-6">
-            {HERO_STATS.map(({ value, label }) => (
-              <div
-                key={label}
-                className="text-center p-2.5 sm:p-4 rounded-lg bg-muted/30 border border-border/60"
-              >
-                <p className="font-display text-xl sm:text-3xl font-bold text-gradient">{value}</p>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 uppercase tracking-wider leading-tight">{label}</p>
-              </div>
-            ))}
+          <div className="space-y-2">
+            <p className="font-mono text-[10px] text-[#1925aa] font-bold uppercase tracking-wider">
+              [ 02 // PRODUCTION BOUNDARIES ]
+            </p>
+            <h3 className="font-editorial text-lg text-black font-medium leading-snug">
+              Standardized architecture eliminating technical debt.
+            </h3>
+            <p className="text-xs text-black/70 leading-relaxed">
+              Enforces clean interfaces between training scripts, model serving endpoints, and monitoring systems so teams focus on algorithms, not folder hierarchy.
+            </p>
           </div>
 
-          <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-muted-foreground leading-snug">
-            <li className="flex gap-2 sm:gap-3">
-              <span className="text-primary font-mono font-bold shrink-0">→</span>
-              <span>No local Python install — generation runs in the browser</span>
-            </li>
-            <li className="flex gap-2 sm:gap-3">
-              <span className="text-accent font-mono font-bold shrink-0">→</span>
-              <span>Fully editable output — presets are starting points</span>
-            </li>
-            <li className="flex gap-2 sm:gap-3">
-              <span className="text-primary font-mono font-bold shrink-0">→</span>
-              <span>Recent projects saved locally for quick re-download</span>
-            </li>
-          </ul>
+          <div className="space-y-2">
+            <p className="font-mono text-[10px] text-[#1925aa] font-bold uppercase tracking-wider">
+              [ 03 // ZERO RUNTIME INSTALL ]
+            </p>
+            <h3 className="font-editorial text-lg text-black font-medium leading-snug">
+              Pure client-side synthesis delivering immediate ZIP archives.
+            </h3>
+            <p className="text-xs text-black/70 leading-relaxed">
+              Runs in the browser. Inspect file trees, review code templates syntax-by-syntax, and download a ready-to-run repository instantly.
+            </p>
+          </div>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
+          <a
+            href="#generator"
+            className="btn-monograph"
+          >
+            <span>Configure Stack Matrix</span>
+            <ArrowDown className="w-3.5 h-3.5" />
+          </a>
+          <a
+            href="#capabilities"
+            className="btn-monograph-outline"
+          >
+            <span>Explore Architecture</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+          <span className="font-mono text-[10px] text-black/50 ml-auto hidden sm:inline uppercase">
+            Output: Standalone ZIP Archive · 8 Curated Presets
+          </span>
         </div>
       </div>
     </section>

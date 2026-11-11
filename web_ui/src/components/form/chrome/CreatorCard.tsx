@@ -1,63 +1,72 @@
-import { Github, Linkedin, Mail, Star } from "lucide-react"
+import { Github, Linkedin, Mail, ExternalLink } from "lucide-react"
 
 const SOCIAL_LINKS = [
-  { href: "https://github.com/NotHarshhaa", icon: Github, label: "GitHub" },
-  { href: "https://linkedin.com/in/harsh-vaghela", icon: Linkedin, label: "LinkedIn" },
-  { href: "mailto:harshvaghela@example.com", icon: Mail, label: "Email" },
+  { href: "https://github.com/NotHarshhaa", label: "GitHub", handle: "@NotHarshhaa" },
+  { href: "https://linkedin.com/in/harsh-vaghela", label: "LinkedIn", handle: "harsh-vaghela" },
+  { href: "mailto:harshvaghela@example.com", label: "Email", handle: "Direct Dispatch" },
 ] as const
 
 export function CreatorCard() {
   return (
-    <footer className="mt-6 sm:mt-12 mb-4 sm:mb-6">
-      <div className="panel p-4 sm:p-8">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
-          <div className="relative flex-shrink-0">
-            <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-lg sm:rounded-xl overflow-hidden ring-2 ring-primary/25 hover:ring-primary/50 transition-all">
+    <footer className="mt-16 sm:mt-24 pt-8 pb-12 border-t border-black/15">
+      <div className="bg-white border border-black/15 p-6 sm:p-10 mb-8">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+          <div className="flex items-start gap-5">
+            {/* Architectural Square Avatar */}
+            <div className="w-16 h-16 sm:w-20 sm:h-20 border border-black/30 overflow-hidden shrink-0 bg-[#e8e6e0]">
               <img
                 src="https://avatars.githubusercontent.com/NotHarshhaa"
-                alt="Harshhaa Reddy"
-                className="w-full h-full object-cover"
+                alt="Harsh Vaghela"
+                className="w-full h-full object-cover grayscale contrast-125"
               />
             </div>
-            <div className="absolute -bottom-1 -right-1 sm:-bottom-1.5 sm:-right-1.5 w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg gradient-primary flex items-center justify-center text-primary-foreground text-[9px] sm:text-[10px] font-black font-mono">
-              HR
+
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-[#1925aa]" />
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#1925aa] font-bold">
+                  COLOPHON // LEAD ARCHITECT
+                </p>
+              </div>
+              <h4 className="font-display text-2xl font-normal text-black uppercase">
+                Harsh Vaghela
+              </h4>
+              <p className="font-mono text-xs text-black/60">
+                Machine Learning Operations & Scalable Systems Engineering
+              </p>
+              <p className="font-editorial text-xs sm:text-sm text-black/80 max-w-xl leading-relaxed pt-1">
+                Constructing reproducible infrastructure patterns and developer tooling for the global MLOps engineering community.
+              </p>
             </div>
           </div>
 
-          <div className="flex-1 text-center sm:text-left">
-            <div className="flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 mb-0.5 sm:mb-1">
-              <h4 className="font-display text-base sm:text-lg font-bold">Harshhaa</h4>
-              <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded border border-primary/30 bg-primary/10 text-primary text-[9px] sm:text-[10px] font-mono-label">
-                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                Creator
-              </span>
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">MLOps Engineer · Open Source</p>
-            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-3 sm:mb-5 max-w-lg">
-              Building scalable ML systems and tools for the MLOps community.
-            </p>
-
-            <div className="flex flex-wrap justify-center sm:justify-start gap-1.5 sm:gap-2">
-              {SOCIAL_LINKS.map(({ href, icon: Icon, label }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-ghost-panel inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-medium text-muted-foreground hover:text-foreground"
-                >
-                  <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  {label}
-                </a>
-              ))}
-            </div>
+          {/* Social Links as Editorial Bracketed Links */}
+          <div className="flex flex-col sm:flex-row md:flex-col gap-2 font-mono text-xs shrink-0 self-start">
+            {SOCIAL_LINKS.map(({ href, label, handle }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-between gap-4 px-3 py-1.5 border border-black/20 bg-white hover:border-[#1925aa] hover:text-[#1925aa] transition-colors"
+              >
+                <span>[ {label.toUpperCase()} ]</span>
+                <span className="text-[10px] text-black/50">{handle} ↗</span>
+              </a>
+            ))}
           </div>
         </div>
       </div>
 
-      <p className="text-center font-mono-label text-muted-foreground mt-4 sm:mt-6 text-[10px] sm:text-[inherit]">
-        MLOps Project Generator · Built for practitioners
-      </p>
+      {/* Broadsheet Colophon Line */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left font-mono text-[10px] text-black/50 uppercase tracking-wider">
+        <p>
+          MLOps Project Generator Inc. · Monograph Edition · Bone & Indigo System
+        </p>
+        <p>
+          Standardized Architectural Scaffolder · 2026.01 Specification
+        </p>
+      </div>
     </footer>
   )
 }

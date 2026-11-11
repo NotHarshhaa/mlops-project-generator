@@ -1,7 +1,6 @@
 "use client"
 
 import { useFormContext } from "react-hook-form"
-import { TrendingUp } from "lucide-react"
 import { FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { SectionHeader } from "../ui"
 import type { FormValues } from "../schema"
@@ -10,39 +9,44 @@ export function AnalyticsToggle() {
   const form = useFormContext<FormValues>()
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 sm:space-y-6">
       <SectionHeader
-        icon={TrendingUp}
-        title="Analytics"
-        subtitle="Usage tracking and generation insights"
-        iconClass="icon-chip-rose"
-        step="Optional"
+        title="Telemetry & Diagnostics"
+        subtitle="Optional compilation metrics and scaffold insights."
+        step="LAYER 05 // TELEMETRY"
       />
       <FormField
         control={form.control}
         name="enable_analytics"
         render={({ field }) => (
           <FormItem>
-            <div className="flex items-center justify-between rounded-lg border border-border/70 bg-muted/20 p-3 sm:p-4 gap-3 sm:gap-4">
+            <div className="flex items-center justify-between p-4 bg-white border border-black/15 gap-4">
               <div className="space-y-0.5">
-                <FormLabel className="text-sm font-semibold text-foreground cursor-pointer">Enable Analytics</FormLabel>
-                <FormDescription className="text-xs">
-                  Track project generation metrics and get insights about your MLOps projects
+                <FormLabel className="font-mono text-xs uppercase tracking-tight text-black font-semibold cursor-pointer">
+                  Enable Project Generation Analytics
+                </FormLabel>
+                <FormDescription className="font-mono text-[11px] text-black/60">
+                  Embeds anonymous generation timestamp and configuration hashes into project metadata.
                 </FormDescription>
               </div>
               <FormControl>
+                {/* Architectural Square Toggle from DESIGN.md (0px radius) */}
                 <button
                   type="button"
                   role="switch"
                   aria-checked={!!field.value}
                   onClick={() => field.onChange(!field.value)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                    field.value ? "gradient-primary shadow-sm shadow-primary/30" : "bg-muted"
+                  className={`w-12 h-6 border cursor-pointer select-none relative transition-colors ${
+                    field.value
+                      ? "bg-[#1925aa] border-[#1925aa]"
+                      : "bg-[#e8e6e0] border-black/30"
                   }`}
                 >
-                  <span className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg transition-transform duration-300 ${
-                    field.value ? "translate-x-5" : "translate-x-0"
-                  }`} />
+                  <span
+                    className={`block w-5 h-5 bg-white transition-transform ${
+                      field.value ? "translate-x-6" : "translate-x-0.5"
+                    }`}
+                  />
                 </button>
               </FormControl>
             </div>
