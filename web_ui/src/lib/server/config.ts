@@ -5,6 +5,10 @@ const OPTIONAL_STRING_FIELDS = [
   "cloud_service",
   "preset_config",
   "custom_template",
+  "python_version",
+  "env_manager",
+  "license",
+  "ci_provider",
 ] as const
 
 const ALL_STRING_FIELDS = [
@@ -63,6 +67,10 @@ export function toGeneratorConfig(raw: Record<string, string>): GeneratorConfig 
     cloud_service: raw.cloud_service || undefined,
     preset_config: raw.preset_config || undefined,
     custom_template: raw.custom_template || undefined,
+    python_version: raw.python_version || undefined,
+    env_manager: raw.env_manager || undefined,
+    license: raw.license || undefined,
+    ci_provider: raw.ci_provider || undefined,
     enable_analytics: parseBoolean(raw.enable_analytics ?? true),
   }
 }

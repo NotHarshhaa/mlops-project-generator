@@ -12,6 +12,10 @@ export const formSchema = z.object({
   cloud_service: z.string().optional(),
   preset_config: z.string().optional(),
   custom_template: z.string().optional(),
+  python_version: z.string().optional(),
+  env_manager: z.string().optional(),
+  license: z.string().optional(),
+  ci_provider: z.string().optional(),
   enable_analytics: z.boolean().optional(),
   project_name: z.string().min(1, "Project name is required").max(50, "Project name must be 50 characters or less"),
   author_name: z.string().min(1, "Author name is required").max(100, "Author name must be 100 characters or less"),
@@ -19,7 +23,7 @@ export const formSchema = z.object({
 }).refine((data) => {
   return REQUIRED_STACK_FIELDS.every(f => !!data[f])
 }, {
-  message: "Please select an option for all categories before generating your project",
+  message: "Please select an option for all required categories before generating your project",
   path: ["framework"],
 })
 

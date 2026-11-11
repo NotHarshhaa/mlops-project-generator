@@ -45,11 +45,30 @@ export function useMLOpsGenerator() {
     loadOptions()
   }, [loadOptions])
 
+  // Clear child field when parent changes
   useEffect(() => {
     const sub = form.watch((_, { name }) => {
       if (name === "cloud_provider") form.setValue("cloud_service", "")
     })
     return () => sub.unsubscribe()
+  }, [form])
+
+  // Sync from URL search params on mount if present
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    if (params.size > 0) {
+      const initial: Record<string, string> = {}
+      params.forEach((val, key) => {
+        initial[key] = val
+      })
+      if (initial.framework || initial.task_type || initial.deployment) {
+        Object.entries(initial).forEach(([key, val]) => {
+          form.setValue(key as keyof FormValues, val as any)
+        })
+        toast.success("Stack specification populated from URL blueprint.")
+      }
+    }
   }, [form])
 
   const applyPreset = useCallback((preset: StackPreset) => {
@@ -172,6 +191,18 @@ export function useMLOpsGenerator() {
       setProgress(0)
     }
   }, [pollTaskStatus])
+
+  // Keyboard shortcut: Ctrl+Enter or Cmd+Enter to submit
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        e.preventDefault()
+        form.handleSubmit(onSubmit)()
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [form, onSubmit])
 
   const handleDownload = useCallback(() => {
     if (downloadUrl) {

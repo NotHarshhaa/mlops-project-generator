@@ -12,6 +12,10 @@ export interface GeneratorConfig {
   cloud_service?: string
   preset_config?: string
   custom_template?: string
+  python_version?: string
+  env_manager?: string
+  license?: string
+  ci_provider?: string
   enable_analytics?: boolean
 }
 

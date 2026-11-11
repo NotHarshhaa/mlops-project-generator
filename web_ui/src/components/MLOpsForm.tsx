@@ -25,9 +25,18 @@ import {
   CoreMLStack,
   Infrastructure,
   ProjectDetails,
+  RuntimeGovernance,
   StackPresets,
 } from "./form/sections"
-import { FilePreview, GenerationProgress, ProjectSummary, SuccessDialog } from "./form/feedback"
+import {
+  ArchitectureAudit,
+  ArchitectureVisualizer,
+  EnvPreview,
+  FilePreview,
+  GenerationProgress,
+  ProjectSummary,
+  SuccessDialog,
+} from "./form/feedback"
 import { CreatorCard, RecentProjects } from "./form/chrome"
 import type { FormValues } from "./form/schema"
 
@@ -94,6 +103,7 @@ export default function MLOpsForm() {
 
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 sm:space-y-10">
+                {/* Layer 01 & Layer 02 */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
                   <CoreMLStack options={options} />
                   <Infrastructure options={options} />
@@ -101,6 +111,7 @@ export default function MLOpsForm() {
 
                 <SectionDivider />
 
+                {/* Layer 03 & Layer 04 */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
                   <CloudDeployment />
                   <ConfigTemplates />
@@ -108,10 +119,24 @@ export default function MLOpsForm() {
 
                 <SectionDivider />
 
+                {/* Layer 05: Runtime Governance & Layer 06: Project Details */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
-                  <AnalyticsToggle />
+                  <RuntimeGovernance />
                   <ProjectDetails />
                 </div>
+
+                <SectionDivider />
+
+                {/* Telemetry Toggle */}
+                <AnalyticsToggle />
+
+                <SectionDivider />
+
+                {/* Real-time Architecture Pipeline Visualizer */}
+                <ArchitectureVisualizer values={formValues as FormValues} />
+
+                {/* Production Readiness & Compatibility Audit */}
+                <ArchitectureAudit values={formValues as FormValues} />
 
                 {isGenerating && <GenerationProgress progress={progress} />}
 
@@ -119,6 +144,10 @@ export default function MLOpsForm() {
                   <ProjectSummary values={formValues as FormValues} />
                 )}
 
+                {/* Generated .env.example Specification Preview */}
+                <EnvPreview values={formValues as FormValues} />
+
+                {/* Live Code Inspector & File Matrix */}
                 <FilePreview values={formValues as FormValues} />
 
                 {validationError && (

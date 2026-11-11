@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Download, Terminal, Check } from "lucide-react"
+import { Download, Terminal, Check, Share2 } from "lucide-react"
 import { toast } from "sonner"
 import type { FormValues } from "../schema"
 
@@ -28,11 +28,13 @@ function generateCliCommand(values: FormValues): string {
   if (values.cloud_service) parts.push(`--cloud-service ${values.cloud_service}`)
   if (values.preset_config) parts.push(`--preset-config ${values.preset_config}`)
   if (values.custom_template) parts.push(`--custom-template ${values.custom_template}`)
+  if (values.python_version) parts.push(`--python-version ${values.python_version}`)
   return parts.join(" \\\n  ")
 }
 
 export function ProjectSummary({ values }: ProjectSummaryProps) {
   const [copiedCli, setCopiedCli] = useState(false)
+  const [copiedShare, setCopiedShare] = useState(false)
 
   const handleExportConfig = () => {
     const jsonStr = JSON.stringify(values, null, 2)
@@ -56,6 +58,20 @@ export function ProjectSummary({ values }: ProjectSummaryProps) {
     setTimeout(() => setCopiedCli(false), 2000)
   }
 
+  const handleShareBlueprint = () => {
+    const params = new URLSearchParams()
+    for (const [key, val] of Object.entries(values)) {
+      if (val !== undefined && val !== null && val !== "") {
+        params.set(key, String(val))
+      }
+    }
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`
+    navigator.clipboard.writeText(shareUrl)
+    setCopiedShare(true)
+    toast.success("Shareable blueprint URL copied to clipboard.")
+    setTimeout(() => setCopiedShare(false), 2000)
+  }
+
   const summaryItems = [
     { label: "Framework", value: values.framework },
     { label: "Task Objective", value: values.task_type },
@@ -65,6 +81,10 @@ export function ProjectSummary({ values }: ProjectSummaryProps) {
     { label: "Production Monitoring", value: values.monitoring },
     { label: "Cloud Provider", value: values.cloud_provider },
     { label: "Cloud Service", value: values.cloud_service },
+    { label: "Python Runtime", value: values.python_version ? `Python ${values.python_version}` : undefined },
+    { label: "Pkg Manager", value: values.env_manager ? values.env_manager.toUpperCase() : undefined },
+    { label: "License", value: values.license ? values.license.toUpperCase() : undefined },
+    { label: "CI/CD Target", value: values.ci_provider ? values.ci_provider.toUpperCase() : undefined },
     { label: "Config Preset", value: values.preset_config },
     { label: "Template Density", value: values.custom_template },
   ].filter((item) => Boolean(item.value))
@@ -83,6 +103,15 @@ export function ProjectSummary({ values }: ProjectSummaryProps) {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleShareBlueprint}
+            className="btn-monograph-outline text-[10px] py-1.5 px-3 flex items-center gap-1.5"
+            title="Generate shareable URL with current stack specification"
+          >
+            {copiedShare ? <Check className="w-3 h-3 text-[#1925aa]" /> : <Share2 className="w-3 h-3" />}
+            <span>{copiedShare ? "Link Copied" : "Share Blueprint URL"}</span>
+          </button>
           <button
             type="button"
             onClick={handleCopyCli}
@@ -105,7 +134,7 @@ export function ProjectSummary({ values }: ProjectSummaryProps) {
       </div>
 
       {/* Specification Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 border-b border-black/10 pb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 border-b border-black/10 pb-4">
         {summaryItems.map((item) => (
           <div key={item.label} className="p-3 bg-[#e8e6e0]/50 border border-black/10">
             <p className="font-mono text-[9px] uppercase tracking-wider text-black/50 mb-1">

@@ -2,7 +2,7 @@ import { Github, Linkedin, Mail, ExternalLink } from "lucide-react"
 
 const SOCIAL_LINKS = [
   { href: "https://github.com/NotHarshhaa", label: "GitHub", handle: "@NotHarshhaa" },
-  { href: "https://linkedin.com/in/harsh-vaghela", label: "LinkedIn", handle: "harsh-vaghela" },
+  { href: "https://linkedin.com/in/NotHarshhaa", label: "LinkedIn", handle: "NotHarshhaa" },
   { href: "mailto:harshvaghela@example.com", label: "Email", handle: "Direct Dispatch" },
 ] as const
 
@@ -16,7 +16,7 @@ export function CreatorCard() {
             <div className="w-16 h-16 sm:w-20 sm:h-20 border border-black/30 overflow-hidden shrink-0 bg-[#e8e6e0]">
               <img
                 src="https://avatars.githubusercontent.com/NotHarshhaa"
-                alt="Harsh Vaghela"
+                alt="HARSHHAA"
                 className="w-full h-full object-cover grayscale contrast-125"
               />
             </div>
@@ -29,7 +29,7 @@ export function CreatorCard() {
                 </p>
               </div>
               <h4 className="font-display text-2xl font-normal text-black uppercase">
-                Harsh Vaghela
+                HARSHHAA
               </h4>
               <p className="font-mono text-xs text-black/60">
                 Machine Learning Operations & Scalable Systems Engineering
